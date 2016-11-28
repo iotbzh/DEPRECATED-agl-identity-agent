@@ -1,0 +1,12 @@
+
+
+# this udev file should be used with udev 188 and newer
+
+ACTION!="add|change", GOTO="u2f_end"
+#Vasco usb
+KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="f1d0", TAG+="uaccess", MODE="0666"
+# Vasco SecureClick
+KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="1a44", ATTRS{idProduct}=="80bb", TAG+="uaccess", MODE="0666"
+LABEL="u2f_end"
+
+
