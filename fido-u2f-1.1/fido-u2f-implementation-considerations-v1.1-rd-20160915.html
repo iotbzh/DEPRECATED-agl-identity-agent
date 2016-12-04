@@ -1,0 +1,427 @@
+<!DOCTYPE html PUBLIC '-//W3C//DTD XHTML 1.0 Strict//EN' 'http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd'>
+<html lang="en" dir="ltr" typeof="bibo:Document w3p:CR" about="" property="dcterms:language" content="en" prefix="bibo: http://purl.org/ontology/bibo/ w3p: http://www.w3.org/2001/02pd/rec54#">
+<head>
+    <title>FIDO U2F Implementation Considerations</title>
+    <meta name="generator" content="HTML::TextToHTML v2.5201">
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    
+    
+    
+  <style>/*****************************************************************
+ * ReSpec 3 CSS
+ * Robin Berjon - http://berjon.com/
+ *****************************************************************/
+
+/* --- INLINES --- */
+em.rfc2119 { 
+    text-transform:     lowercase;
+    font-variant:       small-caps;
+    font-style:         normal;
+    color:              #900;
+}
+
+h1 acronym, h2 acronym, h3 acronym, h4 acronym, h5 acronym, h6 acronym, a acronym,
+h1 abbr, h2 abbr, h3 abbr, h4 abbr, h5 abbr, h6 abbr, a abbr {
+    border: none;
+}
+
+dfn {
+    font-weight:    bold;
+}
+
+a.internalDFN {
+    color:  inherit;
+    border-bottom:  1px solid #99c;
+    text-decoration:    none;
+}
+
+a.externalDFN {
+    color:  inherit;
+    border-bottom:  1px dotted #ccc;
+    text-decoration:    none;
+}
+
+a.bibref {
+    text-decoration:    none;
+}
+
+cite .bibref {
+    font-style: normal;
+}
+
+code {
+    color:  #ff4500;
+}
+
+/* --- TOC --- */
+.toc a, .tof a {
+    text-decoration:    none;
+}
+
+a .secno, a .figno {
+    color:  #000;
+}
+
+ul.tof, ol.tof {
+    list-style: none outside none;
+}
+
+.caption {
+    margin-top: 0.5em;
+    font-style:   italic;
+}
+
+/* --- TABLE --- */
+table.simple {
+    border-spacing: 0;
+    border-collapse:    collapse;
+    border-bottom:  3px solid #003a7c;
+}
+
+.simple th {
+    background: #003a7c;
+    color:  #fff;
+    padding:    3px 5px;
+    text-align: left;
+}
+
+.simple th[scope="row"] {
+    background: inherit;
+    color:  inherit;
+    border-top: 1px solid #ddd;
+}
+
+.simple td {
+    padding:    3px 10px;
+    border-top: 1px solid #ddd;
+}
+
+.simple tr:nth-child(even) {
+    background: #f0f6ff;
+}
+
+/* --- DL --- */
+.section dd > p:first-child {
+    margin-top: 0;
+}
+
+.section dd > p:last-child {
+    margin-bottom: 0;
+}
+
+.section dd {
+    margin-bottom:  1em;
+}
+
+.section dl.attrs dd, .section dl.eldef dd {
+    margin-bottom:  0;
+}
+
+@media print {
+    .removeOnSave {
+        display: none;
+    }
+}
+</style><link rel="stylesheet" href="resources/FIDO-RD.css"><!--[if lt IE 9]><script src='https://www.w3.org/2008/site/js/html5shiv.js'></script><![endif]--></head>
+  <body class="h-entry" style="" role="document" id="respecDocument"><div class="head" role="contentinfo" id="respecHeader">
+  <p>
+    
+      <a href="https://www.fidoalliance.org/"><img width="250" id="toplogo" src="resources/logo.png" alt="FIDO Alliance"></a>
+    
+  </p>
+  <h1 class="title p-name" id="title" property="dcterms:title">FIDO U2F Implementation Considerations</h1>
+  
+  <h2 property="dcterms:issued" datatype="xsd:dateTime" content="2016-09-15T07:00:00.000Z" id="fido-alliance-review-draft-15-september-2016"><abbr title="FIDO Alliance">FIDO Alliance</abbr> Review Draft <time class="dt-published" datetime="2016-09-15">15 September 2016</time></h2>
+  <dl>
+    
+      <dt>This version:</dt>
+      <dd><a class="u-url" href="https://fidoalliance.org/specs/fido-u2f-v1.1-rd-20160915/fido-u2f-implementation-considerations-v1.1-v1.1-rd-20160915.html">https://fidoalliance.org/specs/fido-u2f-v1.1-rd-20160915/fido-u2f-implementation-considerations-v1.1-v1.1-rd-20160915.html</a></dd>
+      <!--<dt>Latest published version:</dt>
+      <dd><a href='https://fidoalliance.org/specs/fido-u2f-implementation-considerations-v1.1/'>https://fidoalliance.org/specs/fido-u2f-implementation-considerations-v1.1/</a></dd>
+    
+    -->
+    
+    
+    
+    
+    
+      <dt>Previous version:</dt>
+      <dd><a rel="dcterms:replaces" href="https://fidoalliance.org/specs/fido-u2f-implementation-considerations-v1.1-RD-20140209.html">https://fidoalliance.org/specs/fido-u2f-implementation-considerations-v1.1-RD-20140209.html</a></dd>
+    
+    
+    <dt>Editor:</dt>
+    <dd class="p-author h-card vcard" rel="bibo:editor" inlist=""><span typeof="foaf:Person"><a class="u-url url p-name fn" rel="foaf:homepage" property="foaf:name" content="Dirk Balfanz" href="mailto:balfanz@google.com">Dirk Balfanz</a>, <a rel="foaf:workplaceHomepage" class="p-org org h-org h-card" href="https://www.google.com/">Google, Inc.</a></span>
+</dd>
+
+    
+    
+  </dl>
+  
+  
+  
+  
+    
+      <p class="copyright">
+        Copyright ©
+        2013-2016
+        
+        <a href="https://www.fidoalliance.org/"><abbr title="FIDO Alliance">FIDO Alliance</abbr></a>
+        All Rights Reserved.
+      </p>
+    
+  
+  <hr>
+</div>
+    
+    <section id="abstract" class="introductory" property="dcterms:abstract" datatype="" typeof="bibo:Chapter" resource="#ref" rel="bibo:Chapter"><h2 aria-level="1" role="heading" id="h2_abstract">Abstract</h2>
+      <p>This document lists a number of considerations for U2F
+	implementers.
+      </p>
+    </section><section id="sotd" class="introductory" typeof="bibo:Chapter" resource="#ref" rel="bibo:Chapter"><h2 aria-level="1" role="heading" id="h2_sotd">Status of This Document</h2>
+  
+    
+      
+        <p>
+          <em>This section describes the status of this document at the time of its publication.
+          Other documents may supersede this document. A list of current <abbr title="FIDO Alliance">FIDO Alliance</abbr> publications and the
+          latest revision of this technical report can be found in the <a href="https://www.fidoalliance.org/specifications/"><abbr title="FIDO Alliance">FIDO Alliance</abbr> specifications index</a> at
+          https://www.fidoalliance.org/specifications/.</em>
+        </p>
+        
+        <p>
+          This document was published by the <a href="http://www.fidoalliance.org/"><abbr title="FIDO Alliance">FIDO Alliance</abbr></a> as a Review Draft.
+          
+            This document is intended to become a <abbr title="FIDO Alliance">FIDO Alliance</abbr> Proposed Standard.
+          
+          
+            If you wish to make comments regarding this document, please 
+            <a href="https://fidoalliance.org/contact">Contact Us</a>.
+          
+          
+          
+          
+            All comments are welcome.
+          
+        </p>
+        
+	
+	
+	  <div class="ribbon-wrapper"><div class="ribbon">REVIEW DRAFT</div></div>
+	  <p>
+	    <strong>This is a Review Draft Specification and
+            is not intended to be a basis for any implementations as the Specification may change.</strong> Permission is
+            hereby granted to use the Specification solely for the purpose of reviewing the Specification. No rights
+            are granted to prepare derivative works of this Specification. Entities seeking permission to reproduce
+            portions of this Specification for other uses must contact the <abbr title="FIDO Alliance">FIDO Alliance</abbr> to determine whether an 
+            appropriate license for such use is available.
+	  </p>
+	
+	
+        
+          <p>
+	    Implementation of certain elements of this Specification may require licenses under third party intellectual 
+	    property rights, including without limitation, patent rights. The <abbr title="FIDO Alliance">FIDO Alliance</abbr>, Inc. and its Members
+            and any other contributors to the Specification are not, and shall not be held, responsible in any manner
+            for identifying or failing to identify any or all such third party intellectual property rights.
+	  </p>
+	  <p>
+	    THIS FIDO ALLIANCE SPECIFICATION IS PROVIDED “AS IS” AND WITHOUT ANY 
+            WARRANTY OF ANY KIND, INCLUDING, WITHOUT LIMITATION, ANY EXPRESS OR IMPLIED
+	    WARRANTY OF NON-INFRINGEMENT, MERCHANTABILITY OR FITNESS FOR A
+	    PARTICULAR PURPOSE.
+          </p>
+        
+        
+        
+        
+      
+    
+  
+</section><section id="toc"><h2 class="introductory" aria-level="1" role="heading" id="h2_toc">Table of Contents</h2><ul class="toc" role="directory" id="respecContents"><li class="tocline"><a href="#notation" class="tocxref"><span class="secno">1. </span>Notation</a><ul class="toc"><li class="tocline"><a href="#key-words" class="tocxref"><span class="secno">1.1 </span>Key Words</a></li></ul></li><li class="tocline"><a href="#implementation-considerations" class="tocxref"><span class="secno">2. </span>Implementation Considerations
+      </a><ul class="toc"><li class="tocline"><a href="#timing-considerations" class="tocxref"><span class="secno">2.1 </span>Timing Considerations
+	</a></li><li class="tocline"><a href="#generation-of-key-handles" class="tocxref"><span class="secno">2.2 </span>Generation of Key Handles
+	</a></li><li class="tocline"><a href="#secure-key-generation" class="tocxref"><span class="secno">2.3 </span>Secure Key Generation
+	</a></li><li class="tocline"><a href="#challenge-parameters" class="tocxref"><span class="secno">2.4 </span>Challenge Parameters
+	</a></li><li class="tocline"><a href="#revocation-of-tokens" class="tocxref"><span class="secno">2.5 </span>Revocation of Tokens
+	</a></li><li class="tocline"><a href="#token-counters" class="tocxref"><span class="secno">2.6 </span>Token Counters
+      </a></li><li class="tocline"><a href="#key-usage" class="tocxref"><span class="secno">2.7 </span>Key Usage
+	</a></li><li class="tocline"><a href="#ui-considerations-for-fido-clients" class="tocxref"><span class="secno">2.8 </span>UI Considerations for FIDO Clients
+	</a></li></ul></li><li class="tocline"><a href="#references" class="tocxref"><span class="secno">A. </span>References</a><ul class="toc"><li class="tocline"><a href="#normative-references" class="tocxref"><span class="secno">A.1 </span>Normative references</a></li><li class="tocline"><a href="#informative-references" class="tocxref"><span class="secno">A.2 </span>Informative references</a></li></ul></li></ul></section>
+
+    <section id="notation">
+      <!--OddPage--><h2 aria-level="1" role="heading" id="h2_notation"><span class="secno">1. </span>Notation</h2>
+
+      <p>Type names, attribute names and element names are written as <code>code</code>.
+      </p>
+      <p>String literals are enclosed in “”, e.g. “UAF-TLV”.
+      </p>
+      <p>In formulas we use “|” to denote byte wise concatenation
+	operations.
+      </p>
+      <p>DOM APIs are described using the ECMAScript [<cite><a class="bibref" href="#bib-ECMA-262">ECMA-262</a></cite>] bindings
+	for WebIDL [<cite><a class="bibref" href="#bib-WebIDL">WebIDL</a></cite>].
+      </p>
+      <p>U2F specific terminology used in this document is defined in
+	[<cite><a class="bibref" href="#bib-FIDOGlossary">FIDOGlossary</a></cite>].
+      </p>
+      <section id="key-words">
+	<h3 aria-level="2" role="heading" id="h3_key-words"><span class="secno">1.1 </span>Key Words</h3>
+
+	<p>The key words “<em class="rfc2119" title="MUST">MUST</em>”, “<em class="rfc2119" title="MUST NOT">MUST NOT</em>”, “<em class="rfc2119" title="REQUIRED">REQUIRED</em>”, “<em class="rfc2119" title="SHALL">SHALL</em>”, “<em class="rfc2119" title="SHALL
+	  NOT">SHALL
+	  NOT</em>”, “<em class="rfc2119" title="SHOULD">SHOULD</em>”, “<em class="rfc2119" title="SHOULD NOT">SHOULD NOT</em>”, “<em class="rfc2119" title="RECOMMENDED">RECOMMENDED</em>”, “<em class="rfc2119" title="MAY">MAY</em>”, and
+	  “<em class="rfc2119" title="OPTIONAL">OPTIONAL</em>” in this document are to be interpreted as
+	  described in [<cite><a class="bibref" href="#bib-RFC2119">RFC2119</a></cite>].
+      </p></section>
+    </section>
+    <section id="implementation-considerations">
+      <!--OddPage--><h2 aria-level="1" role="heading" id="h2_implementation-considerations"><span class="secno">2. </span>Implementation Considerations
+      </h2>
+      <p>Note: Reading the 'FIDO U2F Overview' (see [<cite><a class="bibref" href="#bib-U2FOverview">U2FOverview</a></cite>] in
+	bibliography) is recommended as a background for this
+	document.
+      </p>
+      <section id="timing-considerations">
+	<h3 aria-level="2" role="heading" id="h3_timing-considerations"><span class="secno">2.1 </span>Timing Considerations
+	</h3>
+	<p>U2F Tokens should respond to authentication and registration
+	  request as soon as possible to ensure a responsive user
+	  interface. In particular, they should not wait for user
+	  presence if the request message requires it. Usually, this
+	  means that U2F tokens should respond within 500ms to requests.
+	  (FIDO clients, on the other hand, should be coded more
+	  defensively, and should wait for at least 3 seconds before
+	  giving up on a U2F token.)
+	</p>
+	<p>Once user presence is detected, U2F tokens should persist the
+	  user presence' state for 10 seconds or until an operation
+	  which requires user presence is performed, whichever comes
+	  first.
+	</p>
+      </section>
+      <section id="generation-of-key-handles">
+	<h3 aria-level="2" role="heading" id="h3_generation-of-key-handles"><span class="secno">2.2 </span>Generation of Key Handles
+	</h3>
+	<p>U2F tokens might not store private key material, and instead
+	  might export a wrapped private key as part of the key handle.
+	  If a U2F token chooses to do this, then the following must be
+	  taken into consideration:
+	</p>
+	<p>The U2F token should employ a cipher that offers the best
+	  possible security on the given hardware. Sometimes, hardware
+	  offers better protections against certain attacks for 'weak'
+	  ciphers (e.g., 3DES) than against 'strong' ciphers (e.g., AES).
+	  Implementers should carefully weigh the pros and cons of
+	  different ciphers on the hardware platform that they're
+	  implementing on.
+	</p>
+	<p>Given a particular U2F token and a relying party, the relying
+	  party should not be able to tell the difference between a key
+	  handle that was issued for a different token, and a key handle
+	  that was issued for a different relying party. (The concern is
+	  that a site, evil.com, might want to find out whether a given
+	  token has been registered for a site embarrassing.com, and
+	  would be able to do so if it had key handles from
+	  embarrassing.com if it could tell the difference.) The two
+	  error conditions ('wrong key handle' and 'wrong origin (but
+	  correct key handle)') should not be distinguishable to the
+	  relying party, through careful timings or otherwise.
+	</p>
+      </section>
+      <section id="secure-key-generation">
+	<h3 aria-level="2" role="heading" id="h3_secure-key-generation"><span class="secno">2.3 </span>Secure Key Generation
+	</h3>
+	<p>U2F tokens should follow best practices when generating private
+	  keys (i.e., use a recommended PRNG) and use a good source of
+	  entropy (which usually serves as input to the PRNG). If no good
+	  source of entropy is available on the token, the token should
+	  combine whatever entropy there is with the challenge parameter
+	  from the request as input into the PRNG.
+	</p>
+      </section>
+      <section id="challenge-parameters">
+	<h3 aria-level="2" role="heading" id="h3_challenge-parameters"><span class="secno">2.4 </span>Challenge Parameters
+	</h3>
+	<p>The registration and authentication operations require the
+	  relying party to pass a challenge parameter to the
+	  Javascript API (as part of the SignData and EnrollData
+	  parameters - (see [<cite><a class="bibref" href="#bib-U2FJSAPI">U2FJSAPI</a></cite>] in
+	  bibliography). This parameter is the base64-encoding of a
+	  byte array chosen by the relying party.
+	</p>
+	<p>Relying parties should ensure that the challenge parameter has
+	  sufficient entropy. In particular, it is recommended that the
+	  challenge parameter contains at least 8 random bytes, following
+	  the requirements in [<cite><a class="bibref" href="#bib-SP800-63-1">SP800-63-1</a></cite>].
+	</p>
+      </section>
+      <section id="revocation-of-tokens">
+	<h3 aria-level="2" role="heading" id="h3_revocation-of-tokens"><span class="secno">2.5 </span>Revocation of Tokens
+	</h3>
+	<p>Since U2F tokens don't have device identifiers, U2F does not
+	  prescribe a way to revoke tokens (through a revocation list or
+	  similar mechanism). Instead, it is up to individual relying
+	  parties to stop honoring authentication responses that come
+	  from certain tokens.
+	</p>
+	<p>Relying parties should give users a mechanism to report lost or
+	  stolen tokens. If the token is lost or stolen, then the relying
+	  party should stop honoring authentication responses from the
+	  token.
+	</p>
+      </section>
+      <section id="token-counters">
+      <h3 aria-level="2" role="heading" id="h3_token-counters"><span class="secno">2.6 </span>Token Counters
+      </h3>
+      <p>A U2F token must increase a counter each time it performs an
+	authentication operation. This counter may be 'global' (i.e.,
+	the same counter is incremented regardless of the application
+	parameter in Authentication Request message), or
+	per-application (i.e., one counter for each value of
+	application parameter in the Authentication Request message).
+      </p>
+      <p>U2F token counters should start at 0.
+      </p>
+      <p>The counter allows relying parties to detect token cloning in
+	certain situations. Relying parties should implement their own
+	remediation strategies if they suspect token cloning due to
+	non-increasing counter values.
+      </p>
+      </section>
+      <section id="key-usage">
+	<h3 aria-level="2" role="heading" id="h3_key-usage"><span class="secno">2.7 </span>Key Usage
+	</h3>
+	<p>Keys generated during a U2F registration must not be used for
+	  any purpose other than U2F authentications. Implementers of
+	  hardware and/or software that serves other purposes beyond U2F
+	  need to ensure that U2F keys are not used for such other
+	  purposes.
+	</p>
+      </section>
+      <section id="ui-considerations-for-fido-clients">
+	<h3 aria-level="2" role="heading" id="h3_ui-considerations-for-fido-clients"><span class="secno">2.8 </span>UI Considerations for FIDO Clients
+	</h3>
+	<p>FIDO Clients should implement a user interface that allows the
+	  user to get a clear indication of which relying parties are
+	  using the FIDO U2F APIs. Such APIs allow relying parties that
+	  are in possession of the user's public key to confirm the
+	  identity of the user, even if the user has removed their
+	  cookies, is using anonymizing onion routing networks, etc. In
+	  the case where the FIDO Client is a web browser, the web
+	  browser should indicate to the user which page or web origin is
+	  creating or exercising U2F keys for the user. The FIDO client
+	  might also give the user the ability to allow or deny the use
+	  of the U2F APIs for relying parties.
+	</p>
+      </section>
+    </section>
+  
+
+<section id="references" class="appendix" typeof="bibo:Chapter" resource="#ref" rel="bibo:Chapter"><!--OddPage--><h2 aria-level="1" role="heading" id="h2_references"><span class="secno">A. </span>References</h2><section id="normative-references" typeof="bibo:Chapter" resource="#ref" rel="bibo:Chapter"><h3 aria-level="2" role="heading" id="h3_normative-references"><span class="secno">A.1 </span>Normative references</h3><dl class="bibliography" about=""><dt id="bib-ECMA-262">[ECMA-262]</dt><dd rel="dcterms:requires"><a href="https://tc39.github.io/ecma262/"><cite>ECMAScript Language Specification</cite></a>. URL: <a href="https://tc39.github.io/ecma262/">https://tc39.github.io/ecma262/</a>
+</dd><dt id="bib-FIDOGlossary">[FIDOGlossary]</dt><dd rel="dcterms:requires">R. Lindemann, D. Baghdasaryan, B. Hill, J. Hodges, <cite>FIDO Technical Glossary</cite>. FIDO Alliance Proposed Standard. URLs: <br>HTML: <a href="./fido-glossary-v1.1-rd-20160915.html">fido-glossary-v1.1-rd-20160915.html</a> <br>PDF: <a href="./fido-glossary-v1.1-rd-20160915.pdf">fido-glossary-v1.1-rd-20160915.pdf</a>
+</dd><dt id="bib-RFC2119">[RFC2119]</dt><dd rel="dcterms:requires">S. Bradner. <a href="https://tools.ietf.org/html/rfc2119"><cite>Key words for use in RFCs to Indicate Requirement Levels</cite></a>. March 1997. Best Current Practice. URL: <a href="https://tools.ietf.org/html/rfc2119">https://tools.ietf.org/html/rfc2119</a>
+</dd><dt id="bib-U2FJSAPI">[U2FJSAPI]</dt><dd rel="dcterms:requires">D. Balfanz, A. Birgisson, J. Lang, <a href="./fido-u2f-javascript-api-v1.1-rd-20160915.pdf"><cite>FIDO U2F Javascript API v1.0</cite></a>. FIDO Alliance Review Draft (Work in progress.) URL:  <a href="./fido-u2f-javascript-api-v1.1-rd-20160915.pdf">./fido-u2f-javascript-api-v1.1-rd-20160915.pdf</a>
+</dd><dt id="bib-U2FOverview">[U2FOverview]</dt><dd rel="dcterms:requires">S. Srinivas, D. Balfanz, E. Tiffany, <a href="./fido-u2f-overview-v1.1-rd-20160915.pdf"><cite>FIDO U2F Overview v1.0</cite></a>. FIDO Alliance Review Draft (Work in progress.) URL:  <a href="./fido-u2f-overview-v1.1-rd-20160915.pdf">./fido-u2f-overview-v1.1-rd-20160915.pdf</a>
+</dd><dt id="bib-WebIDL">[WebIDL]</dt><dd rel="dcterms:requires">Cameron McCormack; Boris Zbarsky. <a href="https://www.w3.org/TR/WebIDL-1/"><cite>WebIDL Level 1</cite></a>. 15 September 2016. W3C Proposed Recommendation. URL: <a href="https://www.w3.org/TR/WebIDL-1/">https://www.w3.org/TR/WebIDL-1/</a>
+</dd></dl></section><section id="informative-references" typeof="bibo:Chapter" resource="#ref" rel="bibo:Chapter"><h3 aria-level="2" role="heading" id="h3_informative-references"><span class="secno">A.2 </span>Informative references</h3><dl class="bibliography" about=""><dt id="bib-SP800-63-1">[SP800-63-1]</dt><dd rel="dcterms:references">W. Burr, D. Dodson, E. Newton, R. Perlner, W.T. Polk, S. Gupta and E. Nabbus, <a href="http://csrc.nist.gov/publications/nistpubs/800-63-1/SP-800-63-1.pdf"><cite>NIST Special Publication 800-63-1: Electronic Authentication Guideline</cite></a>. National Institute of Standards and Technology, December 2011, URL: <a href="http://csrc.nist.gov/publications/nistpubs/800-63-1/SP-800-63-1.pdf">http://csrc.nist.gov/publications/nistpubs/800-63-1/SP-800-63-1.pdf</a>
+</dd></dl></section></section></body></html>

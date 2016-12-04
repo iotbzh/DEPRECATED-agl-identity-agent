@@ -1,0 +1,1520 @@
+<!DOCTYPE html PUBLIC '-//W3C//DTD XHTML 1.0 Strict//EN' 'http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd'>
+<html lang="en" dir="ltr" typeof="bibo:Document w3p:CR" about="" property="dcterms:language" content="en" prefix="bibo: http://purl.org/ontology/bibo/ w3p: http://www.w3.org/2001/02pd/rec54#">
+<head>
+    <title>FIDO U2F Raw Message Formats</title>
+    <meta name="generator" content="HTML::TextToHTML v2.5201">
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+      
+      
+      
+    <style>/*****************************************************************
+ * ReSpec 3 CSS
+ * Robin Berjon - http://berjon.com/
+ *****************************************************************/
+
+/* --- INLINES --- */
+em.rfc2119 { 
+    text-transform:     lowercase;
+    font-variant:       small-caps;
+    font-style:         normal;
+    color:              #900;
+}
+
+h1 acronym, h2 acronym, h3 acronym, h4 acronym, h5 acronym, h6 acronym, a acronym,
+h1 abbr, h2 abbr, h3 abbr, h4 abbr, h5 abbr, h6 abbr, a abbr {
+    border: none;
+}
+
+dfn {
+    font-weight:    bold;
+}
+
+a.internalDFN {
+    color:  inherit;
+    border-bottom:  1px solid #99c;
+    text-decoration:    none;
+}
+
+a.externalDFN {
+    color:  inherit;
+    border-bottom:  1px dotted #ccc;
+    text-decoration:    none;
+}
+
+a.bibref {
+    text-decoration:    none;
+}
+
+cite .bibref {
+    font-style: normal;
+}
+
+code {
+    color:  #ff4500;
+}
+
+/* --- TOC --- */
+.toc a, .tof a {
+    text-decoration:    none;
+}
+
+a .secno, a .figno {
+    color:  #000;
+}
+
+ul.tof, ol.tof {
+    list-style: none outside none;
+}
+
+.caption {
+    margin-top: 0.5em;
+    font-style:   italic;
+}
+
+/* --- TABLE --- */
+table.simple {
+    border-spacing: 0;
+    border-collapse:    collapse;
+    border-bottom:  3px solid #003a7c;
+}
+
+.simple th {
+    background: #003a7c;
+    color:  #fff;
+    padding:    3px 5px;
+    text-align: left;
+}
+
+.simple th[scope="row"] {
+    background: inherit;
+    color:  inherit;
+    border-top: 1px solid #ddd;
+}
+
+.simple td {
+    padding:    3px 10px;
+    border-top: 1px solid #ddd;
+}
+
+.simple tr:nth-child(even) {
+    background: #f0f6ff;
+}
+
+/* --- DL --- */
+.section dd > p:first-child {
+    margin-top: 0;
+}
+
+.section dd > p:last-child {
+    margin-bottom: 0;
+}
+
+.section dd {
+    margin-bottom:  1em;
+}
+
+.section dl.attrs dd, .section dl.eldef dd {
+    margin-bottom:  0;
+}
+
+@media print {
+    .removeOnSave {
+        display: none;
+    }
+}
+</style><style>/* --- WEB IDL --- */
+pre.idl {
+    border-top: 1px solid #364e50;
+    border-bottom: 1px solid #364e50;
+    padding:    1em;
+    line-height:    120%;
+}
+
+pre.idl::before {
+    content:    "WebIDL";
+    display:    block;
+    width:      150px;
+    background: #364e50;
+    color:  #fff;
+    font-family:    initial;
+    padding:    3px;
+    font-weight:    bold;
+    margin: -1em 0 1em -1em;
+}
+
+.idlType {
+    color:  #ff4500;
+    font-weight:    bold;
+    text-decoration:    none;
+}
+
+/*.idlModule*/
+/*.idlModuleID*/
+/*.idlInterface*/
+.idlInterfaceID, .idlDictionaryID, .idlCallbackID, .idlEnumID {
+    font-weight:    bold;
+    color:  #003a7c;
+}
+a.idlEnumItem {
+    color:  #000;
+    border-bottom:  1px dotted #ccc;
+    text-decoration: none;
+}
+
+.idlSuperclass {
+    font-style: italic;
+    color:  #003a7c;
+}
+
+/*.idlAttribute*/
+.idlAttrType, .idlFieldType, .idlMemberType {
+    color:  #003a7c;
+}
+.idlAttrName, .idlFieldName, .idlMemberName {
+    color:  #ff4500;
+}
+.idlAttrName a, .idlFieldName a, .idlMemberName a {
+    color:  #ff4500;
+    border-bottom:  1px dotted #ff4500;
+    text-decoration: none;
+}
+
+/*.idlMethod*/
+.idlMethType, .idlCallbackType {
+    color:  #003a7c;
+}
+.idlMethName {
+    color:  #ff4500;
+}
+.idlMethName a {
+    color:  #ff4500;
+    border-bottom:  1px dotted #ff4500;
+    text-decoration: none;
+}
+
+/*.idlCtor*/
+.idlCtorName {
+    color:  #ff4500;
+}
+.idlCtorName a {
+    color:  #ff4500;
+    border-bottom:  1px dotted #ff4500;
+    text-decoration: none;
+}
+
+/*.idlParam*/
+.idlParamType {
+    color:  #003a7c;
+}
+.idlParamName, .idlDefaultValue {
+    font-style: italic;
+}
+
+.extAttr {
+    color:  #666;
+}
+
+/*.idlSectionComment*/
+.idlSectionComment {
+    color: gray;
+}
+
+/*.idlConst*/
+.idlConstType {
+    color:  #003a7c;
+}
+.idlConstName {
+    color:  #ff4500;
+}
+.idlConstName a {
+    color:  #ff4500;
+    border-bottom:  1px dotted #ff4500;
+    text-decoration: none;
+}
+
+/*.idlException*/
+.idlExceptionID {
+    font-weight:    bold;
+    color:  #c00;
+}
+
+.idlTypedefID, .idlTypedefType {
+    color:  #003a7c;
+}
+
+.idlRaises, .idlRaises a.idlType, .idlRaises a.idlType code, .excName a, .excName a code {
+    color:  #c00;
+    font-weight:    normal;
+}
+
+.excName a {
+    font-family:    monospace;
+}
+
+.idlRaises a.idlType, .excName a.idlType {
+    border-bottom:  1px dotted #c00;
+}
+
+.excGetSetTrue, .excGetSetFalse, .prmNullTrue, .prmNullFalse, .prmOptTrue, .prmOptFalse {
+    width:  45px;
+    text-align: center;
+}
+.excGetSetTrue, .prmNullTrue, .prmOptTrue { color:  #0c0; }
+.excGetSetFalse, .prmNullFalse, .prmOptFalse { color:  #c00; }
+
+.idlImplements a {
+    font-weight:    bold;
+}
+
+dl.attributes, dl.methods, dl.constants, dl.constructors, dl.fields, dl.dictionary-members {
+    margin-left:    2em;
+}
+
+.attributes dt, .methods dt, .constants dt, .constructors dt, .fields dt, .dictionary-members dt {
+    font-weight:    normal;
+}
+
+.attributes dt code, .methods dt code, .constants dt code, .constructors dt code, .fields dt code, .dictionary-members dt code {
+    font-weight:    bold;
+    color:  #000;
+    font-family:    monospace;
+}
+
+.attributes dt code, .fields dt code, .dictionary-members dt code {
+    background:  #ffffd2;
+}
+
+.attributes dt .idlAttrType code, .fields dt .idlFieldType code, .dictionary-members dt .idlMemberType code {
+    color:  #003a7c;
+    background:  transparent;
+    font-family:    inherit;
+    font-weight:    normal;
+    font-style: italic;
+}
+
+.methods dt code {
+    background:  #d9e6f8;
+}
+
+.constants dt code {
+    background:  #ddffd2;
+}
+
+.constructors dt code {
+    background:  #cfc;
+}
+
+.attributes dd, .methods dd, .constants dd, .constructors dd, .fields dd, .dictionary-members dd {
+    margin-bottom:  1em;
+}
+
+table.parameters, table.exceptions {
+    border-spacing: 0;
+    border-collapse:    collapse;
+    margin: 0.5em 0;
+    width:  100%;
+}
+table.parameters { border-bottom:  1px solid #364e50; }
+table.exceptions { border-bottom:  1px solid #deb890; }
+
+.parameters th, .exceptions th {
+    color:  #fff;
+    padding:    3px 5px;
+    text-align: left;
+    font-family:    initial;
+    font-weight:    normal;
+    text-shadow:    #666 1px 1px 0;
+}
+.parameters th { background: #364e50; }
+.exceptions th { background: #deb890; }
+
+.parameters td, .exceptions td {
+    padding:    3px 10px;
+    border-top: 1px solid #ddd;
+    vertical-align: top;
+}
+
+.parameters tr:first-child td, .exceptions tr:first-child td {
+    border-top: none;
+}
+
+.parameters td.prmName, .exceptions td.excName, .exceptions td.excCodeName {
+    width:  100px;
+}
+
+.parameters td.prmType {
+    width:  120px;
+}
+
+table.exceptions table {
+    border-spacing: 0;
+    border-collapse:    collapse;
+    width:  100%;
+}
+</style><link rel="stylesheet" href="resources/FIDO-RD.css"><!--[if lt IE 9]><script src='https://www.w3.org/2008/site/js/html5shiv.js'></script><![endif]--></head>
+    <body class="h-entry" style="" role="document" id="respecDocument"><div class="head" role="contentinfo" id="respecHeader">
+  <p>
+    
+      <a href="https://www.fidoalliance.org/"><img width="250" id="toplogo" src="resources/logo.png" alt="FIDO Alliance"></a>
+    
+  </p>
+  <h1 class="title p-name" id="title" property="dcterms:title">FIDO U2F Raw Message Formats</h1>
+  
+  <h2 property="dcterms:issued" datatype="xsd:dateTime" content="2016-09-15T07:00:00.000Z" id="fido-alliance-review-draft-15-september-2016"><abbr title="FIDO Alliance">FIDO Alliance</abbr> Review Draft <time class="dt-published" datetime="2016-09-15">15 September 2016</time></h2>
+  <dl>
+    
+      <dt>This version:</dt>
+      <dd><a class="u-url" href="https://fidoalliance.org/specs/fido-u2f-v1.1-rd-20160915/fido-u2f-raw-message-formats-v1.1-v1.1-rd-20160915.html">https://fidoalliance.org/specs/fido-u2f-v1.1-rd-20160915/fido-u2f-raw-message-formats-v1.1-v1.1-rd-20160915.html</a></dd>
+      <!--<dt>Latest published version:</dt>
+      <dd><a href='https://fidoalliance.org/specs/fido-u2f-raw-message-formats-v1.1/'>https://fidoalliance.org/specs/fido-u2f-raw-message-formats-v1.1/</a></dd>
+    
+    -->
+    
+    
+    
+    
+    
+      <dt>Previous version:</dt>
+      <dd><a rel="dcterms:replaces" href="https://fidoalliance.org/specs/fido-u2f-raw-message-formats-v1.1-RD-20140209.html">https://fidoalliance.org/specs/fido-u2f-raw-message-formats-v1.1-RD-20140209.html</a></dd>
+    
+    
+    <dt>Editors:</dt>
+    <dd class="p-author h-card vcard" rel="bibo:editor" inlist=""><span typeof="foaf:Person"><a class="u-url url p-name fn" rel="foaf:homepage" property="foaf:name" content="Dirk Balfanz" href="mailto:balfanz@google.com">Dirk Balfanz</a>, <a rel="foaf:workplaceHomepage" class="p-org org h-org h-card" href="https://www.google.com/">Google, Inc.</a></span>
+</dd>
+<dd class="p-author h-card vcard" rel="bibo:editor" inlist=""><span typeof="foaf:Person"><a class="u-url url p-name fn" rel="foaf:homepage" property="foaf:name" content="Jakob Ehrensvard" href="mailto:jakob@yubico.com">Jakob Ehrensvard</a>, <a rel="foaf:workplaceHomepage" class="p-org org h-org h-card" href="https://www.yubico.com/">Yubico, Inc</a></span>
+</dd>
+<dd class="p-author h-card vcard" rel="bibo:editor" inlist=""><span typeof="foaf:Person"><a class="u-url url p-name fn" rel="foaf:homepage" property="foaf:name" content="Juan Lang" href="mailto:juanlang@google.com">Juan Lang</a>, <a rel="foaf:workplaceHomepage" class="p-org org h-org h-card" href="https://www.google.com/">Google, Inc.</a></span>
+</dd>
+
+    
+    
+  </dl>
+  
+  
+  
+  
+    
+      <p class="copyright">
+        Copyright ©
+        2013-2016
+        
+        <a href="https://www.fidoalliance.org/"><abbr title="FIDO Alliance">FIDO Alliance</abbr></a>
+        All Rights Reserved.
+      </p>
+    
+  
+  <hr>
+</div>
+      
+      <section id="abstract" class="introductory" property="dcterms:abstract" datatype="" typeof="bibo:Chapter" resource="#ref" rel="bibo:Chapter"><h2 aria-level="1" role="heading" id="h2_abstract">Abstract</h2><p>
+      </p></section><section id="sotd" class="introductory" typeof="bibo:Chapter" resource="#ref" rel="bibo:Chapter"><h2 aria-level="1" role="heading" id="h2_sotd">Status of This Document</h2>
+  
+    
+      
+        <p>
+          <em>This section describes the status of this document at the time of its publication.
+          Other documents may supersede this document. A list of current <abbr title="FIDO Alliance">FIDO Alliance</abbr> publications and the
+          latest revision of this technical report can be found in the <a href="https://www.fidoalliance.org/specifications/"><abbr title="FIDO Alliance">FIDO Alliance</abbr> specifications index</a> at
+          https://www.fidoalliance.org/specifications/.</em>
+        </p>
+        
+        <p>
+          This document was published by the <a href="http://www.fidoalliance.org/"><abbr title="FIDO Alliance">FIDO Alliance</abbr></a> as a Review Draft.
+          
+            This document is intended to become a <abbr title="FIDO Alliance">FIDO Alliance</abbr> Proposed Standard.
+          
+          
+            If you wish to make comments regarding this document, please 
+            <a href="https://fidoalliance.org/contact">Contact Us</a>.
+          
+          
+          
+          
+            All comments are welcome.
+          
+        </p>
+        
+	
+	
+	  <div class="ribbon-wrapper"><div class="ribbon">REVIEW DRAFT</div></div>
+	  <p>
+	    <strong>This is a Review Draft Specification and
+            is not intended to be a basis for any implementations as the Specification may change.</strong> Permission is
+            hereby granted to use the Specification solely for the purpose of reviewing the Specification. No rights
+            are granted to prepare derivative works of this Specification. Entities seeking permission to reproduce
+            portions of this Specification for other uses must contact the <abbr title="FIDO Alliance">FIDO Alliance</abbr> to determine whether an 
+            appropriate license for such use is available.
+	  </p>
+	
+	
+        
+          <p>
+	    Implementation of certain elements of this Specification may require licenses under third party intellectual 
+	    property rights, including without limitation, patent rights. The <abbr title="FIDO Alliance">FIDO Alliance</abbr>, Inc. and its Members
+            and any other contributors to the Specification are not, and shall not be held, responsible in any manner
+            for identifying or failing to identify any or all such third party intellectual property rights.
+	  </p>
+	  <p>
+	    THIS FIDO ALLIANCE SPECIFICATION IS PROVIDED “AS IS” AND WITHOUT ANY 
+            WARRANTY OF ANY KIND, INCLUDING, WITHOUT LIMITATION, ANY EXPRESS OR IMPLIED
+	    WARRANTY OF NON-INFRINGEMENT, MERCHANTABILITY OR FITNESS FOR A
+	    PARTICULAR PURPOSE.
+          </p>
+        
+        
+        
+        
+      
+    
+  
+</section><section id="toc"><h2 class="introductory" aria-level="1" role="heading" id="h2_toc">Table of Contents</h2><ul class="toc" role="directory" id="respecContents"><li class="tocline"><a href="#notation" class="tocxref"><span class="secno">1. </span>Notation</a><ul class="toc"><li class="tocline"><a href="#key-words" class="tocxref"><span class="secno">1.1 </span>Key Words</a></li></ul></li><li class="tocline"><a href="#introduction" class="tocxref"><span class="secno">2. </span>Introduction
+	</a></li><li class="tocline"><a href="#u2f-message-framing" class="tocxref"><span class="secno">3. </span>U2F message framing</a><ul class="toc"><li class="tocline"><a href="#request-message-framing" class="tocxref"><span class="secno">3.1 </span>Request Message Framing</a><ul class="toc"><li class="tocline"><a href="#short-encoding" class="tocxref"><span class="secno">3.1.1 </span>Short Encoding</a></li><li class="tocline"><a href="#extended-length-encoding" class="tocxref"><span class="secno">3.1.2 </span>Extended Length Encoding</a></li></ul></li><li class="tocline"><a href="#response-message-framing" class="tocxref"><span class="secno">3.2 </span>Response Message Framing</a></li><li class="tocline"><a href="#status-codes" class="tocxref"><span class="secno">3.3 </span>Status Codes</a></li></ul></li><li class="tocline"><a href="#registration-messages" class="tocxref"><span class="secno">4. </span>Registration Messages
+	      </a><ul class="toc"><li class="tocline"><a href="#registration-request-message---u2f_register" class="tocxref"><span class="secno">4.1 </span>Registration Request Message - U2F_REGISTER</a></li><li class="tocline"><a href="#registration-response-message-error-test-of-user-presence-required" class="tocxref"><span class="secno">4.2 </span>Registration Response Message: Error: Test-of-User-Presence
+		  Required
+		</a></li><li class="tocline"><a href="#registration-response-message-success" class="tocxref"><span class="secno">4.3 </span>Registration Response Message: Success
+		</a></li></ul></li><li class="tocline"><a href="#authentication-messages" class="tocxref"><span class="secno">5. </span>Authentication Messages
+	      </a><ul class="toc"><li class="tocline"><a href="#authentication-request-message---u2f_authenticate" class="tocxref"><span class="secno">5.1 </span>Authentication Request Message - U2F_AUTHENTICATE
+		</a></li><li class="tocline"><a href="#authentication-response-message-error-test-of-user-presence-required" class="tocxref"><span class="secno">5.2 </span>Authentication Response Message: Error: Test-of-User-Presence
+		  Required
+		</a></li><li class="tocline"><a href="#authentication-response-message-error-bad-key-handle" class="tocxref"><span class="secno">5.3 </span>Authentication Response Message: Error: Bad Key Handle
+		</a></li><li class="tocline"><a href="#authentication-response-message-success" class="tocxref"><span class="secno">5.4 </span>Authentication Response Message: Success
+		</a></li></ul></li><li class="tocline"><a href="#other-messages" class="tocxref"><span class="secno">6. </span>Other Messages
+	      </a><ul class="toc"><li class="tocline"><a href="#getversion-request-and-response---u2f_version" class="tocxref"><span class="secno">6.1 </span>GetVersion Request and Response - U2F_VERSION</a></li><li class="tocline"><a href="#extensions-and-vendor-specific-messages" class="tocxref"><span class="secno">6.2 </span>Extensions and vendor-specific messages </a></li></ul></li><li class="tocline"><a href="#client-data" class="tocxref"><span class="secno">7. </span>Client Data
+	      </a><ul class="toc"><li class="tocline"><a href="#dictionary-clientdata-members" class="tocxref"><span class="secno">7.1 </span>Dictionary <span class="formerLink"><code>ClientData</code></span> Members</a></li><li class="tocline"><a href="#dictionary-jwkkey-members" class="tocxref"><span class="secno">7.2 </span>Dictionary <span class="formerLink"><code>JwkKey</code></span> Members</a></li></ul></li><li class="tocline"><a href="#examples" class="tocxref"><span class="secno">8. </span>Examples</a><ul class="toc"><li class="tocline"><a href="#registration-example" class="tocxref"><span class="secno">8.1 </span>Registration Example</a></li><li class="tocline"><a href="#authentication-example" class="tocxref"><span class="secno">8.2 </span>Authentication Example
+		</a></li></ul></li><li class="tocline"><a href="#implementation-considerations" class="tocxref"><span class="secno">9. </span>Implementation Considerations</a></li><li class="tocline"><a href="#references" class="tocxref"><span class="secno">A. </span>References</a><ul class="toc"><li class="tocline"><a href="#normative-references" class="tocxref"><span class="secno">A.1 </span>Normative references</a></li><li class="tocline"><a href="#informative-references" class="tocxref"><span class="secno">A.2 </span>Informative references</a></li></ul></li></ul></section>
+      <section id="notation">
+	<!--OddPage--><h2 aria-level="1" role="heading" id="h2_notation"><span class="secno">1. </span>Notation</h2>
+
+	<p>Type names, attribute names and element names are written as <code>code</code>.</p>
+
+	<p>String literals are enclosed in “”, e.g. “UAF-TLV”.
+	</p>
+	<p>In formulas we use “|” to denote byte wise concatenation
+	  operations.
+	</p>
+	<p>DOM APIs are described using the ECMAScript [<cite><a class="bibref" href="#bib-ECMA-262">ECMA-262</a></cite>] bindings
+	  for WebIDL [<cite><a class="bibref" href="#bib-WebIDL">WebIDL</a></cite>].
+	</p>
+	<p>U2F specific terminology used in this document is defined in
+	  [<cite><a class="bibref" href="#bib-FIDOGlossary">FIDOGlossary</a></cite>].
+	</p>
+       <p>Symbolic constants such as <b>U2F_REGISTER</b> which are
+       referred to when defining messages in this documents have their
+       values defined in (See [<cite><a class="bibref" href="#bib-U2FHeader">U2FHeader</a></cite>] in bibliography].
+       </p>
+	<section id="key-words">
+	  <h3 aria-level="2" role="heading" id="h3_key-words"><span class="secno">1.1 </span>Key Words</h3>
+
+	  <p>The key words “<em class="rfc2119" title="MUST">MUST</em>”, “<em class="rfc2119" title="MUST NOT">MUST NOT</em>”, “<em class="rfc2119" title="REQUIRED">REQUIRED</em>”, “<em class="rfc2119" title="SHALL">SHALL</em>”, “<em class="rfc2119" title="SHALL
+	    NOT">SHALL
+	    NOT</em>”, “<em class="rfc2119" title="SHOULD">SHOULD</em>”, “<em class="rfc2119" title="SHOULD NOT">SHOULD NOT</em>”, “<em class="rfc2119" title="RECOMMENDED">RECOMMENDED</em>”, “<em class="rfc2119" title="MAY">MAY</em>”, and
+	    “<em class="rfc2119" title="OPTIONAL">OPTIONAL</em>” in this document are to be interpreted as
+	    described in [<cite><a class="bibref" href="#bib-RFC2119">RFC2119</a></cite>].
+	  </p>
+	</section>
+      </section>
+      <section id="introduction">
+	<!--OddPage--><h2 aria-level="1" role="heading" id="h2_introduction"><span class="secno">2. </span>Introduction
+	</h2>
+	<p><em>Note: Reading the 'FIDO U2F Overview' (see
+	    [<cite><a class="bibref" href="#bib-U2FOverview">U2FOverview</a></cite>] in bibliography) is recommended as a
+	    background for this document.
+	</em></p>
+	<p>U2F Tokens provide cryptographic assertions that can be verified
+	  by relying parties. Typically, the relying party is a web
+	  server, and the cryptographic assertions are used as
+	  second-factors (in addition to passwords) during user
+	  authentication.
+	</p>
+	<p>U2F Tokens are typically small special-purpose devices that
+	  aren't directly connected to the Internet (and hence, able to
+	  talk directly to the relying party). Therefore, they rely on a
+	  FIDO Client to relay messages between the token and the relying
+	  party. Typically, the FIDO Client is a web browser.
+	</p>
+	<p>The U2F protocol supports two operations, registration and
+	  authentication. The registration operation introduces the
+	  relying party to a freshly-minted keypair that is under control
+	  of the U2F token. The authentication operation proves possession
+	  of a previously-registered keypair to the relying party. Both
+	  the registration and authentication operation consist of three
+	  phases:
+	</p>
+	<ol>
+	  <li>
+	    <p>Setup: In this phase, the FIDO Client contacts the relying party
+	      and obtains a challenge. Using the challenge (and possibly other
+	      data obtained from the relying party and/or prepared by the FIDO
+	      Client itself), the FIDO Client prepares a request message for
+	      the U2F Token.
+	    </p>
+	  </li>
+	  <li>
+	    <p>Processing: In this phase, the FIDO Client sends the request
+	      message to the token, and the token performs some cryptographic
+	      operations on the message, creating a response message. This
+	      response message is sent to the FIDO Client.
+	    </p>
+	  </li>
+	  <li>
+	    <p>Verification: In this phase, the FIDO Client transmits the
+	      token's response message, along with other data necessary for
+	      the relying party to verify the token response, to the relying
+	      party. The relying party then processes the token response and
+	      verifies its correctness. A correct registration response will
+	      cause the relying party to register a new public key for a
+	      user, while a correct authentication response will cause the
+	      relying party to accept that the client is in possession of the
+	      corresponding private key.
+	    </p>
+	  </li>
+	</ol>
+
+	<figure title="Three phases of Registration and Authentication" alt="diagram showing three phases of registration and authentication" id="fig-three-phases-of-registration-and-authentication">
+	  <img src="./img/reg-and-auth-phases.png">
+	  <figcaption>Fig. <span class="figno">1</span> <span class="fig-title">Three phases of Registration and Authentication</span></figcaption>
+	</figure>
+
+	<p>Above is a picture illustrating the three phases.
+	</p>
+	<p>At the heart of the U2F protocol are the request messages sent
+	  to the U2F token, and the response messages received from the
+	  U2F token.1
+	</p>
+	<p>Note that the request message is usually obtained by the FIDO
+	  client from the relying party during the setup phase, and
+	  therefore reaches the FIDO client as part of an HTTP response.
+	  Similarly, the response message that is processed by the
+	  relying party during the verification phase is sent by the FIDO
+	  Client to the relying party in an HTTP request. Beware the
+	  possibility of confusion when talking about requests and
+	  responses!
+	</p>
+	<p>Request messages are created by the relying party and consumed
+	  by the U2F token. Response messages are created by the U2F
+	  token and consumed by the relying party.
+	</p>
+	<p>As the messages flow from relying party (through the FIDO
+	  Client) to the U2F token and back, they undergo various
+	  transformations and encodings. Some of these transformations
+	  and encodings are up to the individual implementations and are
+	  not standardized as part of FIDO U2F. For example, FIDO U2F
+	  does not prescribe how request and response messages are
+	  encoded between the FIDO Client and the relying party.
+	</p>
+	<p>However, to ensure that U2F tokens from different vendors can
+	  work across U2F-compliant web sites certain encodings are
+	  standardized:
+	</p>
+	<ol>
+	  <li>
+	    <p>FIDO U2F standardizes a Javascript API that prescribes how a web
+	      application can pass request messages into the FIDO Client (in
+	      the case where the web browser is the FIDO Client), and what
+	      the encoding of the response messages is.
+	    </p>
+	  </li>
+	  <li>
+	    <p>FIDO U2F standardizes how request and response messages are to
+	      be encoded when sent over from the client over the USB
+	      transport to U2F tokens. In addition to specifying the
+	      encoding, the transport level specification also specifies the
+	      format for control messages to the tokens and the format for
+	      the error responses from the tokens. We anticipate that FIDO
+	      U2F will standardize how request and response messages are
+	      encoded over other non-USB transports such as NFC or Bluetooth.
+	    </p>
+	  </li>
+	</ol>
+	<p>In this document we describe the <em>"raw"</em>, or canonical, format of
+	  the messages, i.e., without regard to the various encodings
+	  that are prescribed in U2F standards or that implementors might
+	  choose when sending messages around. The raw format of the
+	  messages is important to know for two reasons:
+	</p>
+	<ol>
+	  <li>
+	    <p>The encoding of messages and parameters described elsewhere may
+	      refer to the raw messages described in this document. For
+	      example, a Javascript API might refer to a parameter of a
+	      function as the Base64-encoding of a raw registration response
+	      message. It is this document that describes what the raw
+	      registration response message looks like.
+	    </p>
+	  </li>
+	  <li>
+	    <p>Cryptographic signatures are calculated over raw data. For
+	      example, the standard might prescribe that a certain
+	      cryptographic signature is taken over bytes 5 through 60 of a
+	      certain raw message. The implementor therefore has to know how
+	      what the raw message looks like.
+	    </p>
+	  </li>
+	</ol>
+      </section>
+        <section id="u2f-message-framing">
+	<!--OddPage--><h2 aria-level="1" role="heading" id="h2_u2f-message-framing"><span class="secno">3. </span>U2F message framing</h2>
+
+	  <p>The U2F protocol is based on a request-response mechanism,
+	    where a requester sends a request message to a U2F device, which
+	    always results in a response message being sent back from the
+	    U2F device to the requester.</p>
+
+           <p>The request message has to be "framed" to send to the
+            lower layer. Taking the signature request as an example,
+            the "framing" is a way for the FIDO client to tell the
+            lower transport layer that it is sending a signature
+            request and then send the raw message contents. The
+            framing also specifies how the transport will carry back
+            the response raw message and any meta-information such as
+            an error code if the command failed. </p>
+
+           <p>Framing is defined based on the ISO7816-4:2005 APDU format. </p>
+
+          <section id="request-message-framing">
+	    <h3 aria-level="2" role="heading" id="h3_request-message-framing"><span class="secno">3.1 </span>Request Message Framing</h3>
+
+	    <p>The raw request message is framed as a command APDU. At a high
+            level, APDUs are framed in the following way:</p>
+            <p><b>CLA INS P1 P2 [L<sub>c</sub> &lt;request-data&gt;] [L<sub>e</sub>]</b></p>
+	    <p>Where:</p>
+            <li><p><b>CLA</b>: Reserved to be used by the underlying transport
+              protocol (if applicable). The host application shall set this
+              byte to zero.</p>
+	    </li>
+             <li>
+            <p><b>INS</b>: U2F command code, defined in the following sections.</p>
+	    </li>
+            <li>
+            <p><b>P1, P2</b>: Parameter 1 and 2, defined by each command.</p>
+	    </li>
+            <li>
+              <p><b>L<sub>c</sub></b>: The length of the <b>request-data</b>.
+              If there are no request data bytes, <b>L<sub>c</sub></b> is
+              omitted.</p>
+            </li>
+            <li>
+              <p><b>L<sub>e</sub></b>: The maximum expected length of the
+              response data. If no response data are expected,
+              <b>L<sub>e</sub></b> may be omitted. </p>
+            </li>
+
+            <p>The precise format of the APDU depends on the encoding choice.
+            There are two different encodings allowed for an APDU:
+            <b>short</b> and <b>extended length</b>. The differences are in the
+            way the length of the request data, <b>L<sub>c</sub></b>, and the
+            maximum length of the expected response, <b>L<sub>e</sub></b>, are
+            encoded. </p>
+
+            <p>The choice of encoding varies depending on the needs of the
+            individual transport. Refer to the transport-specific encoding
+            documents for which encodings are allowed with each transport. </p>
+
+            <section id="short-encoding">
+              <h4 aria-level="3" role="heading" id="h4_short-encoding"><span class="secno">3.1.1 </span>Short Encoding</h4>
+
+              <p>In <b>short encoding</b>, the maximum length of request-data
+              is 255 bytes. <b>L<sub>c</sub></b> is encoded in the following
+              way: </p>
+
+              <blockquote>
+                <p>Let <b>N<sub>c</sub></b> = | &lt;<b>request-data</b>&gt; |.
+                If <b>N<sub>c</sub></b> is 0, <b>L<sub>c</sub></b> is omitted.
+                Otherwise, <b>L<sub>c</sub></b> is encoded as a single byte
+                containing the value of <b>N<sub>c</sub></b>.
+              </p></blockquote>
+
+              <p>If the instruction is not expected to yield any response
+              bytes, <b>L<sub>e</sub></b> may be omitted. Otherwise, in
+              <b>short encoding</b>, <b>L<sub>e</sub></b> is encoded
+              in the following way: </p>
+
+              <blockquote>
+                <p>Let <b>N<sub>e</sub></b> = the maximum length of the response
+                data. In <b>short encoding</b>, the maximum value of
+                <b>N<sub>e</sub></b> is 256 bytes. </p>
+
+                <p>For values of <b>N<sub>e</sub></b> between 1 and 255,
+                <b>L<sub>c</sub></b> contains the value of <b>N<sub>c</sub></b>.
+                When <b>N<sub>e</sub></b> = 256, <b>L<sub>c</sub></b> contains
+                the value 0.
+              </p></blockquote>
+
+            </section>
+
+            <section id="extended-length-encoding">
+              <h4 aria-level="3" role="heading" id="h4_extended-length-encoding"><span class="secno">3.1.2 </span>Extended Length Encoding</h4>
+
+              <p>In <b>extended length encoding</b>, the maximum length of
+              request-data is 65 535 bytes. <b>L<sub>c</sub></b> is encoded
+              in the following way: </p>
+
+              <blockquote>
+                <p>Let <b>N<sub>c</sub></b> = | &lt;<b>request-data</b>&gt; |.
+                If <b>N<sub>c</sub></b> is 0, <b>L<sub>c</sub></b> is omitted.
+                Otherwise, <b>L<sub>c</sub></b> is encoded as: </p>
+
+                <p><b>0 MSB(N<sub>c</sub>) LSB(N<sub>c</sub>)</b></p>
+
+                <p>Where <b>MSB(N<sub>c</sub></b>) is the most significant byte
+                of <b>N<sub>c</sub></b>, and <b>LSB(N<sub>c</sub></b>) is the
+                least significant byte of <b>N<sub>c</sub></b>.
+                </p>
+              </blockquote>
+
+              <p>In other words, the request-data are preceded by
+              three length bytes, a byte with value 0 followed
+              by the length of request-data, in big-endian order. </p>
+
+              <p>If the instruction is not expected to yield any response
+              bytes, <b>L<sub>e</sub></b> may be omitted. Otherwise, in
+              <b>extended length encoding</b>, <b>L<sub>e</sub></b> is encoded
+              in the following way: </p>
+
+              <blockquote>
+                <p>Let <b>N<sub>e</sub></b> = the maximum length of the
+                response data. In <b>extended length encoding</b>, the
+                maximum value of <b>N<sub>e</sub></b> is 65 536 bytes. </p>
+
+                <p>For values of <b>N<sub>e</sub></b> between 1 and 65 535,
+                inclusive, let
+                <b>L<sub>e1</sub></b> = <b>MSB(N<sub>e</sub>)</b>,
+                and <b>L<sub>e2</sub></b> = <b>LSB(N<sub>e</sub>)</b>, where
+                <b>MSB(N<sub>e</sub></b>) is the most significant
+                byte of <b>N<sub>e</sub></b>, and <b>LSB(N<sub>e</sub></b>) is
+                the least significant byte of <b>N<sub>e</sub></b>.
+                </p>
+
+                <p>When <b>N<sub>e</sub></b> = 65 536, let
+                <b>L<sub>e1</sub></b> = <b>0</b> and
+                <b>L<sub>e2</sub></b> = <b>0</b>.
+                </p>
+
+                <p>When <b>L<sub>c</sub></b> is present, i.e. if
+                <b>N<sub>c</sub></b> &gt; 0, <b>L<sub>e</sub></b> is encoded
+                as:</p>
+
+                <p><b>L<sub>e1</sub> L<sub>e2</sub></b></p>
+
+                <p>When <b>L<sub>c</sub></b> is absent, i.e. if
+                <b>N<sub>c</sub></b> = 0, <b>L<sub>e</sub></b> is encoded as:
+                </p>
+
+                <p><b>0 L<sub>e1</sub> L<sub>e2</sub></b></p>
+
+                <p>In other words, <b>L<sub>e</sub></b> has a single-byte
+                prefix of 0 when <b>L<sub>c</sub></b> is absent. </p>
+
+              </blockquote>
+
+            </section>
+	  </section>
+	  <section id="response-message-framing">
+	    <h3 aria-level="2" role="heading" id="h3_response-message-framing"><span class="secno">3.2 </span>Response Message Framing</h3>
+	    <p>The raw response data is framed as a response APDU:</p>
+	    <p>
+            <b>&lt;response-data&gt; SW<sub>1</sub> SW<sub>2</sub></b>
+	    </p>
+            <p>Where <b>SW<sub>1</sub></b> and <b>SW<sub>2</sub></b> are the
+            status word bytes 1 and 2, respectively, forming a 16-bit status
+            word, defined below. SW<sub>1</sub> is the most-significant byte,
+            and SW<sub>2</sub> is the least-significant byte.</p>
+	  </section>
+	  <section id="status-codes">
+	    <h3 aria-level="2" role="heading" id="h3_status-codes"><span class="secno">3.3 </span>Status Codes</h3>
+            <p>The following ISO7816-4 defined status words have a special meaning in U2F:</p>
+	    <li>
+	    <p><b>SW_NO_ERROR</b>: The command completed successfully without error.</p>
+	    </li>
+	    <li>
+            <p><b>SW_CONDITIONS_NOT_SATISFIED</b>: The request was
+              rejected due to test-of-user-presence being required. </p>
+	    </li>
+	    <li>
+	    <p><b>SW_WRONG_DATA</b>: The request was rejected due to an
+	      invalid key handle. </p>
+	    </li>
+	    <p> Each implementation may define any other vendor-specific
+	      status codes, providing additional information about an error
+	      condition. Only the error codes listed above will be handled by
+	      U2F FIDO Client, where others will be seen as general errors and
+	      logging of these is optional.
+	    </p>
+     	  </section>
+	</section>
+    
+
+	    <section id="registration-messages">
+	      <!--OddPage--><h2 aria-level="1" role="heading" id="h2_registration-messages"><span class="secno">4. </span>Registration Messages
+	      </h2>
+	      <section id="registration-request-message---u2f_register">
+		<h3 aria-level="2" role="heading" id="h3_registration-request-message---u2f_register"><span class="secno">4.1 </span>Registration Request Message - U2F_REGISTER</h3>
+		<figure title="Registration Request Message" alt="diagram of registration request message" id="fig-registration-request-message">
+		  <img src="./img/reg-request.png">
+		  <figcaption>Fig. <span class="figno">2</span> <span class="fig-title">Registration Request Message</span></figcaption>
+		</figure>
+		<p>This message is used to initiate a U2F token registration. The
+		  FIDO Client first contacts the relying party to obtain a
+		  challenge, and then constructs the registration request
+		  message. The registration request message has two parts:
+		</p>
+		<ul>
+		  <li>
+		    <p>The <b>challenge parameter</b> [32 bytes]. The challenge parameter is
+		      the SHA-256 hash of the Client Data, a stringified JSON
+		      data structure that the FIDO Client prepares. Among other
+		      things, the Client Data contains the challenge from the relying
+		      party (hence the name of the parameter). See below for a
+		      detailed explanation of Client Data.
+		    </p>
+		  </li>
+		  <li>
+		    <p>The <b>application parameter</b> [32
+		      bytes]. The application parameter is the SHA-256
+		      hash of the UTF-8 encoding of the application identity of
+                      the application requesting the registration. (See
+		      [<cite><a class="bibref" href="#bib-FIDOAppIDAndFacets">FIDOAppIDAndFacets</a></cite>] in bibliography for details.)
+		    </p>
+		  </li>
+		</ul>
+	      </section>
+
+	      <section id="registration-response-message-error-test-of-user-presence-required">
+		<h3 aria-level="2" role="heading" id="h3_registration-response-message-error-test-of-user-presence-required"><span class="secno">4.2 </span>Registration Response Message: Error: Test-of-User-Presence
+		  Required
+		</h3>
+		<p> This is an error message that is output by the U2F
+                    token if no test-of-user-presence could be
+                    obtained by the U2F token. The error message
+                    details are specified in the framing for the
+                    underlying transport (see Section "U2F Message
+                    Framing" above).
+		</p>
+	      </section>
+	      <section id="registration-response-message-success">
+
+		<h3 aria-level="2" role="heading" id="h3_registration-response-message-success"><span class="secno">4.3 </span>Registration Response Message: Success
+		</h3>
+		<figure title="Registration Response Message" alt="diagram of registration response message" id="fig-registration-response-message">
+		  <img src="./img/reg-response.png">
+		  <figcaption>Fig. <span class="figno">3</span> <span class="fig-title">Registration Response Message</span></figcaption>
+		</figure>
+
+		<p>This message is output by the U2F token once it created a new
+		  keypair in response to the registration request message. Note
+		  that U2F tokens <em class="rfc2119" title="SHOULD">SHOULD</em> verify user presence before returning a
+		  registration response success message (otherwise they <em class="rfc2119" title="SHOULD">SHOULD</em>
+		  return a test-of-user-presence-required message - see above).
+		  Its raw representation is the concatenation of the following:
+		</p>
+		<ul>
+		  <li>
+		    <p>A <b>reserved byte</b> [1 byte], which for legacy reasons has the value
+		      0x05.
+		    </p>
+		  </li>
+		  <li>
+		    <p>A <b>user public key</b> [65 bytes]. This is the (uncompressed)
+		      x,y-representation of a curve point on the P-256 NIST elliptic
+		      curve.
+		    </p>
+		  </li>
+		  <li>
+		    <p>A <b>key handle length byte</b> [1 byte], which specifies the length of
+		      the key handle (see below). The value is unsigned (range 0-255).
+		    </p>
+		  </li>
+		  <li>
+		    <p>A <b>key handle</b> [length specified in previous field]. This a handle
+		      that allows the U2F token to identify the generated key pair.
+		      U2F tokens <em class="rfc2119" title="MAY">MAY</em> wrap the generated private key and the
+		      application id it was generated for, and output that as the key
+		      handle.
+		    </p>
+		  </li>
+		  <li>
+		    <p>An <b>attestation certificate</b> [variable length]. This is a
+		      certificate in X.509 DER format. Parsing of the X.509
+		      certificate unambiguously establishes its ending. The remaining
+		      bytes in the message are
+		    </p>
+		  </li>
+		  <li>
+		    <p>a <b>signature</b>. This is a ECDSA signature (on P-256)
+		      over the following byte string:
+		    </p>
+		    <ul>
+		      <li>
+			<p>A <em>byte reserved for future use</em> [1 byte] with the value 0x00.
+			  This will evolve into a byte that will allow RPs to track
+			  known-good applet version of U2F tokens from specific vendors.
+			</p>
+		      </li>
+		      <li>
+			<p>The <em>application parameter</em> [32 bytes] from the registration
+			  request message.
+			</p>
+		      </li>
+		      <li>
+			<p>The <em>challenge parameter</em> [32 bytes] from the registration request
+			  message.
+			</p>
+		      </li>
+		      <li>
+			<p>The above <em>key handle</em> [variable length]. (Note that the key
+			  handle length is not included in the signature base string.
+			</p>
+			<p>This doesn't cause confusion in the signature base string, since
+			  all other parameters in the signature base string are
+			  fixed-length.)
+			</p>
+		      </li>
+		      <li>
+			<p>The above <em>user public key</em> [65 bytes].
+			</p>
+		      </li>
+		    </ul>
+                    <p>The signature is encoded in ANSI X9.62 format (see
+		      [<cite><a class="bibref" href="#bib-ECDSA-ANSI">ECDSA-ANSI</a></cite>] in bibliography).
+		  </p></li>
+		</ul>
+		<p>The signature is to be verified by the relying party using the
+		  public key certified in the attestation certificate. The
+		  relying party should also verify that the attestation
+		  certificate was issued by a trusted certification authority.
+		  The exact process of setting up trusted certification
+		  authorities is to be defined by the <abbr title="FIDO Alliance">FIDO Alliance</abbr> and is
+		  outside the scope of this document.
+		</p>
+		<p>Once the relying party verifies the signature, it should store
+		  the public key and key handle so that they can be used in
+		  future authentication operations.
+		</p>
+	      </section>
+	    </section>
+	    <section id="authentication-messages">
+	      <!--OddPage--><h2 aria-level="1" role="heading" id="h2_authentication-messages"><span class="secno">5. </span>Authentication Messages
+	      </h2>
+	      <section id="authentication-request-message---u2f_authenticate">
+
+		<h3 aria-level="2" role="heading" id="h3_authentication-request-message---u2f_authenticate"><span class="secno">5.1 </span>Authentication Request Message - U2F_AUTHENTICATE
+		</h3>
+		<figure title="Authentication Request Message" alt="diagram of authentication request message" id="fig-authentication-request-message">
+		  <img src="./img/auth-request.png">
+		  <figcaption>Fig. <span class="figno">4</span> <span class="fig-title">Authentication Request Message</span></figcaption>
+		</figure>
+
+		<p>This message is used to initiate a U2F token authentication. The
+		  FIDO Client first contacts the relying party to obtain a
+		  challenge, and then constructs the authentication request
+		  message. The authentication request message has five parts:
+		</p>
+		<ul>
+		  <li>
+		    <p>Control byte (P1). The control byte is determined by the FIDO Client
+		      - the relying party cannot specify its value. The FIDO Client
+		      will set the control byte to one of the following values:
+		    </p>
+		    <ul>
+		      <li>
+			<p><b>0x07 ("check-only")</b>: if the control byte is set to 0x07 by the
+			  FIDO Client, the U2F token is supposed to simply check whether
+			  the provided key handle was originally created by this token,
+			  and whether it was created for the provided application
+			  parameter. If so, the U2F token <em class="rfc2119" title="MUST">MUST</em> respond with an
+			  authentication response<br>
+			  message:error:test-of-user-presence-required (note that despite
+			  the name this signals a success condition). If the key handle
+			  was not created by this U2F token, or if it was created for a
+			  different application parameter, the token <em class="rfc2119" title="MUST">MUST</em> respond with an
+			  authentication response message:error:bad-key-handle.
+			</p>
+		      </li>
+		      <li>
+			<p><b>0x03 ("enforce-user-presence-and-sign")</b>: If the FIDO client sets
+			  the control byte to 0x03, then the U2F token is supposed to
+			  perform a real signature and respond with either an
+			  authentication response message:success or an appropriate error
+			  response (see below). The signature <em class="rfc2119" title="SHOULD">SHOULD</em> only be provided if
+			  user presence could be validated.
+			</p>
+		      </li>
+		    </ul>
+		    <p>Other control byte values are reserved for future use.
+		    </p>
+		    <p>During registration, the FIDO Client <em class="rfc2119" title="MAY">MAY</em> send authentication
+		      request messages to the U2F token to figure out whether the U2F
+		      token has already been registered. In this case, the FIDO client
+		      will use the check-only value for the control byte. In all other
+		      cases (i.e., during authentication, the FIDO Client <em class="rfc2119" title="MUST">MUST</em> use the
+		      enforce-user-presence-and-sign value).
+		    </p>
+		  </li>
+		  <li>
+		    <p>The <b>challenge parameter</b> [32 bytes]. The challenge parameter is
+		      the SHA-256 hash of the Client Data, a stringified JSON
+		      data structure that the FIDO Client prepares. Among other
+		      things, the Client Data contains the challenge from the relying
+		      party (hence the name of the parameter). See below for a
+		      detailed explanation of Client Data.
+		    </p>
+		  </li>
+		  <li>
+		    <p>The <b>application parameter</b> [32 bytes]. The application parameter
+		      is the SHA-256 hash of the UTF-8 encoding of the application identity of the
+		      application requesting the authentication as provided by the
+		      relying party.
+		    </p>
+		  </li>
+		  <li>
+		    <p>A <b>key handle length byte</b> [1 byte], which specifies the length of
+		      the key handle (see below). The value is unsigned (range 0-255).
+		    </p>
+		  </li>
+		  <li>
+		    <p>A <b>key handle</b> [length specified in previous field]. The key
+		      handle. This is provided by the relying party, and was obtained
+		      by the relying party during registration.
+		    </p>
+		  </li>
+		</ul>
+	      </section>
+	      <section id="authentication-response-message-error-test-of-user-presence-required">
+		<h3 aria-level="2" role="heading" id="h3_authentication-response-message-error-test-of-user-presence-required"><span class="secno">5.2 </span>Authentication Response Message: Error: Test-of-User-Presence
+		  Required
+		</h3>
+		<p> This is an error message that is output by the U2F
+                    token if no test-of-user-presence could be
+                    obtained by the U2F token. The error message
+                    details are specified in the framing for the
+                    underlying transport (see Section "U2F Message
+                    Framing" above).
+		</p>
+	      </section>
+	      <section id="authentication-response-message-error-bad-key-handle">
+		<h3 aria-level="2" role="heading" id="h3_authentication-response-message-error-bad-key-handle"><span class="secno">5.3 </span>Authentication Response Message: Error: Bad Key Handle
+		</h3>
+		<p> This is an error message that is output by the U2F
+		token if the provided key handle was not originally
+		created by this token, or if the provided key handle
+		was created by this token, but for a different
+		application parameter. The error message details are
+		specified in the framing for the underlying transport
+		(see Section "U2F Message Framing" above).
+		</p>
+	      </section>
+	      <section id="authentication-response-message-success">
+		<h3 aria-level="2" role="heading" id="h3_authentication-response-message-success"><span class="secno">5.4 </span>Authentication Response Message: Success
+		</h3>
+		<figure title="Authentication Response Message:Success" alt="diagram of authentication response success message" id="fig-authentication-response-message-success">
+		  <img src="./img/auth-response.png">
+		  <figcaption>Fig. <span class="figno">5</span> <span class="fig-title">Authentication Response Message: Success</span></figcaption>
+		</figure>
+		<p>This message is output by the U2F token after processing/signing
+		  the authentication request message described above. Its raw
+		  representation is the concatenation of the following:
+		</p>
+		<ul>
+		  <li>
+		    <p>A <b>user presence byte</b> [1 byte]. Bit 0 is set to 1, which means
+		      that user presence was verified. (This version of the protocol
+		      doesn't specify a way to request authentication responses
+		      without requiring user presence.) A different value of Bit 0,
+		      as well as Bits 1 through 7, are reserved for future use. The
+		      values of Bit 1 through 7 <em class="rfc2119" title="SHOULD">SHOULD</em> be 0:
+		    </p>
+		    <figure title="User Presence Byte Layout" alt="diagram of user presence byte layout" id="fig-user-presence-byte-layout">
+		      <img src="./img/user-presence-byte.png">
+		      <figcaption>Fig. <span class="figno">6</span> <span class="fig-title">User Presence Byte Layout</span></figcaption>
+		    </figure>
+		  </li>
+		  <li>
+		    <p>A <b>counter</b> [4 bytes]. This is the big-endian representation of a
+		      counter value that the U2F token increments every time it
+		      performs an authentication operation. (See Implementation
+		      Considerations [<cite><a class="bibref" href="#bib-U2FImplCons">U2FImplCons</a></cite>] for more detail.)
+		    </p>
+		  </li>
+		  <li>
+		    <p>a <b>signature</b>. This is a ECDSA signature (on P-256)
+                      over the following byte string:</p>
+		    <ul>
+		      <li>
+			<p>The <em>application parameter</em> [32 bytes] from the authentication
+			  request message.
+			</p>
+		      </li>
+		      <li>
+			<p>The above <em>user presence byte</em> [1 byte].
+			</p>
+		      </li>
+		      <li>
+			<p>The above <em>counter</em> [4 bytes].
+			</p>
+		      </li>
+		      <li>
+			<p>The <em>challenge parameter</em> [32 bytes] from the authentication
+			  request message.
+			</p>
+		      </li>
+		    </ul>
+                    <p>The signature is encoded in ANSI X9.62 format (see
+                      [<cite><a class="bibref" href="#bib-ECDSA-ANSI">ECDSA-ANSI</a></cite>] in bibliography).</p>
+
+		    <p>The signature is to be verified by the relying party using the
+		      public key obtained during registration.
+		    </p>
+		  </li>
+		</ul>
+	      </section>
+	    </section>
+	    <section id="other-messages">
+	      <!--OddPage--><h2 aria-level="1" role="heading" id="h2_other-messages"><span class="secno">6. </span>Other Messages
+	      </h2>
+	      <section id="getversion-request-and-response---u2f_version">
+		<h3 aria-level="2" role="heading" id="h3_getversion-request-and-response---u2f_version"><span class="secno">6.1 </span>GetVersion Request and Response - U2F_VERSION</h3>
+		<p>The FIDO Client can query the U2F token about the U2F protocol
+		  version that it implements. The protocol version described in
+		  this document is U2F_V2.
+		</p>
+		<p>The response message's raw representation is the ASCII
+		  representation of the string 'U2F_V2' (without quotes, and
+                  without any NUL terminator).
+		</p>
+                <p>The command takes no flags, i.e. P1 and P2 are 0, and takes
+                  no data as input. As a result, the complete layout of this
+                  command in <b>short</b> encoding is, in hexadecimal form:
+                </p>
+                <table title="U2F_VERSION short APDU encoding">
+                  <tbody><tr>
+                    <th align="left">CLA</th>
+                    <th align="left">INS</th>
+                    <th align="left">P1</th>
+                    <th align="left">P2</th>
+                    <th align="left">Le</th>
+                  </tr>
+                  <tr>
+                    <td align="left">00</td>
+                    <td align="left">03</td>
+                    <td align="left">00</td>
+                    <td align="left">00</td>
+                    <td align="left">00</td>
+                  </tr>
+                </tbody></table>
+
+                <p>The layout of this command in <b>extended length</b>
+                encoding is, in hexadecimal form: </p>
+                <table>
+                  <tbody><tr>
+                    <th align="left">CLA</th>
+                    <th align="left">INS</th>
+                    <th align="left">P1</th>
+                    <th align="left">P2</th>
+                    <th align="left">Le</th>
+                  </tr>
+                  <tr>
+                    <td>00</td>
+                    <td>03</td>
+                    <td>00</td>
+                    <td>00</td>
+                    <td>00 00 00</td>
+                  </tr>
+                </tbody></table>
+                <p>
+	      </p></section>
+              <section id="extensions-and-vendor-specific-messages">
+		<h3 aria-level="2" role="heading" id="h3_extensions-and-vendor-specific-messages"><span class="secno">6.2 </span>Extensions and vendor-specific messages </h3>
+		<p>Command codes in the range
+		between <b>U2F_VENDOR_FIRST</b>
+		and <b>U2F_VENDOR_LAST</b> may be used for
+		vendor-specific implementations. For example, the
+		vendor may choose to put in some testing
+		commands. Note that the FIDO client will never
+		generate these commands. All other command codes are
+		RFU and may not be used.
+		</p>
+	      </section>
+	    </section>
+	    <section id="client-data">
+	      <!--OddPage--><h2 aria-level="1" role="heading" id="h2_client-data"><span class="secno">7. </span>Client Data
+	      </h2>
+	      <table title="Table 1: Definition of terms" border="1" cellpadding="5">
+		<tbody><tr><th>Term</th><th>Definition</th></tr>
+
+		<tr>
+		  <td><p>websafe-base64 encoding
+		  </p></td>
+		  <td><p>This is the "Base 64 Encoding with URL and Filename Safe
+		      Alphabet" from Section 5 in [<cite><a class="bibref" href="#bib-RFC4648">RFC4648</a></cite>] without padding.
+		  </p></td>
+		</tr>
+		<tr><td><p>stringified javascript object
+		  </p></td>
+		  <td><p>This is the JSON object (i.e., a string starting with "{" and
+		      ending with "}") whose keys are the property names of the
+		      javascript object, and whose values are the corresponding
+		      property values. Only "data objects" can be stringified, i.e.,
+		      only objects whose property names and values are supported in
+		      <strong>JSON.</strong>
+		    </p>
+		  </td>
+		</tr>
+	      </tbody></table>
+
+	      <p>The registration and authentication request messages contain a
+		challenge parameter, which is defined as the SHA-256 hash of a
+		(UTF8 representation of a) stringified JSON data structure that
+		the FIDO client has to prepare. The FIDO Client <em class="rfc2119" title="MUST">MUST</em> send the
+		Client Data (rather than its hash - the challenge parameter) to
+		the relying party during the verification phase, where the
+		relying party can re-generate the challenge parameter (by
+		hashing the client data), which is necessary in order to verify
+		the signature both on the registration response message and
+		authentication response message.
+	      </p>
+	      <p>In the case where the FIDO Client is a web browser, the client
+		data is defined as follows (in WebIDL):
+	      </p>
+	      <pre class="idl"><span class="idlDictionary" id="idl-def-ClientData">dictionary <span class="idlDictionaryID">ClientData</span> {
+<span class="idlMember">    <span class="idlMemberType">DOMString</span>             <span class="idlMemberName"><a href="#widl-ClientData-typ">typ</a></span>;</span>
+<span class="idlMember">    <span class="idlMemberType">DOMString</span>             <span class="idlMemberName"><a href="#widl-ClientData-challenge">challenge</a></span>;</span>
+<span class="idlMember">    <span class="idlMemberType">DOMString</span>             <span class="idlMemberName"><a href="#widl-ClientData-origin">origin</a></span>;</span>
+<span class="idlMember">    <span class="idlMemberType">(DOMString or <a href="#idl-def-JwkKey" class="idlType"><code>JwkKey</code></a>)</span> <span class="idlMemberName"><a href="#widl-ClientData-cid_pubkey">cid_pubkey</a></span>;</span>
+};</span></pre><section id="dictionary-clientdata-members"><h3 aria-level="2" role="heading" id="h3_dictionary-clientdata-members"><span class="secno">7.1 </span>Dictionary <a class="idlType" href="#idl-def-ClientData"><code>ClientData</code></a> Members</h3><dl class="dictionary-members"><dt id="widl-ClientData-typ"><code>typ</code> of type <span class="idlMemberType">DOMString</span></dt><dd>the constant 'navigator.id.getAssertion' for authentication,
+		  and 'navigator.id.finishEnrollment' for registration
+		</dd><dt id="widl-ClientData-challenge"><code>challenge</code> of type <span class="idlMemberType">DOMString</span></dt><dd>the websafe-base64-encoded challenge provided by the relying
+		  party
+		</dd><dt id="widl-ClientData-origin"><code>origin</code> of type <span class="idlMemberType">DOMString</span></dt><dd>the facet id of the caller, i.e., the web origin of the
+		  relying party.<br>
+		  (Note: this might be more accurately called 'facet_id', but
+		  for compatibility with existing implementations within Chrome we keep the legacy name.)
+		</dd><dt id="widl-ClientData-cid_pubkey"><code>cid_pubkey</code> of type <span class="idlMemberType">(DOMString or JwkKey)</span></dt><dd>The Channel ID public key used by this browser to communicate
+		  with the above origin. This parameter is optional, and missing if the
+		  browser doesn't support Channel ID. It is present and set to the
+		  constant 'unused' if the browser supports Channel ID, but is not using
+		  Channel ID to talk to the above origin (presumably because
+		  the origin server didn't signal support for the Channel ID TLS
+		  extension).
+		  <p>
+		    Otherwise (i.e., both browser and origin server at the above
+		    origin support Channel ID), it is present and of type JwkKey.
+		  </p>
+		</dd></dl></section>
+	      <p>
+		The JwkKey is a dictionary representing the public key
+		used by a browser for the Channel ID TLS
+		extension. The current version of the Channel ID draft
+		prescribes the algorithm ([<cite><a class="bibref" href="#bib-ECDSA-ANSI">ECDSA-ANSI</a></cite>] in
+		bibliography) and curve used, so the dictionary will
+		have the following parameters
+	      </p>
+
+	      <pre class="idl"><span class="idlDictionary" id="idl-def-JwkKey">dictionary <span class="idlDictionaryID">JwkKey</span> {
+<span class="idlMember">    <span class="idlMemberType">DOMString</span> <span class="idlMemberName"><a href="#widl-JwkKey-kty">kty</a></span>;</span>
+<span class="idlMember">    <span class="idlMemberType">DOMString</span> <span class="idlMemberName"><a href="#widl-JwkKey-crv">crv</a></span>;</span>
+<span class="idlMember">    <span class="idlMemberType">DOMString</span> <span class="idlMemberName"><a href="#widl-JwkKey-x">x</a></span>;</span>
+<span class="idlMember">    <span class="idlMemberType">DOMString</span> <span class="idlMemberName"><a href="#widl-JwkKey-y">y</a></span>;</span>
+};</span></pre><section id="dictionary-jwkkey-members"><h3 aria-level="2" role="heading" id="h3_dictionary-jwkkey-members"><span class="secno">7.2 </span>Dictionary <a class="idlType" href="#idl-def-JwkKey"><code>JwkKey</code></a> Members</h3><dl class="dictionary-members"><dt id="widl-JwkKey-kty"><code>kty</code> of type <span class="idlMemberType">DOMString</span></dt><dd>signature algorithm used for Channel ID, i.e., the constant 'EC'
+		</dd><dt id="widl-JwkKey-crv"><code>crv</code> of type <span class="idlMemberType">DOMString</span></dt><dd>Elliptic curve on which this public key is defined, i.e., the
+		  constant 'P-256'
+		</dd><dt id="widl-JwkKey-x"><code>x</code> of type <span class="idlMemberType">DOMString</span></dt><dd>websafe-base64-encoding of the x coordinate of the public key (big-endian, 32-byte value)
+		</dd><dt id="widl-JwkKey-y"><code>y</code> of type <span class="idlMemberType">DOMString</span></dt><dd>websafe-base64-encoding of the y coordinate of the public key (big-endian, 32-byte value)
+		</dd></dl></section>
+	    </section>
+	    <section id="examples">
+	      <!--OddPage--><h2 aria-level="1" role="heading" id="h2_examples"><span class="secno">8. </span>Examples</h2>
+	      <section id="registration-example">
+		<h3 aria-level="2" role="heading" id="h3_registration-example"><span class="secno">8.1 </span>Registration Example</h3>
+
+		<p>Assume we have a U2F token with the following private
+		  attestation key:
+		</p>
+		<code>f3fccc0d00d8031954f90864d43c247f4bf5f0665c6b50cc17749a27d1cf7664
+		</code>
+		<p>the corresponding public key:
+		</p>
+		<code>048d617e65c9508e64bcc5673ac82a6799da3c1446682c258c463fffdf58dfd2fa3e6c378b53d795c4a4dffb4199edd7862f23abaf0203b4b8911ba0569994e101
+		</code>
+		<p>and the following attestation cert:
+		</p>
+		<code>[<br>
+		  [<br>
+		  Version: V3<br>
+		  Subject: CN=PilotGnubby-0.4.1-47901280001155957352
+		  Signature Algorithm: SHA256withECDSA, OID = <a href="telnet://1.2.840.100">1.2.840.100</a>45.4.3.2
+
+		  <p>Key: EC Public Key<br>
+		    X:<br>
+		    8d617e65c9508e64bcc5673ac82a6799da3c1446682c258c463fffdf58dfd2fa
+		    Y:<br>
+		    3e6c378b53d795c4a4dffb4199edd7862f23abaf0203b4b8911ba0569994e101
+		  </p>
+		  <p>Validity: [From: Tue Aug 14 11:29:32 PDT 2012,
+		    To: Wed Aug 14 11:29:32 PDT 2013]
+		  </p>
+		  <p>Issuer: CN=Gnubby Pilot<br>
+		    SerialNumber: [ 47901280 00115595 7352]
+		    ]
+		  </p>
+		  <p>Algorithm: [SHA256withECDSA]<br>
+		    Signature:<br>
+		    0000: 30 44 02 20 60 CD B6 06 1E 9C 22 26 2D 1A AC 1D 0D.
+		    `....."&amp;-...<br>
+		    0010: 96 D8 C7 08 29 B2 36 65 31 DD A2 68 83 2C B8 36
+		    ....).6e1..h.,.6<br>
+		    0020: BC D3 0D FA 02 20 63 1B 14 59 F0 9E 63 30 05 57 .....
+		    c..Y..c0.W<br>
+		    0030: 22 C8 D8 9B 7F 48 88 3B 90 89 B8 8D 60 D1 D9 79
+		    "....H.;....`..y<br>
+		    0040: 59 02 B3 04 10 DF Y.....<br>
+		    ]
+		  </p>
+		</code>
+		<p>The attestation cert in hex form:
+		</p>
+		<code>3082013c3081e4a003020102020a47901280001155957352300a06082a8648ce3d0403023017311530130603550403130c476e756262792050696c6f74301e170d3132303831343138323933325a170d3133303831343138323933325a3031312f302d0603550403132650696c6f74476e756262792d302e342e312d34373930313238303030313135353935373335323059301306072a8648ce3d020106082a8648ce3d030107034200048d617e65c9508e64bcc5673ac82a6799da3c1446682c258c463fffdf58dfd2fa3e6c378b53d795c4a4dffb4199edd7862f23abaf0203b4b8911ba0569994e101300a06082a8648ce3d0403020347003044022060cdb6061e9c22262d1aac1d96d8c70829b2366531dda268832cb836bcd30dfa0220631b1459f09e6330055722c8d89b7f48883b9089b88d60d1d9795902b30410df
+		</code>
+		<p>Now let's assume that we use the following client data
+		</p>
+		<code>{"typ":"navigator.id.finishEnrollment","challenge":"vqrS6WXDe1JUs5_c3i4-LkKIHRr-3XVb3azuA5TifHo","cid_pubkey":{"kty":"EC","crv":"P-256","x":"HzQwlfXX7Q4S5MtCCnZUNBw3RMzPO9tOyWjBqRl4tJ8","y":"XVguGFLIZx1fXg3wNqfdbn75hi4-_7-BxhMljw42Ht4"},"origin":"<a href="http://example.com">http://example.com</a>"}
+		</code>
+		<p>with hash:
+		</p>
+		<code>4142d21c00d94ffb9d504ada8f99b721f4b191ae4e37ca0140f696b6983cfacb
+		</code>
+		<p>and application id:
+		</p>
+		<code>http://example.com
+		</code>
+		<p>with hash:
+		</p>
+		<code>f0e6a6a97042a4f1f1c87f5f7d44315b2d852c2df5c7991cc66241bf7072d1c4
+		</code>
+		<p>to construct a registration request message.
+		</p>
+		<p>Let's say the U2F token generates the following key pair:
+		</p>
+		<p>Private key:
+		</p>
+		<code>9a9684b127c5e3a706d618c86401c7cf6fd827fd0bc18d24b0eb842e36d16df1
+		</code>
+		<p>Public key:
+		</p>
+		<code>04b174bc49c7ca254b70d2e5c207cee9cf174820ebd77ea3c65508c26da51b657c1cc6b952f8621697936482da0a6d3d3826a59095daf6cd7c03e2e60385d2f6d9
+		</code>
+		<p>Associated key handle:
+		</p>
+		<code>2a552dfdb7477ed65fd84133f86196010b2215b57da75d315b7b9e8fe2e3925a6019551bab61d16591659cbaf00b4950f7abfe6660e2e006f76868b772d70c25
+		</code>
+		<p>The signature base string for the registration response message
+		  is therefore:
+		</p>
+		<code>00f0e6a6a97042a4f1f1c87f5f7d44315b2d852c2df5c7991cc66241bf7072d1c44142d21c00d94ffb9d504ada8f99b721f4b191ae4e37ca0140f696b6983cfacb2a552dfdb7477ed65fd84133f86196010b2215b57da75d315b7b9e8fe2e3925a6019551bab61d16591659cbaf00b4950f7abfe6660e2e006f76868b772d70c2504b174bc49c7ca254b70d2e5c207cee9cf174820ebd77ea3c65508c26da51b657c1cc6b952f8621697936482da0a6d3d3826a59095daf6cd7c03e2e60385d2f6d9
+		</code>
+		<p>A possible signature over the base string with the above private
+		  attestation key is:
+		</p>
+		<code>304502201471899bcc3987e62e8202c9b39c33c19033f7340352dba80fcab017db9230e402210082677d673d891933ade6f617e5dbde2e247e70423fd5ad7804a6d3d3961ef871
+		</code>
+		<p>Which means the whole registration response message is:
+		</p>
+		<code>0504b174bc49c7ca254b70d2e5c207cee9cf174820ebd77ea3c65508c26da51b657c1cc6b952f8621697936482da0a6d3d3826a59095daf6cd7c03e2e60385d2f6d9402a552dfdb7477ed65fd84133f86196010b2215b57da75d315b7b9e8fe2e3925a6019551bab61d16591659cbaf00b4950f7abfe6660e2e006f76868b772d70c253082013c3081e4a003020102020a47901280001155957352300a06082a8648ce3d0403023017311530130603550403130c476e756262792050696c6f74301e170d3132303831343138323933325a170d3133303831343138323933325a3031312f302d0603550403132650696c6f74476e756262792d302e342e312d34373930313238303030313135353935373335323059301306072a8648ce3d020106082a8648ce3d030107034200048d617e65c9508e64bcc5673ac82a6799da3c1446682c258c463fffdf58dfd2fa3e6c378b53d795c4a4dffb4199edd7862f23abaf0203b4b8911ba0569994e101300a06082a8648ce3d0403020347003044022060cdb6061e9c22262d1aac1d96d8c70829b2366531dda268832cb836bcd30dfa0220631b1459f09e6330055722c8d89b7f48883b9089b88d60d1d9795902b30410df304502201471899bcc3987e62e8202c9b39c33c19033f7340352dba80fcab017db9230e402210082677d673d891933ade6f617e5dbde2e247e70423fd5ad7804a6d3d3961ef871
+		</code>
+		<p>from which (together with challenge and application parameters)
+		  the signature base string and signature can be extracted, and
+		  verified with the public key from the attestation cert.
+		</p>
+	      </section>
+	      <section id="authentication-example">
+		<h3 aria-level="2" role="heading" id="h3_authentication-example"><span class="secno">8.2 </span>Authentication Example
+		</h3>
+		<p>Let's assume we have a U2F device with private key:
+		</p>
+		<code>ffa1e110dde5a2f8d93c4df71e2d4337b7bf5ddb60c75dc2b6b81433b54dd3c0
+		</code>
+		<p>and corresponding public key:
+		</p>
+		<code>04d368f1b665bade3c33a20f1e429c7750d5033660c019119d29aa4ba7abc04aa7c80a46bbe11ca8cb5674d74f31f8a903f6bad105fb6ab74aefef4db8b0025e1d
+		</code>
+		<p>Example application id:
+		</p>
+		<code>https://gstatic.com/securitykey/a/example.com
+	      </code>
+	      <p>Example client data:
+	      </p>
+	      <code>{"typ":"navigator.id.getAssertion","challenge":"opsXqUifDriAAmWclinfbS0e-USY0CgyJHe_Otd7z8o","cid_pubkey":{"kty":"EC","crv":"P-256","x":"HzQwlfXX7Q4S5MtCCnZUNBw3RMzPO9tOyWjBqRl4tJ8","y":"XVguGFLIZx1fXg3wNqfdbn75hi4-_7-BxhMljw42Ht4"},"origin":"<a href="http://example.com">http://example.com</a>"}
+	      </code>
+	      <p>Hash of the above client data (challenge parameter):
+	      </p>
+	      <code>ccd6ee2e47baef244d49a222db496bad0ef5b6f93aa7cc4d30c4821b3b9dbc57
+	      </code>
+	      <p>Hash of the above application id (application parameter):
+	      </p>
+	      <code>4b0be934baebb5d12d26011b69227fa5e86df94e7d94aa2949a89f2d493992ca
+	      </code>
+	      <p>Assuming counter = 1 and user_presence = 1, signature base
+		string is:
+	      </p>
+	      <code>4b0be934baebb5d12d26011b69227fa5e86df94e7d94aa2949a89f2d493992ca0100000001ccd6ee2e47baef244d49a222db496bad0ef5b6f93aa7cc4d30c4821b3b9dbc57
+	      </code>
+	      <p>A possible signature with above private key is:
+	      </p>
+	      <code>304402204b5f0cd17534cedd8c34ee09570ef542a353df4436030ce43d406de870b847780220267bb998fac9b7266eb60e7cb0b5eabdfd5ba9614f53c7b22272ec10047a923f
+	      </code>
+	      <p>Authentication Response Message:
+	      </p>
+	      <code>0100000001304402204b5f0cd17534cedd8c34ee09570ef542a353df4436030ce43d406de870b847780220267bb998fac9b7266eb60e7cb0b5eabdfd5ba9614f53c7b22272ec10047a923f
+	      </code>
+	      <p>The above signature and signature base string can be
+		reconstructed from the authentication response message and the
+		challenge and application parameters, and can be verified with
+		the above public key.
+	      </p>
+	    </section>
+	  </section>
+	  <section id="implementation-considerations">
+            <!--OddPage--><h2 aria-level="1" role="heading" id="h2_implementation-considerations"><span class="secno">9. </span>Implementation Considerations</h2>
+            <p>Earlier revisions of the FIDO U2F specifications defined the
+            U2F_VERSION command with the following byte layout:</p>
+            <table title="U2F_VERSION legacy encoding">
+              <tbody><tr>
+                <th align="left">CL</th>
+                <th align="left">IN</th>
+                <th align="left">P1</th>
+                <th align="left">P2</th>
+                <th align="left">L0</th>
+                <th align="left">L1</th>
+                <th align="left">L2</th>
+                <th align="left">Le</th>
+              </tr>
+              <tr>
+                <td align="left">00</td>
+                <td align="left">03</td>
+                <td align="left">00</td>
+                <td align="left">00</td>
+                <td align="left">00</td>
+                <td align="left">00</td>
+                <td align="left">00</td>
+                <td align="left">00 00</td>
+              </tr>
+            </tbody></table>
+            <p>This is not compatible with ISO 7816-4. (Compatible encodings
+            are defined earlier in this document.)</p>
+            <p>For maximum compatibility with U2F Authenticators that followed
+            the earlier specification for the U2F_VERSION command, U2F Clients
+            may choose to support this older encoding over the HID protocol,
+            the only protocol defined which used this encoding.</p>
+	  </section>
+	
+      
+<section id="references" class="appendix" typeof="bibo:Chapter" resource="#ref" rel="bibo:Chapter"><!--OddPage--><h2 aria-level="1" role="heading" id="h2_references"><span class="secno">A. </span>References</h2><section id="normative-references" typeof="bibo:Chapter" resource="#ref" rel="bibo:Chapter"><h3 aria-level="2" role="heading" id="h3_normative-references"><span class="secno">A.1 </span>Normative references</h3><dl class="bibliography" about=""><dt id="bib-ECDSA-ANSI">[ECDSA-ANSI]</dt><dd rel="dcterms:requires"><a href="http://webstore.ansi.org/RecordDetail.aspx?sku=ANSI+X9.62%3A2005"><cite>Public Key Cryptography for the Financial Services Industry: The Elliptic Curve Digital Signature Algorithm (ECDSA), ANSI X9.62-2005</cite></a>. American National Standards Institute, November 2005, URL: <a href="http://webstore.ansi.org/RecordDetail.aspx?sku=ANSI+X9.62%3A2005">http://webstore.ansi.org/RecordDetail.aspx?sku=ANSI+X9.62%3A2005</a>
+</dd><dt id="bib-ECMA-262">[ECMA-262]</dt><dd rel="dcterms:requires"><a href="https://tc39.github.io/ecma262/"><cite>ECMAScript Language Specification</cite></a>. URL: <a href="https://tc39.github.io/ecma262/">https://tc39.github.io/ecma262/</a>
+</dd><dt id="bib-FIDOAppIDAndFacets">[FIDOAppIDAndFacets]</dt><dd rel="dcterms:requires">D. Balfanz, B. Hill, R. Lindemann, D. Baghdasaryan, <cite>FIDO AppID and Facets v1.0</cite>. FIDO Alliance Proposed Standard. URLs: <br>HTML: <a href="./fido-appid-and-facets-v1.1-rd-20160915.html">fido-appid-and-facets-v1.1-rd-20160915.html</a><br>PDF: <a href="./fido-appid-and-facets-v1.1-rd-20160915.pdf">fido-appid-and-facets-v1.1-rd-20160915.pdf</a>
+</dd><dt id="bib-FIDOGlossary">[FIDOGlossary]</dt><dd rel="dcterms:requires">R. Lindemann, D. Baghdasaryan, B. Hill, J. Hodges, <cite>FIDO Technical Glossary</cite>. FIDO Alliance Proposed Standard. URLs: <br>HTML: <a href="./fido-glossary-v1.1-rd-20160915.html">fido-glossary-v1.1-rd-20160915.html</a> <br>PDF: <a href="./fido-glossary-v1.1-rd-20160915.pdf">fido-glossary-v1.1-rd-20160915.pdf</a>
+</dd><dt id="bib-RFC2119">[RFC2119]</dt><dd rel="dcterms:requires">S. Bradner. <a href="https://tools.ietf.org/html/rfc2119"><cite>Key words for use in RFCs to Indicate Requirement Levels</cite></a>. March 1997. Best Current Practice. URL: <a href="https://tools.ietf.org/html/rfc2119">https://tools.ietf.org/html/rfc2119</a>
+</dd><dt id="bib-RFC4648">[RFC4648]</dt><dd rel="dcterms:requires">S. Josefsson, <a href="http://www.ietf.org/rfc/rfc4648.txt"><cite>The Base16, Base32, and Base64 Data Encodings (RFC 4648)</cite></a>, IETF, October 2006, URL: <a href="http://www.ietf.org/rfc/rfc4648.txt">http://www.ietf.org/rfc/rfc4648.txt</a>
+</dd><dt id="bib-U2FHeader">[U2FHeader]</dt><dd rel="dcterms:requires">J. Ehrensvard, <a href="https://github.com/fido-alliance/u2f-specs/blob/master/inc/u2f.h"><cite>FIDO U2F HID Header Files v1.0</cite></a>. FIDO Alliance Review Draft (Work in progress.) URL:  <a href="https://github.com/fido-alliance/u2f-specs/blob/master/inc/u2f.h">https://github.com/fido-alliance/u2f-specs/blob/master/inc/u2f.h</a>
+</dd><dt id="bib-WebIDL">[WebIDL]</dt><dd rel="dcterms:requires">Cameron McCormack; Boris Zbarsky. <a href="https://www.w3.org/TR/WebIDL-1/"><cite>WebIDL Level 1</cite></a>. 15 September 2016. W3C Proposed Recommendation. URL: <a href="https://www.w3.org/TR/WebIDL-1/">https://www.w3.org/TR/WebIDL-1/</a>
+</dd></dl></section><section id="informative-references" typeof="bibo:Chapter" resource="#ref" rel="bibo:Chapter"><h3 aria-level="2" role="heading" id="h3_informative-references"><span class="secno">A.2 </span>Informative references</h3><dl class="bibliography" about=""><dt id="bib-U2FImplCons">[U2FImplCons]</dt><dd rel="dcterms:references">D. Balfanz, <a href="./fido-u2f-implementation-considerations-v1.1-rd-20160915.pdf"><cite>FIDO U2F Implementation Considerations v1.0</cite></a>. FIDO Alliance Review Draft (Work in progress.) URL:  <a href="./fido-u2f-implementation-considerations-v1.1-rd-20160915.pdf">./fido-u2f-implementation-considerations-v1.1-rd-20160915.pdf</a>
+</dd><dt id="bib-U2FOverview">[U2FOverview]</dt><dd rel="dcterms:references">S. Srinivas, D. Balfanz, E. Tiffany, <a href="./fido-u2f-overview-v1.1-rd-20160915.pdf"><cite>FIDO U2F Overview v1.0</cite></a>. FIDO Alliance Review Draft (Work in progress.) URL:  <a href="./fido-u2f-overview-v1.1-rd-20160915.pdf">./fido-u2f-overview-v1.1-rd-20160915.pdf</a>
+</dd></dl></section></section></body></html>

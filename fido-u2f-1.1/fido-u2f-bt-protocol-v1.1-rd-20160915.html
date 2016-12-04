@@ -1,0 +1,900 @@
+<!DOCTYPE html PUBLIC '-//W3C//DTD XHTML 1.0 Strict//EN' 'http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd'>
+<html lang="en" dir="ltr" typeof="bibo:Document w3p:CR" about="" property="dcterms:language" content="en" prefix="bibo: http://purl.org/ontology/bibo/ w3p: http://www.w3.org/2001/02pd/rec54#">
+<head>
+    <title>FIDO Bluetooth Specification v1.0</title>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    
+    
+    
+  <style>/*****************************************************************
+ * ReSpec 3 CSS
+ * Robin Berjon - http://berjon.com/
+ *****************************************************************/
+
+/* --- INLINES --- */
+em.rfc2119 { 
+    text-transform:     lowercase;
+    font-variant:       small-caps;
+    font-style:         normal;
+    color:              #900;
+}
+
+h1 acronym, h2 acronym, h3 acronym, h4 acronym, h5 acronym, h6 acronym, a acronym,
+h1 abbr, h2 abbr, h3 abbr, h4 abbr, h5 abbr, h6 abbr, a abbr {
+    border: none;
+}
+
+dfn {
+    font-weight:    bold;
+}
+
+a.internalDFN {
+    color:  inherit;
+    border-bottom:  1px solid #99c;
+    text-decoration:    none;
+}
+
+a.externalDFN {
+    color:  inherit;
+    border-bottom:  1px dotted #ccc;
+    text-decoration:    none;
+}
+
+a.bibref {
+    text-decoration:    none;
+}
+
+cite .bibref {
+    font-style: normal;
+}
+
+code {
+    color:  #ff4500;
+}
+
+/* --- TOC --- */
+.toc a, .tof a {
+    text-decoration:    none;
+}
+
+a .secno, a .figno {
+    color:  #000;
+}
+
+ul.tof, ol.tof {
+    list-style: none outside none;
+}
+
+.caption {
+    margin-top: 0.5em;
+    font-style:   italic;
+}
+
+/* --- TABLE --- */
+table.simple {
+    border-spacing: 0;
+    border-collapse:    collapse;
+    border-bottom:  3px solid #003a7c;
+}
+
+.simple th {
+    background: #003a7c;
+    color:  #fff;
+    padding:    3px 5px;
+    text-align: left;
+}
+
+.simple th[scope="row"] {
+    background: inherit;
+    color:  inherit;
+    border-top: 1px solid #ddd;
+}
+
+.simple td {
+    padding:    3px 10px;
+    border-top: 1px solid #ddd;
+}
+
+.simple tr:nth-child(even) {
+    background: #f0f6ff;
+}
+
+/* --- DL --- */
+.section dd > p:first-child {
+    margin-top: 0;
+}
+
+.section dd > p:last-child {
+    margin-bottom: 0;
+}
+
+.section dd {
+    margin-bottom:  1em;
+}
+
+.section dl.attrs dd, .section dl.eldef dd {
+    margin-bottom:  0;
+}
+
+@media print {
+    .removeOnSave {
+        display: none;
+    }
+}
+</style><link rel="stylesheet" href="resources/FIDO-RD.css"><!--[if lt IE 9]><script src='https://www.w3.org/2008/site/js/html5shiv.js'></script><![endif]--></head>
+  <body class="h-entry" style="" role="document" id="respecDocument"><div class="head" role="contentinfo" id="respecHeader">
+  <p>
+    
+      <a href="https://www.fidoalliance.org/"><img width="250" id="toplogo" src="resources/logo.png" alt="FIDO Alliance"></a>
+    
+  </p>
+  <h1 class="title p-name" id="title" property="dcterms:title">FIDO Bluetooth Specification v1.0</h1>
+  
+  <h2 property="dcterms:issued" datatype="xsd:dateTime" content="2016-09-15T07:00:00.000Z" id="fido-alliance-review-draft-15-september-2016"><abbr title="FIDO Alliance">FIDO Alliance</abbr> Review Draft <time class="dt-published" datetime="2016-09-15">15 September 2016</time></h2>
+  <dl>
+    
+      <dt>This version:</dt>
+      <dd><a class="u-url" href="https://fidoalliance.org/specs/fido-u2f-v1.1-rd-20160915/fido-u2f-bt-protocol-v1.0-v1.1-rd-20160915.html">https://fidoalliance.org/specs/fido-u2f-v1.1-rd-20160915/fido-u2f-bt-protocol-v1.0-v1.1-rd-20160915.html</a></dd>
+      <!--<dt>Latest published version:</dt>
+      <dd><a href='https://fidoalliance.org/specs/fido-u2f-bt-protocol-v1.0/'>https://fidoalliance.org/specs/fido-u2f-bt-protocol-v1.0/</a></dd>
+    
+    
+      <dt>Latest editor's draft:</dt>
+      <dd><a href='#INSERT URL HERE'>#INSERT URL HERE</a></dd>
+    -->
+    
+    
+    
+    
+    
+      <dt>Previous version:</dt>
+      <dd><a rel="dcterms:replaces" href="https://fidoalliance.org/specs/fido-u2f-bt-protocol-v1.0-Member Submission-20140721.html">https://fidoalliance.org/specs/fido-u2f-bt-protocol-v1.0-Member Submission-20140721.html</a></dd>
+    
+    
+    <dt>Editors:</dt>
+    <dd class="p-author h-card vcard" rel="bibo:editor" inlist=""><span typeof="foaf:Person"><span property="foaf:name" class="p-name fn">Alexei Czeskis</span>, <a rel="foaf:workplaceHomepage" class="p-org org h-org h-card" href="https://www.google.com/">Google, Inc.</a></span>
+</dd>
+<dd class="p-author h-card vcard" rel="bibo:editor" inlist=""><span typeof="foaf:Person"><span property="foaf:name" class="p-name fn">Juan Lang</span>, <a rel="foaf:workplaceHomepage" class="p-org org h-org h-card" href="https://www.google.com/">Google, Inc.</a></span>
+</dd>
+
+    
+      <dt>Contributors:</dt>
+      <dd class="p-author h-card vcard" rel="dcterms:contributor"><span typeof="foaf:Person"><span property="foaf:name" class="p-name fn">Scott Walsh</span>, <a rel="foaf:workplaceHomepage" class="p-org org h-org h-card" href="https://www.plantronics.com/">Plantronics, Inc.</a></span>
+</dd>
+<dd class="p-author h-card vcard" rel="dcterms:contributor"><span typeof="foaf:Person"><span property="foaf:name" class="p-name fn">Deniz Akkaya</span>, <a rel="foaf:workplaceHomepage" class="p-org org h-org h-card" href="https://www.yubico.com/">Yubico, Inc.</a></span>
+</dd>
+<dd class="p-author h-card vcard" rel="dcterms:contributor"><span typeof="foaf:Person"><span property="foaf:name" class="p-name fn">Jakub Pawlowski</span>, <a rel="foaf:workplaceHomepage" class="p-org org h-org h-card" href="https://www.google.com/">Google, Inc.</a></span>
+</dd>
+<dd class="p-author h-card vcard" rel="dcterms:contributor"><span typeof="foaf:Person"><span property="foaf:name" class="p-name fn">Hannes Tschofenig</span>, <a rel="foaf:workplaceHomepage" class="p-org org h-org h-card" href="http://arm.com/">ARM Ltd.</a></span>
+</dd>
+<dd class="p-author h-card vcard" rel="dcterms:contributor"><span typeof="foaf:Person"><span property="foaf:name" class="p-name fn">Johan Verrept</span>, <a rel="foaf:workplaceHomepage" class="p-org org h-org h-card" href="https://www.vasco.com/">VASCO Datasecurity International, Inc</a></span>
+</dd>
+
+    
+    
+  </dl>
+  
+  
+  
+  
+    
+      <p class="copyright">
+        Copyright ©
+        2014-2016
+        
+        <a href="https://www.fidoalliance.org/"><abbr title="FIDO Alliance">FIDO Alliance</abbr></a>
+        All Rights Reserved.
+      </p>
+    
+  
+  <hr>
+</div>
+
+    <!-- only put content here if you want a custom status of document not
+    the specification-maturity-appropriate boilerplate -->
+    
+
+    <section id="abstract" class="introductory" property="dcterms:abstract" datatype="" typeof="bibo:Chapter" resource="#ref" rel="bibo:Chapter"><h2 aria-level="1" role="heading" id="h2_abstract">Abstract</h2>
+      <p>The FIDO U2F framework was designed to be able to support multiple
+         Authenticator form factors. This document describes the communication
+         protocol with Authenticators over Bluetooth Smart (referred to in this
+         document as <em>Bluetooth Low Energy</em> or <em>BLE</em>).</p>
+
+      <p>There are multiple form factors possible for Authenticators. Some
+         might be low cost, low power devices, and others might be implemented
+         as an additional feature of a more powerful device, such as a
+         smartphone. The design proposed here is meant to support multiple form
+         factors, including but not necessarily limited to these two
+         examples.</p>
+    </section><section id="sotd" class="introductory" typeof="bibo:Chapter" resource="#ref" rel="bibo:Chapter"><h2 aria-level="1" role="heading" id="h2_sotd">Status of This Document</h2>
+  
+    
+      
+        <p>
+          <em>This section describes the status of this document at the time of its publication.
+          Other documents may supersede this document. A list of current <abbr title="FIDO Alliance">FIDO Alliance</abbr> publications and the
+          latest revision of this technical report can be found in the <a href="https://www.fidoalliance.org/specifications/"><abbr title="FIDO Alliance">FIDO Alliance</abbr> specifications index</a> at
+          https://www.fidoalliance.org/specifications/.</em>
+        </p>
+        
+        <p>
+          This document was published by the <a href="http://www.fidoalliance.org/"><abbr title="FIDO Alliance">FIDO Alliance</abbr></a> as a Review Draft.
+          
+            This document is intended to become a <abbr title="FIDO Alliance">FIDO Alliance</abbr> Proposed Standard.
+          
+          
+            If you wish to make comments regarding this document, please 
+            <a href="https://fidoalliance.org/contact">Contact Us</a>.
+          
+          
+          
+          
+            All comments are welcome.
+          
+        </p>
+        
+	
+	
+	  <div class="ribbon-wrapper"><div class="ribbon">REVIEW DRAFT</div></div>
+	  <p>
+	    <strong>This is a Review Draft Specification and
+            is not intended to be a basis for any implementations as the Specification may change.</strong> Permission is
+            hereby granted to use the Specification solely for the purpose of reviewing the Specification. No rights
+            are granted to prepare derivative works of this Specification. Entities seeking permission to reproduce
+            portions of this Specification for other uses must contact the <abbr title="FIDO Alliance">FIDO Alliance</abbr> to determine whether an 
+            appropriate license for such use is available.
+	  </p>
+	
+	
+        
+          <p>
+	    Implementation of certain elements of this Specification may require licenses under third party intellectual 
+	    property rights, including without limitation, patent rights. The <abbr title="FIDO Alliance">FIDO Alliance</abbr>, Inc. and its Members
+            and any other contributors to the Specification are not, and shall not be held, responsible in any manner
+            for identifying or failing to identify any or all such third party intellectual property rights.
+	  </p>
+	  <p>
+	    THIS FIDO ALLIANCE SPECIFICATION IS PROVIDED “AS IS” AND WITHOUT ANY 
+            WARRANTY OF ANY KIND, INCLUDING, WITHOUT LIMITATION, ANY EXPRESS OR IMPLIED
+	    WARRANTY OF NON-INFRINGEMENT, MERCHANTABILITY OR FITNESS FOR A
+	    PARTICULAR PURPOSE.
+          </p>
+        
+        
+        
+        
+      
+    
+  
+</section><section id="toc"><h2 class="introductory" aria-level="1" role="heading" id="h2_toc">Table of Contents</h2><ul class="toc" role="directory" id="respecContents"><li class="tocline"><a href="#notation" class="tocxref"><span class="secno">1. </span>Notation</a><ul class="toc"><li class="tocline"><a href="#key-words" class="tocxref"><span class="secno">1.1 </span>Key Words</a></li></ul></li><li class="tocline"><a href="#conformance" class="tocxref"><span class="secno">2. </span>Conformance</a></li><li class="tocline"><a href="#pairing" class="tocxref"><span class="secno">3. </span>Pairing</a></li><li class="tocline"><a href="#link-security" class="tocxref"><span class="secno">4. </span>Link Security</a></li><li class="tocline"><a href="#framing" class="tocxref"><span class="secno">5. </span>Framing</a><ul class="toc"><li class="tocline"><a href="#request-from-client-to-authenticator" class="tocxref"><span class="secno">5.1 </span>Request from Client to Authenticator</a></li><li class="tocline"><a href="#response-from-authenticator-to-client" class="tocxref"><span class="secno">5.2 </span>Response from Authenticator to Client</a></li><li class="tocline"><a href="#command-status-and-error-constants" class="tocxref"><span class="secno">5.3 </span>Command, Status, and Error constants</a></li></ul></li><li class="tocline"><a href="#gatt-service-description" class="tocxref"><span class="secno">6. </span>GATT Service Description</a><ul class="toc"><li class="tocline"><a href="#u2f-service" class="tocxref"><span class="secno">6.1 </span>U2F Service</a></li><li class="tocline"><a href="#device-information-service" class="tocxref"><span class="secno">6.2 </span>Device Information Service</a></li><li class="tocline"><a href="#generic-access-service" class="tocxref"><span class="secno">6.3 </span>Generic Access Service</a></li></ul></li><li class="tocline"><a href="#protocol-overview" class="tocxref"><span class="secno">7. </span>Protocol Overview</a></li><li class="tocline"><a href="#authenticator-advertising-format" class="tocxref"><span class="secno">8. </span>Authenticator Advertising Format</a></li><li class="tocline"><a href="#requests" class="tocxref"><span class="secno">9. </span>Requests</a></li><li class="tocline"><a href="#responses" class="tocxref"><span class="secno">10. </span>Responses</a></li><li class="tocline"><a href="#framing-fragmentation" class="tocxref"><span class="secno">11. </span>Framing fragmentation</a></li><li class="tocline"><a href="#implementation-considerations" class="tocxref"><span class="secno">12. </span>Implementation Considerations</a><ul class="toc"><li class="tocline"><a href="#bluetooth-pairing-client-considerations" class="tocxref"><span class="secno">12.1 </span>Bluetooth pairing: Client considerations</a></li><li class="tocline"><a href="#bluetooth-pairing-authenticator-considerations" class="tocxref"><span class="secno">12.2 </span>Bluetooth pairing: Authenticator considerations</a></li><li class="tocline"><a href="#handling-command-completion" class="tocxref"><span class="secno">12.3 </span>Handling command completion</a></li><li class="tocline"><a href="#data-throughput" class="tocxref"><span class="secno">12.4 </span>Data throughput</a></li><li class="tocline"><a href="#advertising" class="tocxref"><span class="secno">12.5 </span>Advertising</a></li><li class="tocline"><a href="#authenticator-address-type" class="tocxref"><span class="secno">12.6 </span>Authenticator Address Type</a></li></ul></li><li class="tocline"><a href="#bibliography" class="tocxref"><span class="secno">13. </span>Bibliography</a></li><li class="tocline"><a href="#references" class="tocxref"><span class="secno">A. </span>References</a><ul class="toc"><li class="tocline"><a href="#normative-references" class="tocxref"><span class="secno">A.1 </span>Normative references</a></li></ul></li></ul></section>
+
+    <!-- Notation section; do not remove or change -->
+    <section id="notation">
+      <!--OddPage--><h2 aria-level="1" role="heading" id="h2_notation"><span class="secno">1. </span>Notation</h2>
+      <p>Type names, attribute names and element names are written as <code>code</code>.</p>
+      <p>String literals are enclosed in “”, e.g. “UAF-TLV”.</p>
+      <p>In formulas we use “|” to denote byte wise concatenation operations.</p>
+      <p>DOM APIs are described using the ECMAScript [<cite><a class="bibref" href="#bib-ECMA-262">ECMA-262</a></cite>] bindings for
+         WebIDL [<cite><a class="bibref" href="#bib-WebIDL">WebIDL</a></cite>].</p>
+      <p>UAF specific terminology used in this document is defined in
+        [<cite><a class="bibref" href="#bib-FIDOGlossary">FIDOGlossary</a></cite>].</p>
+
+      <section id="key-words">
+        <h3 aria-level="2" role="heading" id="h3_key-words"><span class="secno">1.1 </span>Key Words</h3>
+        <p>The key words “<em class="rfc2119" title="MUST">MUST</em>”, “<em class="rfc2119" title="MUST NOT">MUST NOT</em>”, “<em class="rfc2119" title="REQUIRED">REQUIRED</em>”, “<em class="rfc2119" title="SHALL">SHALL</em>”, “<em class="rfc2119" title="SHALL NOT">SHALL NOT</em>”,
+        “<em class="rfc2119" title="SHOULD">SHOULD</em>”, “<em class="rfc2119" title="SHOULD NOT">SHOULD NOT</em>”, “<em class="rfc2119" title="RECOMMENDED">RECOMMENDED</em>”, “<em class="rfc2119" title="MAY">MAY</em>”, and “<em class="rfc2119" title="OPTIONAL">OPTIONAL</em>” in this
+        document are to be interpreted as described in [<cite><a class="bibref" href="#bib-RFC2119">RFC2119</a></cite>].</p>
+      </section>
+    </section>
+
+    <section id="conformance">
+      <!--OddPage--><h2 aria-level="1" role="heading" id="h2_conformance"><span class="secno">2. </span>Conformance</h2>
+      <p>Authenticator and Client devices using BLE <em class="rfc2119" title="SHALL">SHALL</em> conform to
+         Bluetooth Core Specification 4.0 or later [<a href="#BTCORE">BTCORE</a>]</p>
+      <p>Bluetooth(tm) SIG specified UUID values <em class="rfc2119" title="SHALL">SHALL</em> be found on the
+         Assigned Numbers website [<a href="#BTASSNUM">BTASSNUM</a>]</p>
+    </section>
+
+    <section id="pairing">
+      <!--OddPage--><h2 aria-level="1" role="heading" id="h2_pairing"><span class="secno">3. </span>Pairing</h2>
+      <p>BLE is a long-range wireless protocol and thus has several
+         implications for privacy, security, and overall user-experience.
+         Because it is wireless, BLE may be subject to monitoring, injection,
+         and other network-level attacks.</p>
+
+      <p>For these reasons, Clients and Authenticators <em class="rfc2119" title="MUST">MUST</em> create and use a
+         long-term link key (LTK) and <em class="rfc2119" title="SHALL">SHALL</em> encrypt all communications.
+         Authenticator <em class="rfc2119" title="MUST">MUST</em> never use short term keys.</p>
+
+      <p>Because BLE has poor ranging (<em>i.e.,</em> there is no good
+         indication of proximity), it may not be clear to a FIDO Client with
+         which BLE Authenticator it should communicate.  Pairing is the only
+         mechanism defined in this protocol to ensure that FIDO Clients are
+         interacting with the expected BLE Authenticator.  As a result,
+         Authenticator manufacturers <em class="rfc2119" title="SHOULD">SHOULD</em> instruct users to avoid performing
+         Bluetooth pairing in a public space such as a cafe, shop or train
+         station.</p>
+
+      <p>One disadvantage of using standard Bluetooth pairing is that the
+         pairing is "system-wide" on most operating systems.  That is, if an
+         Authenticator is paired to a FIDO Client which resides on an operating
+         system where Bluetooth pairing is "system-wide", then any application
+         on that device might be able to interact with an Authenticator. This
+         issue is discussed further in Implementation Considerations.</p>
+    </section>
+
+    <section id="link-security">
+      <!--OddPage--><h2 aria-level="1" role="heading" id="h2_link-security"><span class="secno">4. </span>Link Security</h2>
+      <p>For BLE connections, the Authenticator <em class="rfc2119" title="SHALL">SHALL</em> enforce <code>Security
+         Mode 1, Level 2</code> (unauthenticated pairing with encryption)
+         or <code>Security Mode 1, Level 3</code> (authenticated pairing with
+         encryption) before any U2F messages are exchanged.</p>
+    </section>
+
+    <section id="framing">
+      <!--OddPage--><h2 aria-level="1" role="heading" id="h2_framing"><span class="secno">5. </span>Framing</h2>
+      <p>Conceptually, framing defines an encapsulation of U2F raw messages
+         responsible for correct transmission of a single request and its
+         response by the transport layer.</p>
+
+      <p>All requests and their responses are conceptually written as a single
+         frame. The format of the requests and responses is given first as
+         complete frames. Fragmentation is discussed next for each type of
+         transport layer.</p>
+
+      <section id="request-from-client-to-authenticator">
+        <h3 aria-level="2" role="heading" id="h3_request-from-client-to-authenticator"><span class="secno">5.1 </span>Request from Client to Authenticator</h3>
+        <p>Request frames must have the following format</p>
+
+        <table class="tlv">
+          <tbody><tr><th>Offset</th><th>Length</th><th>Mnemonic</th><th>Description</th></tr>
+          <tr><td>0</td><td>1</td><td><code>CMD</code></td><td>Command identifier</td></tr>
+          <tr><td>1</td><td>1</td><td><code>HLEN</code></td><td>High part of data length</td></tr>
+          <tr><td>2</td><td>1</td><td><code>LLEN</code></td><td>Low part of data length</td></tr>
+          <tr><td>3</td><td>s</td><td><code>DATA</code></td><td>Data (s is equal to the length)</td></tr>
+        </tbody></table>
+
+        <p>Supported commands are <code>PING</code> and <code>MSG</code>.
+           The constant values for them are described below.</p>
+
+        <p>The data format for the <code>MSG</code> command is defined in
+           [<cite><a class="bibref" href="#bib-U2FRawMsgs">U2FRawMsgs</a></cite>]. For the U2F over Bluetooth protocol, U2F raw
+           messages are encoded using <b>extended length</b> APDU encoding.</p>
+      </section>
+
+      <section id="response-from-authenticator-to-client">
+        <h3 aria-level="2" role="heading" id="h3_response-from-authenticator-to-client"><span class="secno">5.2 </span>Response from Authenticator to Client</h3>
+        <p>Response frames must have the following format, which share a
+        similar format to the request frames: </p>
+
+        <table class="tlv">
+          <tbody><tr><th>Offset</th><th>Length</th><th>Mnemonic</th><th>Description</th></tr>
+          <tr><td>0</td><td>1</td><td><code>STAT</code></td><td>Response status</td></tr>
+          <tr><td>1</td><td>1</td><td><code>HLEN</code></td><td>High part of data length</td></tr>
+          <tr><td>2</td><td>1</td><td><code>LLEN</code></td><td>Low part of data length</td></tr>
+          <tr><td>3</td><td>s</td><td><code>DATA</code></td><td>Data (s is equal to the length)</td></tr>
+        </tbody></table>
+
+        <p>When the status byte in the response is the same as the command
+           byte in the request, the response is a successful response.  The
+           value <code>ERROR</code> indicates an error, and the response data
+           contains an error code as a variable-length, big-endian integer. The
+           constant value for <code>ERROR</code> is described below. </p>
+
+        <p>Note that the errors sent in this response are errors at the
+           encapsulation layer, e.g., indicating an incorrectly
+           formatted request, or possibly an error communicating with the
+           Authenticator’s U2F message processing layer. Errors reported by the
+           U2F message processing layer itself are considered a success from
+           the encapsulation layer’s point of view, and are reported as a
+           complete <code>MSG</code> response. </p>
+
+        <p>Data format is defined in [<cite><a class="bibref" href="#bib-U2FRawMsgs">U2FRawMsgs</a></cite>].  Note that as per
+           [<cite><a class="bibref" href="#bib-U2FRawMsgs">U2FRawMsgs</a></cite>] (and unlike the NFC transport specification), all
+           communication <em class="rfc2119" title="SHALL">SHALL</em> be done using extended length APDU format.</p>
+      </section>
+
+      <section id="command-status-and-error-constants">
+        <h3 aria-level="2" role="heading" id="h3_command-status-and-error-constants"><span class="secno">5.3 </span>Command, Status, and Error constants</h3>
+        <p>The COMMAND constants and values are:</p>
+        <table class="tlv">
+          <tbody><tr><th>Command Constant</th><th>Value</th></tr>
+          <tr><td><code>PING</code></td><td>0x81</td></tr>
+          <tr><td><code>KEEPALIVE</code></td><td>0x82</td></tr>
+          <tr><td><code>MSG</code></td><td>0x83</td></tr>
+          <tr><td><code>ERROR</code></td><td>0xbf</td></tr>
+        </tbody></table>
+        <br>
+
+        <p>The KEEPALIVE command contains a single byte with the following
+           possible values:</p>
+        <table class="tlv">
+          <tbody><tr><th>Status Constant</th><th>Value</th></tr>
+          <tr><td><code>PROCESSING</code></td><td>0x01</td></tr>
+          <tr><td><code>TUP_NEEDED</code></td><td>0x02</td></tr>
+          <tr><td><code>RFU</code></td><td>0x00, 0x03-0xFF</td></tr>
+        </tbody></table>
+        <br>
+
+        <p> The ERROR constants and values are:</p>
+        <table class="tlv">
+          <tbody><tr><th>Error Constant</th><th>Value</th><th>Meaning</th></tr>
+          <tr><td><code>ERR_INVALID_CMD</code></td><td>0x01</td><td>The command in the request is unknown/invalid</td></tr>
+          <tr><td><code>ERR_INVALID_PAR</code></td><td>0x02</td><td>The parameter(s) of the command is/are invalid or missing</td></tr>
+          <tr><td><code>ERR_INVALID_LEN</code></td><td>0x03</td><td>The length of the request is invalid</td></tr>
+          <tr><td><code>ERR_INVALID_SEQ</code></td><td>0x04</td><td>The sequence number is invalid</td></tr>
+          <tr><td><code>ERR_REQ_TIMEOUT</code></td><td>0x05</td><td>The request timed out</td></tr>
+          <tr><td><code>NA</code></td><td>0x06</td><td>Value reserved (HID)</td></tr>
+          <tr><td><code>NA</code></td><td>0x0a</td><td>Value reserved (HID)</td></tr>
+          <tr><td><code>NA</code></td><td>0x0b</td><td>Value reserved (HID)</td></tr>
+          <tr><td><code>ERR_OTHER</code></td><td>0x7f</td><td>Other, unspecified error</td></tr>
+        </tbody></table>
+
+      </section>
+    </section> <!-- endo of framing section -->
+
+    <section id="gatt-service-description">
+      <!--OddPage--><h2 aria-level="1" role="heading" id="h2_gatt-service-description"><span class="secno">6. </span>GATT Service Description</h2>
+      <p>This profile defines two roles: FIDO Authenticator and FIDO Client.</p>
+      <ul>
+        <li>The FIDO Client shall be a GATT Client</li>
+        <li>The FIDO Authenticator shall be a GATT Server</li>
+      </ul>
+      <p>The <a href="#fig-gatt-server" class="fig-ref">following figure</a> illustrates the
+        mandatory services and characteristics that <em class="rfc2119" title="SHALL">SHALL</em> be offered by a
+        FIDO Authenticator as part of its GATT server:</p>
+
+      <figure id="fig-gatt-server">
+         <img src="img/gatt_server.jpg" alt="U2F mandatory service and characteristics">
+         <figcaption>Fig. <span class="figno">1</span> <span class="fig-title">
+           Mandatory GATT services and characteristics that <em class="rfc2119" title="MUST">MUST</em> be offered by a FIDO
+           Authenticator.  Note that the Generic Access Service (GAS) is not present as
+           it is already mandatory for any BLE compliant device.
+         </span></figcaption>
+      </figure>
+
+      <p>The table below summarizes additional GATT sub-procedure
+         requirements for a FIDO Authenticator (GATT Server) beyond those
+         required by all GATT Servers.</p>
+
+      <table class="tlv">
+        <tbody><tr><th>GATT Sub-Procedure</th><th>Requirements</th></tr>
+        <tr><td>Write Characteristic Value</td><td><code>Mandatory</code>
+        </td></tr><tr><td>Notifications</td><td><code>Mandatory</code>
+        </td></tr><tr><td>Read Characteristic Descriptors </td><td><code>Mandatory</code>
+        </td></tr><tr><td>Write Characteristic Descriptors</td><td><code>Mandatory</code>
+      </td></tr></tbody></table>
+
+      <p>The table below summarizes additional GATT sub-procedure requirements
+         for a FIDO Client (GATT Client) beyond those required by all GATT Clients.</p>
+
+      <table class="tlv">
+        <tbody><tr><th>GATT Sub-Procedure</th><th>Requirements</th></tr>
+        <tr><td>Discover All Primary Services</td><td><code>(*)</code>
+        </td></tr><tr><td>Discover Primary Services by Service UUID</td><td><code>(*)</code>
+        </td></tr><tr><td>Discover All Characteristics of a Service</td><td><code>(**)</code>
+        </td></tr><tr><td>Discover Characteristics by UUID</td><td><code>(**)</code>
+        </td></tr><tr><td>Discover All Characteristic Descriptors</td><td><code>Mandatory</code>
+        </td></tr><tr><td>Read Characteristic Value</td><td><code>Mandatory</code>
+        </td></tr><tr><td>Write Characteristic Value</td><td><code>Mandatory</code>
+        </td></tr><tr><td>Notification</td><td><code>Mandatory</code>
+        </td></tr><tr><td>Read Characteristic Descriptors</td><td><code>Mandatory</code>
+        </td></tr><tr><td>Write Characteristic Descriptors</td><td><code>Mandatory</code>
+      </td></tr></tbody></table>
+
+      <p>(*): Mandatory to support at least one of these sub-procedures.</p>
+      <p>(**): Mandatory to support at least one of these sub-procedures.</p>
+      <p>Other GATT sub-procedures may be used if supported by both client
+         and server.</p>
+
+      <p>Specifics of each service are explained below. In the following
+         descriptions: all values are big-endian coded, all strings are in
+         UTF-8 encoding, and any characteristics not mentioned explicitly are
+         optional.</p>
+
+      <section id="u2f-service">
+        <h3 aria-level="2" role="heading" id="h3_u2f-service"><span class="secno">6.1 </span>U2F Service</h3>
+        <p>An Authenticator <em class="rfc2119" title="SHALL">SHALL</em> implement the U2F Service described below.
+           The UUID for the FIDO U2F GATT service is <code>0xFFFD</code>, it shall be declared as a Primary Service.
+           The service contains the following characteristics:</p>
+
+        <table class="tlv">
+          <tbody><tr><th>Characteristic Name</th><th>Mnemonic</th><th>Property</th><th>Length</th><th>UUID</th></tr>
+          <tr><td>U2F Control Point</td><td><code>u2fControlPoint</code></td><td>Write</td><td>Defined by Vendor (20-512 bytes)</td><td>F1D0FFF1-DEAA-ECEE-B42F-C9BA7ED623BB</td></tr>
+          <tr><td>U2F Status</td><td><code>u2fStatus</code></td><td>Notify</td><td>N/A</td><td>F1D0FFF2-DEAA-ECEE-B42F-C9BA7ED623BB</td></tr>
+          <tr><td>U2F Control Point Length</td><td><code>u2fControlPointLength</code></td><td>Read</td><td>2 bytes</td><td>F1D0FFF3-DEAA-ECEE-B42F-C9BA7ED623BB</td></tr>
+          <tr><td>U2F Service Revision</td><td><code>u2fServiceRevision</code></td><td>Read</td><td>Defined by Vendor (20-512 bytes)</td><td>0x2A28</td></tr>
+          <tr><td>U2F Service Revision Bitfield</td><td><code>u2fServiceRevisionBitfield</code></td><td>Read/Write</td><td>See below, at least 1 byte</td><td>F1D0FFF4-DEAA-ECEE-B42F-C9BA7ED623BB</td></tr>
+        </tbody></table>
+
+        <p><code>u2fControlPoint</code> is a write-only command buffer.</p>
+
+        <p><code>u2fStatus</code> is a notify-only response attribute.
+           The Authenticator will send a series of notifications on this attribute
+           with a maximum length of (ATT_MTU-3) using the response frames defined
+           above. This mechanism is used because this results in a faster transfer
+           speed compared to a notify-read combination.</p>
+
+        <p><code>u2fControlPointLength</code> defines the maximum size in
+           bytes of a single write request to <code>u2fControlPoint</code>.
+           This value <em class="rfc2119" title="SHALL">SHALL</em> be between 20 and 512.</p>
+
+        <p><code>u2fServiceRevision</code> defines the revision of the U2F Service.
+           The value is a UTF-8 string.  For version 1.0 of the specification, 
+           the value <code>u2fServiceRevision</code> <em class="rfc2119" title="SHALL">SHALL</em> be <code>1.0</code> or in
+           raw bytes: <code>0x312e30</code>. This field <em class="rfc2119" title="SHALL">SHALL</em> be omitted if protocol 
+           version 1.0 is not supported.
+           </p>
+
+        <p><code>u2fServiceRevisionBitfield</code> defines the revision of the U2F 
+           Service. The value is a bit field. Each bit represents the Authenticator's 
+           support of a particular protocol version. A bit value of 1 indicates 
+           support, while value 0 indicates lack of support. The length of the bitfield
+           is 1 or more bytes. All bytes that are 0 are omitted if all the following 
+           bytes are 0 too. The bit field is big endian encoded with the most significant
+           bit representing version 1.1 support, the next most significant bit, 
+           representing the next protocol version, etc. If only version 1.0 is supported, 
+           this characteristic <em class="rfc2119" title="SHALL">SHALL</em> be omitted. If the u2fServiceRevision characteristic 
+           is present or more than 1 bit in this u2fServiceRevisionBitfield characteristic
+           is 1, the client <em class="rfc2119" title="SHALL">SHALL</em> write the value of the requested protocol version to 
+           be used for the lifetime of this connection. If u2fServiceRevision 
+           characteristic is not present and only one bit in u2fServiceRevisionBitfield 
+           is set, the version that bit represents <em class="rfc2119" title="SHALL">SHALL</em> be the default.
+           
+           </p><table class="tlv">
+             <tbody><tr><th>Byte (left to right)</th><th>Bit</th><th>Version</th></tr>
+             <tr><td>0</td><td>7</td><td>1.1</td></tr>
+           </tbody></table>
+            
+           For example, a device that only supports 1.1 will only have a u2fServiceRevisionBitfield
+           characteristic of length 1 with value 0x80.
+           <p></p>
+           
+        <p>The <code>u2fServiceRevision</code> Characteristic <em class="rfc2119" title="MAY">MAY</em> include
+           a Characteristic Presentation Format descriptor with format value
+           0x19, <code>UTF-8 String</code>.</p>
+
+      </section>
+      <section id="device-information-service">
+        <h3 aria-level="2" role="heading" id="h3_device-information-service"><span class="secno">6.2 </span>Device Information Service</h3>
+        <p>An Authenticator <em class="rfc2119" title="SHALL">SHALL</em> implement the Device Information Service
+           [<a href="#BTDIS">BTDIS</a>] with the following characteristics:
+          </p><ul>
+            <li>Manufacturer Name String
+            </li><li>Model Number String
+            </li><li>Firmware Revision String
+          </li></ul>
+
+        <p>All values for the Device Information Service are left to the
+           vendors.  However, vendors should not create uniquely identifiable
+           values so that Authenticators do not become a method of tracking
+           users.</p>
+      </section>
+      <section id="generic-access-service">
+        <h3 aria-level="2" role="heading" id="h3_generic-access-service"><span class="secno">6.3 </span>Generic Access Service</h3>
+        <p>Every Authenticator <em class="rfc2119" title="SHALL">SHALL</em> implement the Generic Access Service [<a href="#BTGAS">BTGAS</a>] with the following characteristics:
+        </p><ul>
+          <li>Device Name
+          </li><li>Appearance
+        </li></ul>
+      </section>
+    </section>
+
+    <section id="protocol-overview">
+      <!--OddPage--><h2 aria-level="1" role="heading" id="h2_protocol-overview"><span class="secno">7. </span>Protocol Overview</h2>
+      <p>The general overview of the communication protocol follows:</p>
+      <ol>
+        <li>Authenticator advertises the FIDO U2F service.
+        </li><li>Client scans for Authenticator advertising the FIDO U2F
+            service.
+        </li><li>Client performs characteristic discovery on the Authenticator.
+        </li><li>If not already paired, the Client and Authenticator <em class="rfc2119" title="SHALL">SHALL</em>
+            perform BLE pairing and create a LTK.  Authenticator <em class="rfc2119" title="SHALL">SHALL</em> only
+            allow connections from previously bonded Clients without user
+            intervention.
+        </li><li>Client reads the <code>u2fControlPointLength</code> characteristic.
+        </li><li>Client registers for notifications on the <code>u2fStatus</code>
+            characteristic.
+        </li><li>Client writes a request (e.g., an enroll request) into
+            the <code>u2fControlPoint</code> characteristic.
+        </li><li>Authenticator evaluates the request and responds by sending
+            notifications over <code>u2fStatus</code> characteristic.
+        </li><li>The protocol completes when either:
+          <ul>
+            <li>The Client unregisters for notifications on the
+              <code>u2fStatus</code> characteristic, or:</li>
+            <li>The connection times out and is closed by the
+              Authenticator.</li>
+          </ul>
+      </li></ol>
+    </section>
+
+    <section id="authenticator-advertising-format">
+      <!--OddPage--><h2 aria-level="1" role="heading" id="h2_authenticator-advertising-format"><span class="secno">8. </span>Authenticator Advertising Format</h2>
+      <p>When advertising, the Authenticator <em class="rfc2119" title="SHALL">SHALL</em> advertise the FIDO U2F
+         service UUID.</p>
+      <p>When advertising, the Authenticator <em class="rfc2119" title="MAY">MAY</em> include the TxPower value
+         in the advertisement (see [<a href="#BTXPLAD">BTXPLAD</a>]).</p>
+      <p>When advertising in pairing mode, the Authenticator <em class="rfc2119" title="SHALL">SHALL</em> either: 
+         (1) set the LE Limited Mode bit to zero and the LE General Discoverable 
+         bit to one OR (2) set the LE Limited Mode bit to one and the LE General 
+         Discoverable bit to zero. When advertising in non-pairing mode, 
+         the Authenticator <em class="rfc2119" title="SHALL">SHALL</em> set both the LE Limited Mode bit and the LE 
+         General Discoverable Mode bit to zero in the Advertising Data Flags.</p>
+      <p>The advertisement <em class="rfc2119" title="MAY">MAY</em> also carry a device name which is
+         distinctive and user-identifiable.  For example, "ACME Key" would
+         be an appropriate name, while "XJS4" would not be.</p>
+      <p>The Authenticator <em class="rfc2119" title="SHALL">SHALL</em> also implement the Generic Access Profile
+         [<a href="#BTGAP">BTGAP</a>] and Device Information Service 
+         [<a href="#BTDIS">BTDIS</a>], both of which also provide a user friendly 
+         name for the device which could be used by the Client. The BTDIS <em class="rfc2119" title="SHALL">SHALL</em> 
+         contain the PnP ID field [<a href="#BTPNPID">BTPNPID</a>].
+         </p>
+      <p>It is not specified when or how often an Authenticator should
+         advertise, instead that flexibility is left to manufacturers.</p>
+    </section>
+
+    <section id="requests">
+      <!--OddPage--><h2 aria-level="1" role="heading" id="h2_requests"><span class="secno">9. </span>Requests</h2>
+      <p>Clients <em class="rfc2119" title="SHOULD">SHOULD</em> make requests by connecting to the Authenticator
+         and performing a write into the <code>u2fControlPoint</code>
+         characteristic.</p>
+    </section>
+
+    <section id="responses">
+      <!--OddPage--><h2 aria-level="1" role="heading" id="h2_responses"><span class="secno">10. </span>Responses</h2>
+      <p>Authenticators <em class="rfc2119" title="SHOULD">SHOULD</em> respond to Clients by sending notifications
+         on the <code>u2fStatus</code> characteristic.</p>
+
+      <p>Some Authenticators might alert users or prompt them to complete the
+         test of user presence (e.g., via sound, light, vibration)
+         Upon receiving any request, the Authenticators <em class="rfc2119" title="SHALL">SHALL</em> send
+         KEEPALIVE commands every <code>kKeepAliveMillis</code>
+         milliseconds until completing processing the commands. While the
+         Authenticator is processing the request the KEEPALIVE command will
+         contain status <code>PROCESSING</code>. If the Authenticator is
+         waiting to complete the Test of User Presence, the KEEPALIVE command
+         will contains status <code>TUP_NEEDED</code>. While waiting to
+         complete the Test of User Presence, the Authenticator <em class="rfc2119" title="MAY">MAY</em> alert the
+         user (e.g., by flashing) in order to prompt the user to complete the
+         test of user presence.
+         As soon the Authenticator has completed processing and confirmed
+         user presence, it <em class="rfc2119" title="SHALL">SHALL</em> stop sending KEEPALIVE commands, and send the
+         reply.</p>
+      <p>Upon receiving a KEEPALIVE command, the Client <em class="rfc2119" title="SHALL">SHALL</em> assume the
+         Authenticator is still processing the command; the Client <em class="rfc2119" title="SHALL">SHALL</em> not
+         resend the command.  The Authenticator <em class="rfc2119" title="SHALL">SHALL</em> continue sending
+         KEEPALIVE messages at least every <code>kKeepAliveMillis</code>
+         to indicate that it is still handling the request.  Until a
+         client-defined timeout occurs, the Client <em class="rfc2119" title="SHALL NOT">SHALL NOT</em> move on to other
+         devices when it receives a KEEPALIVE with <code>TUP_NEEDED</code>
+         status, as it knows this is a device that can satisfy its request.</p>
+    </section>
+
+    <section id="framing-fragmentation">
+      <!--OddPage--><h2 aria-level="1" role="heading" id="h2_framing-fragmentation"><span class="secno">11. </span>Framing fragmentation</h2>
+      <p>A single request/response sent over BLE <em class="rfc2119" title="MAY">MAY</em> be split over multiple
+         writes and notifications, due to the inherent limitations of BLE
+         which is not currently meant for large messages.  Frames are
+         fragmented in the following way:</p>
+      <p>A frame is divided into an <em>initialization fragment</em> and
+         one or more <em>continuation fragments</em>.
+      </p><p>An initialization fragment is defined as:
+         </p><table class="tlv">
+           <tbody><tr><th>Offset</th><th>Length</th><th>Mnemonic</th><th>Description</th></tr>
+           <tr><td>0</td><td>1</td><td><code>CMD</code></td><td>Command identifier</td></tr>
+           <tr><td>1</td><td>1</td><td><code>HLEN</code></td><td>High part of data length</td></tr>
+           <tr><td>2</td><td>1</td><td><code>LLEN</code></td><td>Low part of data length</td></tr>
+           <tr><td>3</td><td>0 to (maxLen - 3)</td><td><code>DATA</code></td><td>Data</td></tr>
+         </tbody></table>
+      <p>where <code>maxLen</code> is the maximum packet size supported by
+         the characteristic or notification.</p>
+      <p>In other words, the start of an initialization fragment is
+         indicated by setting the high bit in the first byte. The subsequent
+         two bytes indicate the total length of the frame, in big-endian
+         order. The first <code>maxLen</code> - 3 bytes of data follow.</p>
+
+      <p>Continuation fragments are defined as:
+      </p><table class="tlv">
+        <tbody><tr><th>Offset</th><th>Length</th><th>Mnemonic</th><th>Description</th></tr>
+        <tr><td>0</td><td>1</td><td><code>SEQ</code></td><td>Packet sequence 0x00..0x7f (high bit always cleared)</td></tr>
+        <tr><td>1</td><td>0 to (maxLen - 1)</td><td><code>DATA</code></td><td>Data</td></tr>
+      </tbody></table>
+      <p>where <code>maxLen</code> is the maximum packet size supported
+         by the characteristic or notification.</p>
+      <p>In other words, continuation fragments begin with a sequence number,
+         beginning at 0, implicitly with the high bit cleared. The sequence
+         number must wrap around to 0 after reaching the maximum sequence
+         number of 0x7f.</p>
+
+      <p>Example for sending a <code>PING</code> command with 40 bytes of
+         data with a <code>maxLen</code> of 20 bytes:</p>
+      <table class="tlv">
+        <tbody><tr><th>Frame</th><th>Bytes</th></tr>
+        <tr><td>0</td><td><code>[810028] [17 bytes of data]</code>
+        </td></tr><tr><td>1</td><td><code>[00] [19 bytes of data]</code>
+        </td></tr><tr><td>2</td><td><code>[01] [4 bytes of data]</code>
+      </td></tr></tbody></table>
+
+      <p>Example for sending a ping command with 400 bytes of data with a
+         <code>maxLen</code> of 512 bytes:</p>
+      <table class="tlv">
+        <tbody><tr><th>Frame</th><th>Bytes</th></tr>
+        <tr><td>0</td><td><code>[810190] [400 bytes of data]</code>
+      </td></tr></tbody></table>
+    </section>
+
+    <section id="implementation-considerations">
+      <!--OddPage--><h2 aria-level="1" role="heading" id="h2_implementation-considerations"><span class="secno">12. </span>Implementation Considerations</h2>
+
+      <section id="bluetooth-pairing-client-considerations">
+        <h3 aria-level="2" role="heading" id="h3_bluetooth-pairing-client-considerations"><span class="secno">12.1 </span>Bluetooth pairing: Client considerations</h3>
+        <p>As noted in the Pairing section, a disadvantage of using standard
+           Bluetooth pairing is that the pairing is "system-wide" on most
+           operating systems.  That is, if an Authenticator is paired to a
+           FIDO Client which resides on an operating system where Bluetooth
+           pairing is "system-wide", then any application on that device
+           might be able to interact with an Authenticator. This poses both
+           security and privacy risks to users.</p>
+
+        <p>While Client operating system security is partly out of FIDO's
+           scope, further revisions of this specification <em class="rfc2119" title="MAY">MAY</em> propose
+           mitigations for this issue.</p>
+      </section>
+
+      <section id="bluetooth-pairing-authenticator-considerations">
+        <h3 aria-level="2" role="heading" id="h3_bluetooth-pairing-authenticator-considerations"><span class="secno">12.2 </span>Bluetooth pairing: Authenticator considerations</h3>
+        <p>The method to put the Authenticator into Pairing Mode should be
+           such that it is not easy for the user to do accidentally
+           <strong>especially</strong> if the pairing method is Just Works.
+           For example, the action could be pressing a physically recessed
+           button or pressing multiple buttons.  A visible or audible cue
+           that the Authenticator is in Pairing Mode should be considered.
+           As a counter example, a silent, long press of a single
+           non-recessed button is not advised as some users naturally hold
+           buttons down during regular operation.</p>
+
+        <p>Note that at times, Authenticators may legitimately receive
+           communication from an unpaired device.  For example, a user
+           attempts to use an Authenticator for the first time with a new
+           Client: he turns it on, but forgets to put the Authenticator into
+           pairing mode.  In this situation, after connecting to the
+           Authenticator, the Client will notify the user that he needs to
+           pair his Authenticator.  The Authenticator should make it easy for
+           the user to do so, e.g., by not requiring the user to wait
+           for a timeout before being able to enable pairing mode.</p>
+
+        <p>Some Client platforms (most notably iOS) do not expose the AD Flag
+           LE Limited and General Discoverable Mode bits to applications.  For
+           this reason, Authenticators are also strongly recommended to include
+           the Service Data field [<a href="BTSD">BTSD</a>] in the Scan 
+           Response. The Service Data field field is 3 or more octets long.
+           This allows the Flags field to be extended while using the minimum 
+           number of octets within the data packet. All octets that are 0x00 
+           are not transmitted as long as all other octets after that octet are 
+           also 0x00 and it is not the first octet after the service UUID. The 
+           first 2 bytes contain the FIDO Service UUID, the following bytes are 
+           flag bytes. </p>
+           
+           <p>To help Clients show the correct UX, Authenthenticators can use the
+           Service Data field to specify whether or not Authenticators will 
+           require a Passkey (PIN) during pairing.</p>
+           
+           <p></p><table class="tlv">
+            <tbody><tr><th>Service Data Bit</th><th>Meaning (if set)</th></tr>
+            <tr><td>7</td><td>Device is in pairing mode.</td></tr>
+            <tr><td>6</td><td>Device requires Passkey Entry [<a href="#BTPESTK">BTPESTK</a>].</td></tr>
+           </tbody></table>
+           <p></p>
+      </section>
+      
+      <section id="handling-command-completion">
+        <h3 aria-level="2" role="heading" id="h3_handling-command-completion"><span class="secno">12.3 </span>Handling command completion</h3>
+        <p>It is important for low-power devices to be able to conserve power
+           by shutting down or switching to a lower-power state when they
+           have satisfied a Client's requests.  However, the U2F protocol
+           makes this hard as it typically includes more than one
+           command/response. This is especially true  if a user has more than
+           one key handle associated with an account or identity, multiple
+           key handles may need to be tried before getting a successful
+           outcome.  Furthermore, Clients that fail to send followup commands
+           in a timely fashion may cause the Authenticator to drain its
+           battery by staying powered up anticipating more commands.</p>
+
+        <p>A further consideration is to ensure that a user is not confused
+           about which command she is confirming by completing the test of
+           user presence. That is, if a user performs the test of user
+           presence, that action should perform exactly one operation.</p>
+
+        <p>We combine these considerations into the following series of
+           recommendations:</p>
+        <ul>
+          <li>Upon initial connection to an Authenticator, and upon receipt
+              of a response from an Authenticator, if a Client has more
+              commands to issue, the Client <em class="rfc2119" title="MUST">MUST</em> transmit the next command or
+              fragment within <code>kMaxCommandTransmitDelayMillis</code>
+              milliseconds. </li>
+          <li>Upon final response from an Authenticator, if the Client decides it has no more
+              commands to send it should indicate this by disabling notifications on the
+              <code>u2fStatus</code> characteristic. When the notifications are disabled
+              the Authenticator may enter a low power state or disconnect and shut down.</li>
+          <li>Any time the Client wishes to send a U2F APDU, it must have first enabled
+              notifications on the <code>u2fStatus</code> characteristic and wait for the
+              ATT acknowledgment to be sure the Authenticator is ready to process APDU
+              messages.</li>
+          <li>Upon successful completion of a command which required a test
+              of user presence, e.g. upon a successful authentication or
+              registration command, the Authenticator can assume the Client
+              is satisfied, and <em class="rfc2119" title="MAY">MAY</em> reset its state or power down.</li>
+          <li>Upon sending a command response that did not consume a test of
+              user presence, the Authenticator <em class="rfc2119" title="MUST">MUST</em> assume that the Client may
+              wish to initiate another command, and leave the connection open
+              until the Client closes it or until a timeout of at least
+              <code>kErrorWaitMillis</code> elapses. Examples of command
+              responses that do not consume user presence include failed
+              authenticate or register commands, as well as get version
+              responses, whether successful or not. After
+              <code>kErrorWaitMillis</code> milliseconds have elapsed without
+              further commands from a Client, an Authenticator <em class="rfc2119" title="MAY">MAY</em> reset its
+              state or power down.</li>
+        </ul>
+        <table class="tlv">
+          <thead>
+            <tr><th>Constant</th><th>Value</th></tr>
+          </thead>
+          <tbody><tr><td><code>kMaxCommandTransmitDelayMillis</code></td><td>1500 milliseconds</td></tr>
+          <tr><td><code>kErrorWaitMillis</code></td><td>2000 milliseconds</td></tr>
+          <tr><td><code>kKeepAliveMillis</code></td><td>500 milliseconds</td></tr>
+        </tbody></table>
+      </section>
+
+      <section id="data-throughput">
+        <h3 aria-level="2" role="heading" id="h3_data-throughput"><span class="secno">12.4 </span>Data throughput</h3>
+        <p>BLE does not have particularly high throughput, this can cause
+           noticeable latency to the user if request/responses are large.
+           Some ways that implementers can reduce latency are:</p>
+        <ul>
+          <li>Support the maximum MTU size allowable by hardware (up to the
+              512 bytes max from the BLE specifications).
+          </li><li>Make the attestation certificate as small as possible, do not
+              include unnecessary extensions.
+        </li></ul>
+      </section>
+
+      <section id="advertising">
+        <h3 aria-level="2" role="heading" id="h3_advertising"><span class="secno">12.5 </span>Advertising</h3>
+        <p>Though the standard doesn’t appear to mandate it (in any way that
+           we’ve found thus far), advertising and device discovery seems to
+           work better when the Authenticators advertise on all 3 advertising
+           channels and not just one.</p>
+      </section>
+
+      <section id="authenticator-address-type">
+        <h3 aria-level="2" role="heading" id="h3_authenticator-address-type"><span class="secno">12.6 </span>Authenticator Address Type</h3>
+        <p>In order to enhance the user's privacy and specifically to guard
+           against tracking, it is recommended that Authenticators use
+           Resolvable Private Addresses (RPAs) instead of static
+           addresses.</p>
+      </section>
+    </section>
+
+    <section id="bibliography">
+      <!--OddPage--><h2 aria-level="1" role="heading" id="h2_bibliography"><span class="secno">13. </span>Bibliography</h2>
+      <p>[BTASSNUM] Bluetooth Assigned Numbers.  URL: <a href="https://www.bluetooth.org/en-us/specification/assigned-numbers">https://www.bluetooth.org/en-us/specification/assigned-numbers</a></p>
+      <p>[BTCORE] Bluetooth Core Specification 4.1.  URL: <a href="https://www.bluetooth.com/specifications/adopted-specifications">https://www.bluetooth.com/specifications/adopted-specifications</a></p>
+      <p>[BTDIS] Device Information Service v1.1.  URL: <a href="https://www.bluetooth.com/specifications/adopted-specifications">https://www.bluetooth.com/specifications/adopted-specifications</a></p>
+      <p>[BTGAP] Generic Access Profile. Bluetooth Core Specification 4.1, Volume 3, Part C, Section 12.  URL: <a href="https://www.bluetooth.com/specifications/adopted-specifications">https://www.bluetooth.com/specifications/adopted-specifications</a></p>
+      <p>[BTGAS] Generic Access Service. Bluetooth Core Specification 4.1, Volume 3, Part C, Section 12. URL: <a href="https://developer.bluetooth.org/gatt/services/Pages/ServiceViewer.aspx?u=org.bluetooth.service.generic_access.xml">https://developer.bluetooth.org/gatt/services/Pages/ServiceViewer.aspx?u=org.bluetooth.service.generic_access.xml</a></p>
+      <p>[BTXPLAD] Bluetooth TX Power AD Type. Bluetooth Core Specification 4.1, Volume 3, Part C, Section 11. URL: <a href="https://www.bluetooth.com/specifications/adopted-specifications">https://www.bluetooth.com/specifications/adopted-specifications</a></p>
+      <p>[BTSD] Bluetooth Service Data AD Type. Bluetooth Core Specification 4.0, Volume 3, Part C, Section 11. URL: <a href="https://www.bluetooth.com/specifications/adopted-specifications">https://www.bluetooth.com/specifications/adopted-specifications</a></p>
+      <p>[BTPESTK] Passkey Entry. Bluetooth Core Specification 4.0, Volume 3, Part H, Section 2.3.5.3 URL: <a href="https://www.bluetooth.com/specifications/adopted-specifications">https://www.bluetooth.com/specifications/adopted-specifications</a></p>
+      <p>[BTPNPID] PnP ID. <a href="https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.characteristic.pnp_id.xml">https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.characteristic.pnp_id.xml</a> URL: <a href="https://www.bluetooth.com/specifications/adopted-specifications">https://www.bluetooth.com/specifications/adopted-specifications</a></p>
+    </section>
+  
+
+<section id="references" class="appendix" typeof="bibo:Chapter" resource="#ref" rel="bibo:Chapter"><!--OddPage--><h2 aria-level="1" role="heading" id="h2_references"><span class="secno">A. </span>References</h2><section id="normative-references" typeof="bibo:Chapter" resource="#ref" rel="bibo:Chapter"><h3 aria-level="2" role="heading" id="h3_normative-references"><span class="secno">A.1 </span>Normative references</h3><dl class="bibliography" about=""><dt id="bib-ECMA-262">[ECMA-262]</dt><dd rel="dcterms:requires"><a href="https://tc39.github.io/ecma262/"><cite>ECMAScript Language Specification</cite></a>. URL: <a href="https://tc39.github.io/ecma262/">https://tc39.github.io/ecma262/</a>
+</dd><dt id="bib-FIDOGlossary">[FIDOGlossary]</dt><dd rel="dcterms:requires">R. Lindemann, D. Baghdasaryan, B. Hill, J. Hodges, <cite>FIDO Technical Glossary</cite>. FIDO Alliance Proposed Standard. URLs: <br>HTML: <a href="./fido-glossary-v1.1-rd-20160915.html">fido-glossary-v1.1-rd-20160915.html</a> <br>PDF: <a href="./fido-glossary-v1.1-rd-20160915.pdf">fido-glossary-v1.1-rd-20160915.pdf</a>
+</dd><dt id="bib-RFC2119">[RFC2119]</dt><dd rel="dcterms:requires">S. Bradner. <a href="https://tools.ietf.org/html/rfc2119"><cite>Key words for use in RFCs to Indicate Requirement Levels</cite></a>. March 1997. Best Current Practice. URL: <a href="https://tools.ietf.org/html/rfc2119">https://tools.ietf.org/html/rfc2119</a>
+</dd><dt id="bib-U2FRawMsgs">[U2FRawMsgs]</dt><dd rel="dcterms:requires">D. Balfanz, <a href="./fido-u2f-raw-message-formats-v1.1-rd-20160915.pdf"><cite>FIDO U2F Raw Message Formats v1.0</cite></a>. FIDO Alliance Review Draft (Work in progress.) URL:  <a href="./fido-u2f-raw-message-formats-v1.1-rd-20160915.pdf">./fido-u2f-raw-message-formats-v1.1-rd-20160915.pdf</a>
+</dd><dt id="bib-WebIDL">[WebIDL]</dt><dd rel="dcterms:requires">Cameron McCormack; Boris Zbarsky. <a href="https://www.w3.org/TR/WebIDL-1/"><cite>WebIDL Level 1</cite></a>. 15 September 2016. W3C Proposed Recommendation. URL: <a href="https://www.w3.org/TR/WebIDL-1/">https://www.w3.org/TR/WebIDL-1/</a>
+</dd></dl></section></section></body></html>

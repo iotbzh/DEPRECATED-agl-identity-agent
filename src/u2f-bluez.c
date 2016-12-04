@@ -10,7 +10,6 @@
 #include <systemd/sd-bus.h>
 #include <systemd/sd-event.h>
 
-#include "u2f-protocol.h"
 #include "u2f-bluez.h"
 
 #ifndef ERROR
@@ -24,14 +23,6 @@
 #define U2F_BT_KEEPALIVE 0x82
 #define U2F_BT_MSG       0x83
 #define U2F_BT_ERROR     0xbf
-
-/*
-	UUID: Generic Access Profile    (00001800-0000-1000-8000-00805f9b34fb)
-	UUID: Generic Attribute Profile (00001801-0000-1000-8000-00805f9b34fb)
-	UUID: Device Information        (0000180a-0000-1000-8000-00805f9b34fb)
-	UUID: Battery Service           (0000180f-0000-1000-8000-00805f9b34fb)
-	UUID: Fast IDentity Online Al.. (0000fffd-0000-1000-8000-00805f9b34fb)
-*/
 
 static const char fidoProfile[] = "0000fffd-0000-1000-8000-00805f9b34fb";
 static const char batteryProfile[] = "0000180f-0000-1000-8000-00805f9b34fb";
@@ -88,14 +79,24 @@ struct device_properties {
 	int is_fido;
 };
 
-struct device {
-	struct device *next;
+struct observer
+{
+	struct observer *next;
+	void *closure;
+	struct u2f_bluez_observer callbacks;
+};
+
+struct u2f_bluez {
+	struct u2f_bluez *next;
+	struct observer *observers;
+	unsigned refcount;
 	char *path;
 	char *address;
 	char *controlpoint;
 	char *status;
 	char *cplen;
 	sd_bus_slot *slot;
+	sd_bus_slot *slotc;
 	size_t mtu;
 	int paired;
 	int connected;
@@ -104,10 +105,8 @@ struct device {
 };
 
 static struct adapter *adalist;
-static struct device *devlist;
-static int scanning;
-
-static void (*signal_device_callback)(const char *address);
+static struct u2f_bluez *devlist;
+static void (*scanning_callback)(struct u2f_bluez *device);
 
 /********************************************************************************************************/
 
@@ -121,7 +120,8 @@ static int isprefix(const char *what, const char *where)
 
 /********************************************************************************************************/
 
-static int add_on_signal(const char *sender, const char *path, const char *itf, const char *member, sd_bus_slot **slot, sd_bus_message_handler_t callback, void *closure)
+static int add_on_signal(const char *sender, const char *path, const char *itf, const char *member,
+				sd_bus_slot **slot, sd_bus_message_handler_t callback, void *closure)
 {
 	int rc, n;
 	char *p;
@@ -140,157 +140,8 @@ static int add_on_signal(const char *sender, const char *path, const char *itf, 
 
 /********************************************************************************************************/
 
-struct pairing_data {
-	struct device *device;
-	void (*callback)(void *closure, int paired);
-	void *closure;
-};
-
-static int pairing_complete(sd_bus_message *m, void *userdata, sd_bus_error *error)
-{
-	struct pairing_data *data = userdata;
-
-	if (data && data->callback)
-		data->callback(data->closure, data->device->paired);
-	free(data);
-
-end:
-	sd_bus_message_unref(m);
-	return 0;
-}
-
-static int request_device_pairing(struct device *device, void (*callback)(void *closure, int paired), void *closure)
-{
-	int rc;
-	sd_bus_error error = SD_BUS_ERROR_NULL;
-	struct pairing_data *data;
-
-	data = malloc(sizeof *data);
-	if (!data) {
-		rc= -ENOMEM;
-		CRC(end);
-	}
-	data->device = device;
-	data->callback = callback;
-	data->closure = closure;
-
-	rc = sd_bus_call_method_async(sbus, NULL, BLUEZ_DEST, device->path, BLUEZ_DEVICE_ITF, "Pair", pairing_complete, data, NULL);
-	CRC(end);
-
-end:
-	return rc;
-}
-
-/********************************************************************************************************/
-
-struct connecting_data {
-	struct device *device;
-	void (*callback)(void *closure, int connected);
-	void *closure;
-};
-
-static int connecting_complete(sd_bus_message *m, void *userdata, sd_bus_error *error)
-{
-	struct connecting_data *data = userdata;
-
-	if (data && data->callback)
-		data->callback(data->closure, data->device->connected);
-	free(data);
-
-end:
-	sd_bus_message_unref(m);
-	return 0;
-}
-
-static int request_device_connecting(struct device *device, void (*callback)(void *closure, int connected), void *closure)
-{
-	int rc;
-	sd_bus_error error = SD_BUS_ERROR_NULL;
-	struct connecting_data *data;
-
-	data = malloc(sizeof *data);
-	if (!data) {
-		rc= -ENOMEM;
-		CRC(end);
-	}
-	data->device = device;
-	data->callback = callback;
-	data->closure = closure;
-
-	rc = sd_bus_call_method_async(sbus, NULL, BLUEZ_DEST, device->path, BLUEZ_DEVICE_ITF, "Connect", connecting_complete, data, NULL);
-	CRC(end);
-
-end:
-	return rc;
-}
-
 /********************************************************************************************************/
 /* ADAPTER */
-
-static int adapter_set_discover_filter(struct adapter *adapter)
-{
-	int rc;
-	sd_bus_error error = SD_BUS_ERROR_NULL;
-	sd_bus_message *m = NULL, *r = NULL;
-
-	rc = sd_bus_message_new_method_call(sbus, &m, BLUEZ_DEST, adapter->path, BLUEZ_ADAPTER_ITF, "SetDiscoveryFilter");
-	CRC(end);
-
-	rc = sd_bus_message_open_container(m, SD_BUS_TYPE_ARRAY, "{sv}");
-	CRC(end);
-	{
-	  rc = sd_bus_message_open_container(m, SD_BUS_TYPE_DICT_ENTRY, "sv");
-	  CRC(end);
-	  {
-	    rc = sd_bus_message_append_basic(m, SD_BUS_TYPE_STRING, "UUIDs");
-	    CRC(end);
-
-	    rc = sd_bus_message_open_container(m, SD_BUS_TYPE_VARIANT, "as");
-	    CRC(end);
-	    {
-	      rc = sd_bus_message_open_container(m, SD_BUS_TYPE_ARRAY, "s");
-	      CRC(end);
-
-	      rc = sd_bus_message_append_basic(m, SD_BUS_TYPE_STRING, fidoProfile);
-	      CRC(end);
-
-	      rc = sd_bus_message_close_container(m);
-	      CRC(end);
-	    }
-	    rc = sd_bus_message_close_container(m);
-	    CRC(end);
-	  }
-	  rc = sd_bus_message_close_container(m);
-	  CRC(end);
-
-	  rc = sd_bus_message_open_container(m, SD_BUS_TYPE_DICT_ENTRY, "sv");
-	  CRC(end);
-	  {
-	    rc = sd_bus_message_append_basic(m, SD_BUS_TYPE_STRING, "Transport");
-	    CRC(end);
-
-	    rc = sd_bus_message_open_container(m, SD_BUS_TYPE_VARIANT, "s");
-	    CRC(end);
-
-	    rc = sd_bus_message_append_basic(m, SD_BUS_TYPE_STRING, "le");
-	    CRC(end);
-
-	    rc = sd_bus_message_close_container(m);
-	    CRC(end);
-	  }
-	  rc = sd_bus_message_close_container(m);
-	  CRC(end);
-	}
-	rc = sd_bus_message_close_container(m);
-	CRC(end);
-
-	rc = sd_bus_call(sbus, m, 0, &error, &r);
-	CRC(end);
-end:
-	sd_bus_message_unref(m);
-	sd_bus_message_unref(r);
-	return rc;
-}
 
 static int adapter_properties_scan(sd_bus_message *m, struct adapter_properties *props)
 {
@@ -379,7 +230,7 @@ static int adapter_property_changed(sd_bus_message *m, void *userdata, sd_bus_er
 	CRC(end);
 
 end:
-	sd_bus_message_unref(m);
+	//sd_bus_message_unref(m);
 	return 0;
 }
 
@@ -417,8 +268,6 @@ static int get_adapter(const char *path, struct adapter **ada, int create)
 			return -ENOMEM;
 		}
 		rc = add_on_signal(BLUEZ_DEST, path, DBUS_PROPERTIES_ITF, "PropertiesChanged", &adapter->slot, adapter_property_changed, adapter);
-		if (rc >= 0)
-			rc = adapter_set_discover_filter(adapter);
 		if (rc < 0) {
 			free(adapter->path);
 			free(adapter);
@@ -431,6 +280,73 @@ static int get_adapter(const char *path, struct adapter **ada, int create)
 
 	*ada = adapter;
 	return 0;
+}
+
+/********************************************************************************************************/
+
+static void signal_connected(struct u2f_bluez *device)
+{
+	struct observer *obs, *nxt;
+
+	obs = device->observers;
+	while (obs) {
+		nxt = obs->next;
+		if (obs->callbacks.connected)
+			obs->callbacks.connected(obs->closure, device->mtu);
+		obs = nxt;
+	}
+}
+
+static void signal_disconnected(struct u2f_bluez *device)
+{
+	struct observer *obs, *nxt;
+
+	obs = device->observers;
+	while (obs) {
+		nxt = obs->next;
+		if (obs->callbacks.disconnected)
+			obs->callbacks.disconnected(obs->closure);
+		obs = nxt;
+	}
+}
+
+static void signal_received(struct u2f_bluez *device, const uint8_t *buffer, size_t size)
+{
+	struct observer *obs, *nxt;
+
+	obs = device->observers;
+	while (obs) {
+		nxt = obs->next;
+		if (obs->callbacks.received)
+			obs->callbacks.received(obs->closure, buffer, size);
+		obs = nxt;
+	}
+}
+
+static void signal_sent(struct u2f_bluez *device)
+{
+	struct observer *obs, *nxt;
+
+	obs = device->observers;
+	while (obs) {
+		nxt = obs->next;
+		if (obs->callbacks.sent)
+			obs->callbacks.sent(obs->closure);
+		obs = nxt;
+	}
+}
+
+static void signal_error(struct u2f_bluez *device, int status, const char *message)
+{
+	struct observer *obs, *nxt;
+
+	obs = device->observers;
+	while (obs) {
+		nxt = obs->next;
+		if (obs->callbacks.error)
+			obs->callbacks.error(obs->closure, status, message);
+		obs = nxt;
+	}
 }
 
 /********************************************************************************************************/
@@ -537,16 +453,15 @@ end:
 	return rc;
 }
 
-static int signal_device(struct device *device)
+static int signal_device(struct u2f_bluez *device)
 {
-	if (scanning && !device->signaled) {
+	if (scanning_callback && !device->signaled) {
 		device->signaled = 1;
-		if (signal_device_callback && device->address)
-			signal_device_callback(device->address);
+		scanning_callback(device);
 	}
 }
 
-static int update_device_property(sd_bus_message *m, struct device *device)
+static int update_device_property(sd_bus_message *m, struct u2f_bluez *device)
 {
 	struct device_properties props;
 	int rc;
@@ -557,8 +472,11 @@ static int update_device_property(sd_bus_message *m, struct device *device)
 	if (props.paired_set)
 		device->paired = props.paired;
 
-	if (props.connected_set)
+	if (props.connected_set) {
 		device->connected = props.connected;
+		if (!props.connected)
+			signal_disconnected(device);
+	}
 
 	if (props.rssi_set) {
 		device->rssi = props.rssi;
@@ -584,13 +502,13 @@ static int device_property_changed(sd_bus_message *m, void *userdata, sd_bus_err
 	CRC(end);
 
 end:
-	sd_bus_message_unref(m);
+	//sd_bus_message_unref(m);
 	return 0;
 }
 
 static int erase_device(const char *path)
 {
-	struct device *d, **pd = &devlist;
+	struct u2f_bluez *d, **pd = &devlist;
 
 	while ((d = *pd) && strcmp(d->path, path))
 		pd = &d->next;
@@ -598,6 +516,7 @@ static int erase_device(const char *path)
 		*pd = d->next;
 		printf("<<<<<<<<< -DEVICE %s >>>>>>>>>>>>>\n", path);
 		sd_bus_slot_unref(d->slot);
+		sd_bus_slot_unref(d->slotc);
 		free(d->controlpoint);
 		free(d->status);
 		free(d->cplen);
@@ -606,10 +525,10 @@ static int erase_device(const char *path)
 	}
 }
 
-static int get_device(const char *path, struct device **dev, int create)
+static int get_device(const char *path, struct u2f_bluez **dev, int create)
 {
 	int rc;
-	struct device *d = devlist;
+	struct u2f_bluez *d = devlist;
 
 	while(d && strcmp(path, d->path))
 		d = d->next;
@@ -641,9 +560,9 @@ static int get_device(const char *path, struct device **dev, int create)
 /********************************************************************************************************/
 /* CHARACTERISTIC */
 
-static struct device *device_of_characteristic(const char *path)
+static struct u2f_bluez *device_of_characteristic(const char *path)
 {
-	struct device *d = devlist;
+	struct u2f_bluez *d = devlist;
 
 	while(d && !isprefix(d->path, path))
 		d = d->next;
@@ -653,7 +572,7 @@ static struct device *device_of_characteristic(const char *path)
 static int erase_characteristic(const char *path)
 {
 	int rc;
-	struct device *d = devlist;
+	struct u2f_bluez *d = devlist;
 	char **p, *q;
 
 	d = device_of_characteristic(path);
@@ -678,7 +597,7 @@ static int erase_characteristic(const char *path)
 static int add_characteristic(const char *path, const char *uuid)
 {
 	int rc;
-	struct device *d;
+	struct u2f_bluez *d;
 	char **p, *q;
 
 	d = device_of_characteristic(path);
@@ -716,30 +635,9 @@ static int scan(const char *adapter_path, int on)
 	sd_bus_message *r = NULL;
 
 	rc = sd_bus_call_method(sbus, BLUEZ_DEST, adapter_path, BLUEZ_ADAPTER_ITF, on ? "StartDiscovery" : "StopDiscovery", &error, &r, NULL);
-	sd_bus_message_unref(r);
+	//sd_bus_message_unref(r);
 	return rc;
 }
-
-/*
-static int discover(const char *adapter_path)
-{
-	int rc;
-	sd_bus_error error = SD_BUS_ERROR_NULL;
-
-	rc = sd_bus_set_property(sbus, BLUEZ_DEST, adapter_path, BLUEZ_ADAPTER_ITF, "Pairable", &error, "b", (char)1);
-	CRC(end);
-
-	rc = set_discover_filter(adapter_path, 1);
-	CRC(end);
-
-	rc = scan(adapter_path, 1);
-	CRC(end);
-	return 0;
-end:
-	set_discover_filter(adapter_path, 0);
-	return rc;
-}
-*/
 
 /********************************************************************************************************/
 /* Observers for InterfacesAdded / InterfacesRemoved */
@@ -769,7 +667,7 @@ end:
 static int add_bluez_device(sd_bus_message *m, const char *path)
 {
 	int rc;
-	struct device *device;
+	struct u2f_bluez *device;
 	struct device_properties props;
 	char *address;
 
@@ -786,8 +684,10 @@ static int add_bluez_device(sd_bus_message *m, const char *path)
 		device->address = address;
 		device->paired = props.paired;
 		device->connected = props.connected;
-		device->rssi = props.rssi;
-		signal_device(device);
+		if (props.rssi_set) {
+			device->rssi = props.rssi;
+			signal_device(device);
+		}
 	}
 
 end:
@@ -1018,7 +918,7 @@ static int register_pairing_agent()
 	rc = sd_bus_call_method(sbus, BLUEZ_DEST, BLUEZ_PATH, BLUEZ_AGENT_MANAGER_ITF, "RegisterAgent", &error, &r, "os", PAIRINGOBJECT, "KeyboardOnly");
 	CRC(end);
 end:
-	sd_bus_message_unref(r);
+	//sd_bus_message_unref(r);
 	return rc;
 }
 
@@ -1037,7 +937,7 @@ static int add_all_bluez_objects()
 		return rc;
 	}
 	rc = sd_bus_call(sbus, r, 0, &error, &m);
-	sd_bus_message_unref(r);
+	//sd_bus_message_unref(r);
 	if (rc < 0) {
 		ERROR("calling managed objects failed: %s", strerror(-rc));
 		return rc;
@@ -1064,7 +964,7 @@ static int add_all_bluez_objects()
 	}
 	rc = sd_bus_message_exit_container(m);
 end:
-	sd_bus_message_unref(m);
+	//sd_bus_message_unref(m);
 	return rc;
 }
 
@@ -1089,363 +989,402 @@ end:
 	return rc;
 }
 
-int u2f_bluez_scan_start(void (*callback)(const char *address))
+int u2f_bluez_scan(void (*callback)(struct u2f_bluez *device))
 {
 	int rc = 0;
 	struct adapter *ada = adalist;
-	struct device *dev = devlist;
+	struct u2f_bluez *dev = devlist;
 
-	scanning = 0;
+	scanning_callback = callback;
 	while (dev) {
 		dev->signaled = 0;
 		dev = dev->next;
 	}
-	signal_device_callback = callback;
-	scanning = 1;
 	while(!rc && ada) {
-		rc = scan(ada->path, 1);
+		rc = scan(ada->path, !!scanning_callback);
 		ada = ada->next;
 	}
 	return rc;
 }
 	
-int u2f_bluez_scan_stop()
+struct u2f_bluez *u2f_bluez_addref(struct u2f_bluez *device)
 {
-	int rc = 0;
-	struct adapter *ada = adalist;
-
-	signal_device_callback = 0;
-	scanning = 0;
-	while(!rc && ada) {
-		rc = scan(ada->path, 1);
-		ada = ada->next;
-	}
-	return rc;
+	if (device)
+		device->refcount++;
+	return device;
 }
 
-int u2f_bluez_is_paired(const char *address)
+void u2f_bluez_unref(struct u2f_bluez *device)
 {
-	struct device *d = devlist;
+	if (device && device->refcount)
+		if (!--device->refcount)
+			{/*do-nothing*/}
+}
+
+int u2f_bluez_get(struct u2f_bluez **device, const char *address)
+{
+	struct u2f_bluez *d = devlist;
 
 	while(d && (!d->address || strcmp(address, d->address)))
 		d = d->next;
 	if (!d)
 		return -ENOENT;
+	if (device)
+		*device = u2f_bluez_addref(d);
 
-	return !!d->paired;
+	return 0;
 }
+
+const char *u2f_bluez_address(struct u2f_bluez *device)
+{
+	return device->address;
+}
+
+int u2f_bluez_is_paired(struct u2f_bluez *device)
+{
+	return !!device->paired;
+}
+
+int u2f_bluez_is_connected(struct u2f_bluez *device)
+{
+	return !!device->connected;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+int u2f_bluez_observer_add(struct u2f_bluez *device, struct u2f_bluez_observer *observer, void *closure)
+{
+	struct observer **prv, *obs;
+
+	prv = &device->observers;
+	while ((obs = *prv) && (obs->closure != closure || memcmp(observer, &obs->callbacks, sizeof *observer)))
+		prv = &obs->next;
+
+	if (!obs) {
+		obs = calloc(1, sizeof *obs);
+		if (!obs)
+			return -ENOMEM;
+
+		obs->closure = closure;
+		memcpy(&obs->callbacks, observer, sizeof *observer);
+		*prv = obs;
+	}
+	return 0;
+}
+
+int u2f_bluez_observer_delete(struct u2f_bluez *device, struct u2f_bluez_observer *observer, void *closure)
+{
+	struct observer **prv, *obs;
+
+	prv = &device->observers;
+	while ((obs = *prv) && (obs->closure != closure || memcmp(observer, &obs->callbacks, sizeof *observer)))
+		prv = &obs->next;
+
+	if (!obs)
+		return -ENOENT;
+
+	*prv = obs->next;
+	free(obs);
+	return 0;
+}
+
 
 
 /********************************************************************************************************/
 
-struct sending {
-	struct device *device;
-	uint8_t *buffer;
+static int charac_status_changed(sd_bus_message *m, void *userdata, sd_bus_error *error)
+{
+	uint8_t *frame;
+	const char *name;
 	size_t size;
-	size_t mtu;
-	size_t offset;
-	void (*callback)(void *closure, int status, const uint8_t *buffer, size_t size);
-	void *closure;
-	sd_bus_slot *slot;
-	uint8_t cmd;
-	uint8_t sts;
-};
+	int rc = 0;
+	struct u2f_bluez *device = userdata;
 
-static void terminate_send(struct sending *sending, int status)
-{
-	if (sending->slot) {
-		sd_bus_call_method_async(sbus, NULL, BLUEZ_DEST, sending->device->status, BLUEZ_GATT_CHARACTERISTIC_ITF, "StopNotify",
-				NULL, NULL, NULL);
-		sd_bus_slot_unref(sending->slot);
+	if (sd_bus_error_is_set(error) || sd_bus_message_is_method_error(m, NULL))
+		rc = -EACCES;
+	CRC(end);
+
+	rc = sd_bus_message_skip(m, "s");
+	CRC(end);
+
+	rc = sd_bus_message_enter_container(m, SD_BUS_TYPE_ARRAY, "{sv}");
+	CRC(end);
+
+	frame = 0;
+	size = 0;
+	while (!sd_bus_message_at_end(m, 0)) {
+
+		rc = sd_bus_message_enter_container(m, SD_BUS_TYPE_DICT_ENTRY, NULL);
+		CRC(end);
+
+		rc = sd_bus_message_read_basic(m, SD_BUS_TYPE_STRING, &name);
+		CRC(end);
+
+		if (strcmp(name, "Value")) {
+			rc = sd_bus_message_skip(m, NULL);
+			CRC(end);
+		} else {
+			rc = sd_bus_message_enter_container(m, SD_BUS_TYPE_VARIANT, "ay");
+			CRC(end);
+
+			rc = sd_bus_message_read_array(m, 'y', (const void**)&frame, &size);
+			CRC(end);
+
+			if (!frame || !size)
+				rc = -EACCES;
+			CRC(end);
+
+			rc = sd_bus_message_exit_container(m);
+			CRC(end);
+		}
+
+		rc = sd_bus_message_exit_container(m);
+		CRC(end);
 	}
-	sending->callback(sending->closure, status < 0 ? status : sending->sts, sending->buffer, sending->size);
-	free(sending);
-}
-
-static int charac_send_read_value(const char *charac, uint16_t offset, sd_bus_message_handler_t handler, void *closure)
-{
-	int rc = 0;
-
-	if (!charac)
-		rc = -EACCES;
-	CRC(end);
-
-	rc = sd_bus_call_method_async(sbus, NULL, BLUEZ_DEST, charac, BLUEZ_GATT_CHARACTERISTIC_ITF, "ReadValue",
-				handler, closure, "a{sv}", (unsigned)1, "offset", "q", (uint16_t)0);
-	CRC(end);
-end:
-	return rc;
-}
-
-static int sending_status_changed(sd_bus_message *m, void *userdata, sd_bus_error *error)
-{
-	return 0;
-}
-
-static void send_frame(struct sending *sending);
-
-static int send_frame_done(sd_bus_message *m, void *userdata, sd_bus_error *error)
-{
-	int rc = 0;
-	struct sending *sending = userdata;
-	size_t off;
-
-	if (sd_bus_error_is_set(error))
-		rc = -EACCES;
-	CRC(end);
-
-	off = sending->offset;
-	off += sending->mtu - 1 - (off ? 0 : 2);
-	if (off < sending->size) {
-		sending->offset = off;
-		send_frame(sending);
-		return 0;
-	}
-	rc = -ENOTSUP;
-
-end:
-	if (rc < 0)
-		terminate_send(sending, rc);
-	return 0;
-}
-
-static void send_frame(struct sending *sending)
-{
-	int rc = 0;
-	size_t i, n, sz, mtu, off;
-	uint8_t *buffer, *org;
-	sd_bus_message *m = NULL;
-
-	n = (sz = sending->size) - (off = sending->offset);
-	if (!n)
-		return;
-
-	buffer = alloca(mtu = sending->mtu);
-	if (off == 0) {
-		buffer[0] = sending->cmd;
-		buffer[1] = (uint8_t)(sz >> 8);
-		buffer[2] = (uint8_t)(sz);
-		i = 3;
-	} else {
-		buffer[0] = (uint8_t)((off / (mtu - 1)) & 0x7f);
-		i = 1;
-	}
-
-	org = sending->buffer;
-	while (i < mtu && off < sz)
-		buffer[i++] = org[off++];
-/*
-	while (i < mtu)
-		buffer[i++] = 0;
-*/
-	rc = sd_bus_message_new_method_call(sbus, &m, BLUEZ_DEST, sending->device->controlpoint, BLUEZ_GATT_CHARACTERISTIC_ITF, "WriteValue");
-	CRC(end);
-
-	rc = sd_bus_message_append_array(m, 'y', buffer, i);
-	CRC(end);
-
-	rc = sd_bus_message_append(m, "a{sv}", (unsigned)1, "offset", "q", (uint16_t)sending->offset);
-	CRC(end);
-
-	rc = sd_bus_call_async(sbus, 0, m, send_frame_done, sending, 5000000);
-	CRC(end);
-
-end:
-	if (rc < 0)
-		terminate_send(sending, rc);
-}
-
-static int send_start_notify_done(sd_bus_message *m, void *userdata, sd_bus_error *error)
-{
-	int rc = 0;
-	struct sending *sending = userdata;
-
-	if (sd_bus_error_is_set(error))
-		rc = -EACCES;
-	CRC(end);
-
-	send_frame(sending);
-	
-end:
-	if (rc < 0)
-		terminate_send(sending, rc);
-	return 0;
-}
-
-static int send_get_mtu_done(sd_bus_message *m, void *userdata, sd_bus_error *error)
-{
-	uint8_t hi, lo;
-	int rc = 0;
-	struct sending *sending = userdata;
-
-	if (sd_bus_error_is_set(error))
-		rc = -EACCES;
-	CRC(end);
-
-	rc = sd_bus_message_enter_container(m, SD_BUS_TYPE_ARRAY, "y");
-	CRC(end);
-
-	rc = sd_bus_message_read_basic(m, 'y', &hi);
-	CRC(end);
-
-	rc = sd_bus_message_read_basic(m, 'y', &lo);
-	CRC(end);
-
 	rc = sd_bus_message_exit_container(m);
 	CRC(end);
 
-	sending->mtu = (((size_t)hi) << 8) | ((size_t)lo);
+	if (!frame)
+		goto end;
 
-printf("********* MTU = %d   (len=%d) *******\n", (int)sending->mtu, (int)sending->size);
+	signal_received(device, frame, size);
 
-	if (sending->mtu < 3)
-		rc = -ECANCELED;
-	CRC(end);
-
-	rc = add_on_signal(BLUEZ_DEST, sending->device->status, DBUS_PROPERTIES_ITF, "PropertiesChanged", &sending->slot, sending_status_changed, sending);
-	CRC(end);
-
-	rc = sd_bus_call_method_async(sbus, NULL, BLUEZ_DEST, sending->device->status, BLUEZ_GATT_CHARACTERISTIC_ITF, "StartNotify",
-				send_start_notify_done, sending, NULL);
-	CRC(end);
 end:
 	if (rc < 0)
-		terminate_send(sending, rc);
+		signal_error(device, rc, "status change error");
 	return 0;
 }
 
-static int send_get_mtu(struct sending *sending)
+/********************************************************************************************************/
+
+static void disconnecting_error(struct u2f_bluez *device, int status, const char *message)
 {
-	int rc = 0;
-	sd_bus_message *m;
-
-	if (!sending->device->cplen)
-		rc = -EACCES;
-	CRC(end);
-
-	rc = charac_send_read_value(sending->device->cplen, 0, send_get_mtu_done, sending);
-	CRC(end);
-end:
-	return rc;
+	u2f_bluez_disconnect(device);
+	signal_error(device, status, message);
 }
 
-
-static void on_connecting_done(void *closure, int connected)
+static int ignoremsg(sd_bus_message *m, void *userdata, sd_bus_error *error)
 {
-	struct sending *sending = closure;
-	int rc = connected ? send_get_mtu(sending) : -EACCES;
-	if (rc < 0)
-		terminate_send(sending, rc);
-}
-
-static int send_connect(struct sending *sending)
-{
-	return sending->device->connected ? send_get_mtu(sending) : request_device_connecting(sending->device, on_connecting_done, sending);
-}
-
-static void on_pairing_done(void *closure, int paired)
-{
-	struct sending *sending = closure;
-	int rc = paired ? send_connect(sending) : -EACCES;
-	if (rc < 0)
-		terminate_send(sending, rc);
-}
-
-static int send_pair(struct sending *sending)
-{
-	return sending->device->paired ? send_connect(sending) : request_device_pairing(sending->device, on_pairing_done, sending);
-}
-
-static int send(const char *address, uint8_t cmd, const uint8_t *buffer, size_t size, void (*callback)(void *closure, int status, const uint8_t *buffer, size_t size), void *closure)
-{
-	int rc = 0;
-	struct device *d = devlist;
-	struct sending *sending = 0;
-
-	if (size > 65535)
-		rc = -EINVAL;
-	CRC(error);
-
-	while(d && (!d->address || strcmp(address, d->address)))
-		d = d->next;
-	if (!d)
-		rc = -ENOENT;
-	CRC(error);
-
-	sending = calloc(1, sizeof *sending);
-	if (!sending)
-		rc = -ENOMEM;
-	CRC(error);
-
-	sending->buffer = malloc(size);
-	if (!sending->buffer)
-		rc = -ENOMEM;
-	CRC(error);
-
-	sending->device = d;
-	memcpy(sending->buffer, buffer, size);
-	sending->size = size;
-	sending->cmd = cmd;
-	sending->callback = callback;
-	sending->closure = closure;
-
-	rc = send_pair(sending);
-	CRC(error);
-
+	//sd_bus_message_unref(m);
 	return 0;
-error:
-	if (sending) {
-		free(sending->buffer);
-		free(sending);
+}
+
+void u2f_bluez_disconnect(struct u2f_bluez *device)
+{
+	if (device->slotc) {
+		sd_bus_slot_unref(device->slotc);
+		sd_bus_call_method_async(sbus, NULL, BLUEZ_DEST, device->status, BLUEZ_GATT_CHARACTERISTIC_ITF, "StopNotify",
+				ignoremsg, NULL, NULL);
+		device->slotc = 0;
 	}
-	return rc;
+	sd_bus_call_method_async(sbus, NULL, BLUEZ_DEST, device->path, BLUEZ_DEVICE_ITF, "Disconnect", ignoremsg, NULL, NULL);
+	device->mtu = 0;
 }
 
-struct sending_message {
-	struct u2f_proto *message;
-	void (*callback)(void *closure, int status, struct u2f_proto *msg);
-	void *closure;
-};
+/********************************************************************************************************/
 
-static void send_message_complete(void *closure, int status, const uint8_t *buffer, size_t size)
+static int notify_status_complete(sd_bus_message *m, void *userdata, sd_bus_error *error)
 {
-	struct sending_message *sending = closure;
-	/* TODO */
-	sending->callback(sending->closure, status, sending->message);
-	u2f_protocol_unref(sending->message);
-	free(sending);
+	struct u2f_bluez *device = userdata;
+
+	if (sd_bus_error_is_set(error) || sd_bus_message_is_method_error(m, NULL)) {
+		disconnecting_error(device, -EPROTO, "failed to start notify");
+		sd_bus_slot_unref(device->slotc);
+		device->slotc = 0;
+	} else
+		signal_connected(device);
+
+	u2f_bluez_unref(device);
+	//sd_bus_message_unref(m);
+	return 0;
 }
 
-int u2f_bluez_send_message(const char *address, struct u2f_proto *msg, void (*callback)(void *closure, int status, struct u2f_proto *msg), void *closure)
+static void notify_status(struct u2f_bluez *device)
 {
 	int rc;
-	struct sending_message *sending = 0;
-	const uint8_t *buffer;
-	size_t size;
 
-	rc = u2f_protocol_get_extended_request(msg, &buffer, &size);
-	CRC(error);
-
-	sending = calloc(1, sizeof *sending);
-	if (!sending)
-		return -ENOMEM;
-
-	sending->message = u2f_protocol_addref(msg);
-	sending->callback = callback;
-	sending->closure = closure;
-
-	rc = send(address, U2F_BT_MSG, buffer, size, send_message_complete, sending);
-	CRC(error);
-
-	return 0;
-
-error:
-	if (sending) {
-		u2f_protocol_unref(sending->message);
-		free(sending);
+	if (device->slotc)
+		signal_connected(device);
+	else {
+		rc = add_on_signal(BLUEZ_DEST, device->status, DBUS_PROPERTIES_ITF, "PropertiesChanged", &device->slotc, charac_status_changed, device);
+		if (rc < 0)
+			disconnecting_error(device, -EPROTO, "failed observe status");
+		else {
+			rc = sd_bus_call_method_async(sbus, NULL, BLUEZ_DEST, device->status, BLUEZ_GATT_CHARACTERISTIC_ITF, "StartNotify",
+					notify_status_complete, device, NULL);
+			if (rc >= 0)
+				u2f_bluez_addref(device);
+			else {
+				disconnecting_error(device, -EPROTO, "can't start notify");
+				sd_bus_slot_unref(device->slotc);
+				device->slotc = 0;
+			}
+		}
 	}
-	return rc;
 }
 
+/********************************************************************************************************/
 
+static int get_mtu_complete(sd_bus_message *m, void *userdata, sd_bus_error *error)
+{
+	const uint8_t *array;
+	size_t mtu, size;
+	int rc = 0;
+	struct u2f_bluez *device = userdata;
+
+	if (sd_bus_error_is_set(error) || sd_bus_message_is_method_error(m, NULL))
+		disconnecting_error(device, -EPROTO, "failed to get mtu");
+	else {
+		rc = sd_bus_message_read_array(m, 'y', (const void**)&array, &size);
+		if (rc < 0 || size != 2)
+			disconnecting_error(device, -EPROTO, "bad answer from get mtu");
+		else {
+			mtu = (((size_t)array[0]) << 8) | ((size_t)array[1]);
+printf("********* MTU = %d *******\n", (int)mtu);
+			if (mtu < 3)
+				disconnecting_error(device, -EPROTO, "bad MTU");
+			else {
+				device->mtu = mtu;
+				notify_status(device);
+			}
+		}
+	}
+
+	u2f_bluez_unref(device);
+	//sd_bus_message_unref(m);
+	return 0;
+}
+
+static void get_mtu(struct u2f_bluez *device)
+{
+	int rc;
+
+	if (!device->cplen || !device->status || !device->controlpoint)
+		disconnecting_error(device, -EPROTO, "failed to connect GATT");
+	else if (device->mtu != 0)
+		notify_status(device);
+	else {
+		rc = sd_bus_call_method_async(sbus, NULL, BLUEZ_DEST, device->cplen, BLUEZ_GATT_CHARACTERISTIC_ITF, "ReadValue",
+				get_mtu_complete, device, "a{sv}", (unsigned)0);
+		if (rc >= 0)
+			u2f_bluez_addref(device);
+		else
+			disconnecting_error(device, -EPROTO, "can't get MTU");
+	}
+}
+
+/********************************************************************************************************/
+
+static int connecting_complete(sd_bus_message *m, void *userdata, sd_bus_error *error)
+{
+	struct u2f_bluez *device = userdata;
+
+	if (device->connected)
+		get_mtu(device);
+	else
+		disconnecting_error(device, -EPROTO, "failed to connect");
+
+	u2f_bluez_unref(device);
+	//sd_bus_message_unref(m);
+	return 0;
+}
+
+static void connect(struct u2f_bluez *device)
+{
+	int rc;
+	if (device->connected)
+		get_mtu(device);
+	else {
+		rc = sd_bus_call_method_async(sbus, NULL, BLUEZ_DEST, device->path, BLUEZ_DEVICE_ITF, "Connect", connecting_complete, device, NULL);
+		if (rc >= 0)
+			u2f_bluez_addref(device);
+		else
+			disconnecting_error(device, -EPROTO, "can't connect");
+	}
+}
+
+/********************************************************************************************************/
+
+static int pairing_complete(sd_bus_message *m, void *userdata, sd_bus_error *error)
+{
+	struct u2f_bluez *device = userdata;
+
+	if (device->paired)
+		connect(device);
+	else
+		disconnecting_error(device, -EPROTO, "failed to pair");
+	u2f_bluez_unref(device);
+	//sd_bus_message_unref(m);
+	return 0;
+}
+
+void u2f_bluez_connect(struct u2f_bluez *device)
+{
+	int rc;
+	sd_bus_error error = SD_BUS_ERROR_NULL;
+
+	if (device->paired)
+		connect(device);
+	else {
+		rc = sd_bus_call_method_async(sbus, NULL, BLUEZ_DEST, device->path, BLUEZ_DEVICE_ITF, "Pair", pairing_complete, device, NULL);
+		if (rc >= 0)
+			u2f_bluez_addref(device);
+		else
+			disconnecting_error(device, -EPROTO, "can't pair");
+	}
+}
+
+/********************************************************************************************************/
+
+static int send_complete(sd_bus_message *m, void *userdata, sd_bus_error *error)
+{
+	struct u2f_bluez *device = userdata;
+
+	if (sd_bus_error_is_set(error) || sd_bus_message_is_method_error(m, NULL))
+		signal_error(device, -EACCES, "failed to write");
+	else
+		signal_sent(device);
+
+	//sd_bus_message_unref(m);
+	return 0;
+}
+
+void u2f_bluez_send(struct u2f_bluez *device, const uint8_t *buffer, size_t size)
+{
+	int rc = 0;
+	sd_bus_message *m = NULL;
+
+	rc = sd_bus_message_new_method_call(sbus, &m, BLUEZ_DEST, device->controlpoint, BLUEZ_GATT_CHARACTERISTIC_ITF, "WriteValue");
+	CRC(end);
+
+	rc = sd_bus_message_append_array(m, 'y', buffer, size);
+	CRC(end);
+
+	rc = sd_bus_message_append(m, "a{sv}", (unsigned)0);
+	CRC(end);
+
+	rc = sd_bus_call_async(sbus, 0, m, send_complete, device, 5000000);
+	CRC(end);
+
+end:
+	if (rc < 0)
+		signal_error(device, -EACCES, "can't write");
+	//sd_bus_message_unref(m);
+}
 

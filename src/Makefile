@@ -6,6 +6,6 @@ CFLAGS += -g
 test: ba
 	./ba || :
 
-ba: u2f-bluez.c main.c u2f-bluez.h u2f-protocol.c u2f-protocol.h u2f.h
-	$(CC) $(CFLAGS) -o ba -g -lsystemd u2f-bluez.c main.c u2f-protocol.c
+ba: u2f-bluez.c main.c u2f-bluez.h u2f-protocol.c u2f-protocol.h u2f.h u2f-bt.c u2f-bt.h
+	$(CC) $(CFLAGS) -o ba -g -lsystemd u2f-bluez.c main.c u2f-protocol.c u2f-bt.c
 

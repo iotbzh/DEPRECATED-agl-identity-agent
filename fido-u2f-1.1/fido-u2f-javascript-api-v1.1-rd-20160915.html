@@ -1,0 +1,991 @@
+<!DOCTYPE html PUBLIC '-//W3C//DTD XHTML 1.0 Strict//EN' 'http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd'>
+<html lang="en" dir="ltr" typeof="bibo:Document w3p:CR" about="" property="dcterms:language" content="en" prefix="bibo: http://purl.org/ontology/bibo/ w3p: http://www.w3.org/2001/02pd/rec54#">
+<head>
+    <title>FIDO U2F JavaScript API</title>
+    <meta name="generator" content="HTML::TextToHTML v2.5201">
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    
+    
+    
+  <style>/*****************************************************************
+ * ReSpec 3 CSS
+ * Robin Berjon - http://berjon.com/
+ *****************************************************************/
+
+/* --- INLINES --- */
+em.rfc2119 { 
+    text-transform:     lowercase;
+    font-variant:       small-caps;
+    font-style:         normal;
+    color:              #900;
+}
+
+h1 acronym, h2 acronym, h3 acronym, h4 acronym, h5 acronym, h6 acronym, a acronym,
+h1 abbr, h2 abbr, h3 abbr, h4 abbr, h5 abbr, h6 abbr, a abbr {
+    border: none;
+}
+
+dfn {
+    font-weight:    bold;
+}
+
+a.internalDFN {
+    color:  inherit;
+    border-bottom:  1px solid #99c;
+    text-decoration:    none;
+}
+
+a.externalDFN {
+    color:  inherit;
+    border-bottom:  1px dotted #ccc;
+    text-decoration:    none;
+}
+
+a.bibref {
+    text-decoration:    none;
+}
+
+cite .bibref {
+    font-style: normal;
+}
+
+code {
+    color:  #ff4500;
+}
+
+/* --- TOC --- */
+.toc a, .tof a {
+    text-decoration:    none;
+}
+
+a .secno, a .figno {
+    color:  #000;
+}
+
+ul.tof, ol.tof {
+    list-style: none outside none;
+}
+
+.caption {
+    margin-top: 0.5em;
+    font-style:   italic;
+}
+
+/* --- TABLE --- */
+table.simple {
+    border-spacing: 0;
+    border-collapse:    collapse;
+    border-bottom:  3px solid #003a7c;
+}
+
+.simple th {
+    background: #003a7c;
+    color:  #fff;
+    padding:    3px 5px;
+    text-align: left;
+}
+
+.simple th[scope="row"] {
+    background: inherit;
+    color:  inherit;
+    border-top: 1px solid #ddd;
+}
+
+.simple td {
+    padding:    3px 10px;
+    border-top: 1px solid #ddd;
+}
+
+.simple tr:nth-child(even) {
+    background: #f0f6ff;
+}
+
+/* --- DL --- */
+.section dd > p:first-child {
+    margin-top: 0;
+}
+
+.section dd > p:last-child {
+    margin-bottom: 0;
+}
+
+.section dd {
+    margin-bottom:  1em;
+}
+
+.section dl.attrs dd, .section dl.eldef dd {
+    margin-bottom:  0;
+}
+
+@media print {
+    .removeOnSave {
+        display: none;
+    }
+}
+</style><style>/* --- EXAMPLES --- */
+div.example-title {
+    min-width: 7.5em;
+    color: #b9ab2d;
+}
+div.example-title span {
+    text-transform: uppercase;   
+}
+aside.example, div.example, div.illegal-example {
+    padding: 0.5em;
+    margin: 1em 0;
+    position: relative;
+    clear: both;
+}
+div.illegal-example { color: red }
+div.illegal-example p { color: black }
+aside.example, div.example {
+    padding: .5em;
+    border-left-width: .5em;
+    border-left-style: solid;
+    border-color: #e0cb52;
+    //background: #fcfaee;    
+    background: rgba(252,250,238,0.3);    
+}
+
+aside.example div.example {
+    border-left-width: .1em;
+    border-color: #999;
+    background: #fff;
+}
+aside.example div.example div.example-title {
+    color: #999;
+}
+</style><style>/* HIGHLIGHTS */
+code.prettyprint {
+    color:  inherit;
+}
+
+/* this from google-code-prettify */
+.pln{color:#000}@media screen{.str{color:#080}.kwd{color:#008}.com{color:#800}.typ{color:#606}.lit{color:#066}.pun,.opn,.clo{color:#660}.tag{color:#008}.atn{color:#606}.atv{color:#080}.dec,.var{color:#606}.fun{color:red}}@media print,projection{.str{color:#060}.kwd{color:#006;font-weight:bold}.com{color:#600;font-style:italic}.typ{color:#404;font-weight:bold}.lit{color:#044}.pun,.opn,.clo{color:#440}.tag{color:#006;font-weight:bold}.atn{color:#404}.atv{color:#060}}ol.linenums{margin-top:0;margin-bottom:0}li.L0,li.L1,li.L2,li.L3,li.L5,li.L6,li.L7,li.L8{list-style-type:none}li.L1,li.L3,li.L5,li.L7,li.L9{background:#eee}
+</style><style>/* --- WEB IDL --- */
+pre.idl {
+    border-top: 1px solid #364e50;
+    border-bottom: 1px solid #364e50;
+    padding:    1em;
+    line-height:    120%;
+}
+
+pre.idl::before {
+    content:    "WebIDL";
+    display:    block;
+    width:      150px;
+    background: #364e50;
+    color:  #fff;
+    font-family:    initial;
+    padding:    3px;
+    font-weight:    bold;
+    margin: -1em 0 1em -1em;
+}
+
+.idlType {
+    color:  #ff4500;
+    font-weight:    bold;
+    text-decoration:    none;
+}
+
+/*.idlModule*/
+/*.idlModuleID*/
+/*.idlInterface*/
+.idlInterfaceID, .idlDictionaryID, .idlCallbackID, .idlEnumID {
+    font-weight:    bold;
+    color:  #003a7c;
+}
+a.idlEnumItem {
+    color:  #000;
+    border-bottom:  1px dotted #ccc;
+    text-decoration: none;
+}
+
+.idlSuperclass {
+    font-style: italic;
+    color:  #003a7c;
+}
+
+/*.idlAttribute*/
+.idlAttrType, .idlFieldType, .idlMemberType {
+    color:  #003a7c;
+}
+.idlAttrName, .idlFieldName, .idlMemberName {
+    color:  #ff4500;
+}
+.idlAttrName a, .idlFieldName a, .idlMemberName a {
+    color:  #ff4500;
+    border-bottom:  1px dotted #ff4500;
+    text-decoration: none;
+}
+
+/*.idlMethod*/
+.idlMethType, .idlCallbackType {
+    color:  #003a7c;
+}
+.idlMethName {
+    color:  #ff4500;
+}
+.idlMethName a {
+    color:  #ff4500;
+    border-bottom:  1px dotted #ff4500;
+    text-decoration: none;
+}
+
+/*.idlCtor*/
+.idlCtorName {
+    color:  #ff4500;
+}
+.idlCtorName a {
+    color:  #ff4500;
+    border-bottom:  1px dotted #ff4500;
+    text-decoration: none;
+}
+
+/*.idlParam*/
+.idlParamType {
+    color:  #003a7c;
+}
+.idlParamName, .idlDefaultValue {
+    font-style: italic;
+}
+
+.extAttr {
+    color:  #666;
+}
+
+/*.idlSectionComment*/
+.idlSectionComment {
+    color: gray;
+}
+
+/*.idlConst*/
+.idlConstType {
+    color:  #003a7c;
+}
+.idlConstName {
+    color:  #ff4500;
+}
+.idlConstName a {
+    color:  #ff4500;
+    border-bottom:  1px dotted #ff4500;
+    text-decoration: none;
+}
+
+/*.idlException*/
+.idlExceptionID {
+    font-weight:    bold;
+    color:  #c00;
+}
+
+.idlTypedefID, .idlTypedefType {
+    color:  #003a7c;
+}
+
+.idlRaises, .idlRaises a.idlType, .idlRaises a.idlType code, .excName a, .excName a code {
+    color:  #c00;
+    font-weight:    normal;
+}
+
+.excName a {
+    font-family:    monospace;
+}
+
+.idlRaises a.idlType, .excName a.idlType {
+    border-bottom:  1px dotted #c00;
+}
+
+.excGetSetTrue, .excGetSetFalse, .prmNullTrue, .prmNullFalse, .prmOptTrue, .prmOptFalse {
+    width:  45px;
+    text-align: center;
+}
+.excGetSetTrue, .prmNullTrue, .prmOptTrue { color:  #0c0; }
+.excGetSetFalse, .prmNullFalse, .prmOptFalse { color:  #c00; }
+
+.idlImplements a {
+    font-weight:    bold;
+}
+
+dl.attributes, dl.methods, dl.constants, dl.constructors, dl.fields, dl.dictionary-members {
+    margin-left:    2em;
+}
+
+.attributes dt, .methods dt, .constants dt, .constructors dt, .fields dt, .dictionary-members dt {
+    font-weight:    normal;
+}
+
+.attributes dt code, .methods dt code, .constants dt code, .constructors dt code, .fields dt code, .dictionary-members dt code {
+    font-weight:    bold;
+    color:  #000;
+    font-family:    monospace;
+}
+
+.attributes dt code, .fields dt code, .dictionary-members dt code {
+    background:  #ffffd2;
+}
+
+.attributes dt .idlAttrType code, .fields dt .idlFieldType code, .dictionary-members dt .idlMemberType code {
+    color:  #003a7c;
+    background:  transparent;
+    font-family:    inherit;
+    font-weight:    normal;
+    font-style: italic;
+}
+
+.methods dt code {
+    background:  #d9e6f8;
+}
+
+.constants dt code {
+    background:  #ddffd2;
+}
+
+.constructors dt code {
+    background:  #cfc;
+}
+
+.attributes dd, .methods dd, .constants dd, .constructors dd, .fields dd, .dictionary-members dd {
+    margin-bottom:  1em;
+}
+
+table.parameters, table.exceptions {
+    border-spacing: 0;
+    border-collapse:    collapse;
+    margin: 0.5em 0;
+    width:  100%;
+}
+table.parameters { border-bottom:  1px solid #364e50; }
+table.exceptions { border-bottom:  1px solid #deb890; }
+
+.parameters th, .exceptions th {
+    color:  #fff;
+    padding:    3px 5px;
+    text-align: left;
+    font-family:    initial;
+    font-weight:    normal;
+    text-shadow:    #666 1px 1px 0;
+}
+.parameters th { background: #364e50; }
+.exceptions th { background: #deb890; }
+
+.parameters td, .exceptions td {
+    padding:    3px 10px;
+    border-top: 1px solid #ddd;
+    vertical-align: top;
+}
+
+.parameters tr:first-child td, .exceptions tr:first-child td {
+    border-top: none;
+}
+
+.parameters td.prmName, .exceptions td.excName, .exceptions td.excCodeName {
+    width:  100px;
+}
+
+.parameters td.prmType {
+    width:  120px;
+}
+
+table.exceptions table {
+    border-spacing: 0;
+    border-collapse:    collapse;
+    width:  100%;
+}
+</style><link rel="stylesheet" href="resources/FIDO-RD.css"><!--[if lt IE 9]><script src='https://www.w3.org/2008/site/js/html5shiv.js'></script><![endif]--></head>
+  <body class="h-entry" style="" role="document" id="respecDocument"><div class="head" role="contentinfo" id="respecHeader">
+  <p>
+    
+      <a href="https://www.fidoalliance.org/"><img width="250" id="toplogo" src="resources/logo.png" alt="FIDO Alliance"></a>
+    
+  </p>
+  <h1 class="title p-name" id="title" property="dcterms:title">FIDO U2F JavaScript API</h1>
+  
+  <h2 property="dcterms:issued" datatype="xsd:dateTime" content="2016-09-15T07:00:00.000Z" id="fido-alliance-review-draft-15-september-2016"><abbr title="FIDO Alliance">FIDO Alliance</abbr> Review Draft <time class="dt-published" datetime="2016-09-15">15 September 2016</time></h2>
+  <dl>
+    
+      <dt>This version:</dt>
+      <dd><a class="u-url" href="https://fidoalliance.org/specs/fido-u2f-v1.1-rd-20160915/fido-u2f-javascript-api-v1.1-v1.1-rd-20160915.html">https://fidoalliance.org/specs/fido-u2f-v1.1-rd-20160915/fido-u2f-javascript-api-v1.1-v1.1-rd-20160915.html</a></dd>
+      <!--<dt>Latest published version:</dt>
+      <dd><a href='https://fidoalliance.org/specs/fido-u2f-javascript-api-v1.1/'>https://fidoalliance.org/specs/fido-u2f-javascript-api-v1.1/</a></dd>
+    
+    -->
+    
+    
+    
+    
+    
+      <dt>Previous version:</dt>
+      <dd><a rel="dcterms:replaces" href="https://fidoalliance.org/specs/fido-u2f-javascript-api-v1.1-RD-20140209.html">https://fidoalliance.org/specs/fido-u2f-javascript-api-v1.1-RD-20140209.html</a></dd>
+    
+    
+    <dt>Editors:</dt>
+    <dd class="p-author h-card vcard" rel="bibo:editor" inlist=""><span typeof="foaf:Person"><a class="u-url url p-name fn" rel="foaf:homepage" property="foaf:name" content="Dirk Balfanz" href="mailto:balfanz@google.com">Dirk Balfanz</a>, <a rel="foaf:workplaceHomepage" class="p-org org h-org h-card" href="https://www.google.com/">Google, Inc.</a></span>
+</dd>
+<dd class="p-author h-card vcard" rel="bibo:editor" inlist=""><span typeof="foaf:Person"><a class="u-url url p-name fn" rel="foaf:homepage" property="foaf:name" content="Arnar Birgisson" href="mailto:arnarb@google.com">Arnar Birgisson</a>, <a rel="foaf:workplaceHomepage" class="p-org org h-org h-card" href="https://www.google.com/">Google, Inc.</a></span>
+</dd>
+<dd class="p-author h-card vcard" rel="bibo:editor" inlist=""><span typeof="foaf:Person"><a class="u-url url p-name fn" rel="foaf:homepage" property="foaf:name" content="Juan Lang" href="mailto:juanlang@google.com">Juan Lang</a>, <a rel="foaf:workplaceHomepage" class="p-org org h-org h-card" href="https://www.google.com/">Google, Inc.</a></span>
+</dd>
+
+    
+    
+  </dl>
+  
+  
+  
+  
+    
+      <p class="copyright">
+        Copyright ©
+        2013-2016
+        
+        <a href="https://www.fidoalliance.org/"><abbr title="FIDO Alliance">FIDO Alliance</abbr></a>
+        All Rights Reserved.
+      </p>
+    
+  
+  <hr>
+</div>
+    
+    <section id="background" class="introductory" property="dcterms:abstract" datatype="" typeof="bibo:Chapter" resource="#ref" rel="bibo:Chapter"><h2 aria-level="1" role="heading" id="h2_background">Background</h2>
+    <i>This section is non-normative.</i>
+    <p>CHANGES: This version <i>version 1.1</i> of the FIDO U2F JavaScript API
+    specification supersedes version JavaScript API 1.0. The major
+    difference between these two versions is the way that requests to be
+    signed are formatted between the RP and the client: In version 1.0, a
+    separate <i>appId</i> and <i>challenge</i> were sent for every <i>keyHandle</i>, whereas
+    in version 1.1, an optimization is made that requires only a single
+    <i>appId</i> and <i>challenge</i> for multiple <i>keyHandles</i>.</p>
+    <p>LOW-LEVEL API: Although this specification refers to two separate
+    API levels, we want to discourage a Relying Party (RP) from
+    implementing directly against the Low-level MessagePort API as this
+    may be deprecated in future versions of this specification. RPs should
+    rather implement against the High-level JavaScript API and use a library
+    that abstracts the lower-level MessagePort API if required.</p>
+    </section>
+    <section id="abstract" class="introductory" property="dcterms:abstract" datatype="" typeof="bibo:Chapter" resource="#ref" rel="bibo:Chapter"><h2 aria-level="1" role="heading" id="h2_abstract">Abstract</h2>
+    <p>The U2F JavaScript API consists of two calls - one to register a
+      U2F token with a relying party (i.e., cause the U2F token to
+      generate a new key pair, and to introduce the new public key to
+      the relying party), and one to sign an identity assertion (i.e.,
+      exercise a previously-registered key pair).
+    </p>
+    </section><section id="sotd" class="introductory" typeof="bibo:Chapter" resource="#ref" rel="bibo:Chapter"><h2 aria-level="1" role="heading" id="h2_sotd">Status of This Document</h2>
+  
+    
+      
+        <p>
+          <em>This section describes the status of this document at the time of its publication.
+          Other documents may supersede this document. A list of current <abbr title="FIDO Alliance">FIDO Alliance</abbr> publications and the
+          latest revision of this technical report can be found in the <a href="https://www.fidoalliance.org/specifications/"><abbr title="FIDO Alliance">FIDO Alliance</abbr> specifications index</a> at
+          https://www.fidoalliance.org/specifications/.</em>
+        </p>
+        
+        <p>
+          This document was published by the <a href="http://www.fidoalliance.org/"><abbr title="FIDO Alliance">FIDO Alliance</abbr></a> as a Review Draft.
+          
+            This document is intended to become a <abbr title="FIDO Alliance">FIDO Alliance</abbr> Proposed Standard.
+          
+          
+            If you wish to make comments regarding this document, please 
+            <a href="https://fidoalliance.org/contact">Contact Us</a>.
+          
+          
+          
+          
+            All comments are welcome.
+          
+        </p>
+        
+	
+	
+	  <div class="ribbon-wrapper"><div class="ribbon">REVIEW DRAFT</div></div>
+	  <p>
+	    <strong>This is a Review Draft Specification and
+            is not intended to be a basis for any implementations as the Specification may change.</strong> Permission is
+            hereby granted to use the Specification solely for the purpose of reviewing the Specification. No rights
+            are granted to prepare derivative works of this Specification. Entities seeking permission to reproduce
+            portions of this Specification for other uses must contact the <abbr title="FIDO Alliance">FIDO Alliance</abbr> to determine whether an 
+            appropriate license for such use is available.
+	  </p>
+	
+	
+        
+          <p>
+	    Implementation of certain elements of this Specification may require licenses under third party intellectual 
+	    property rights, including without limitation, patent rights. The <abbr title="FIDO Alliance">FIDO Alliance</abbr>, Inc. and its Members
+            and any other contributors to the Specification are not, and shall not be held, responsible in any manner
+            for identifying or failing to identify any or all such third party intellectual property rights.
+	  </p>
+	  <p>
+	    THIS FIDO ALLIANCE SPECIFICATION IS PROVIDED “AS IS” AND WITHOUT ANY 
+            WARRANTY OF ANY KIND, INCLUDING, WITHOUT LIMITATION, ANY EXPRESS OR IMPLIED
+	    WARRANTY OF NON-INFRINGEMENT, MERCHANTABILITY OR FITNESS FOR A
+	    PARTICULAR PURPOSE.
+          </p>
+        
+        
+        
+        
+      
+    
+  
+</section><section id="toc"><h2 class="introductory" aria-level="1" role="heading" id="h2_toc">Table of Contents</h2><ul class="toc" role="directory" id="respecContents"><li class="tocline"><a href="#notation" class="tocxref"><span class="secno">1. </span>Notation</a><ul class="toc"><li class="tocline"><a href="#key-words" class="tocxref"><span class="secno">1.1 </span>Key Words</a></li></ul></li><li class="tocline"><a href="#introduction" class="tocxref"><span class="secno">2. </span>Introduction</a></li><li class="tocline"><a href="#api-levels" class="tocxref"><span class="secno">3. </span>API Levels</a><ul class="toc"><li class="tocline"><a href="#low-level-messageport-api" class="tocxref"><span class="secno">3.1 </span>Low-level MessagePort API</a><ul class="toc"><li class="tocline"><a href="#dictionary-u2frequest-members" class="tocxref"><span class="secno">3.1.1 </span>Dictionary <span class="formerLink"><code>U2fRequest</code></span> Members</a></li><li class="tocline"><a href="#dictionary-u2fresponse-members" class="tocxref"><span class="secno">3.1.2 </span>Dictionary <span class="formerLink"><code>U2fResponse</code></span> Members</a></li><li class="tocline"><a href="#dictionary-error-members" class="tocxref"><span class="secno">3.1.3 </span>Dictionary <span class="formerLink"><code>Error</code></span> Members</a></li></ul></li><li class="tocline"><a href="#high-level-javascript-api" class="tocxref"><span class="secno">3.2 </span>High-level JavaScript API</a><ul class="toc"><li class="tocline"><a href="#methods" class="tocxref"><span class="secno">3.2.1 </span>Methods</a></li></ul></li></ul></li><li class="tocline"><a href="#u2f-transports" class="tocxref"><span class="secno">4. </span>U2F transports</a></li><li class="tocline"><a href="#u2f-operations" class="tocxref"><span class="secno">5. </span>U2F operations</a><ul class="toc"><li class="tocline"><a href="#registration" class="tocxref"><span class="secno">5.1 </span>Registration</a><ul class="toc"><li class="tocline"><a href="#dictionary-registerrequest-members" class="tocxref"><span class="secno">5.1.1 </span>Dictionary <span class="formerLink"><code>RegisterRequest</code></span> Members</a></li><li class="tocline"><a href="#dictionary-registeredkey-members" class="tocxref"><span class="secno">5.1.2 </span>Dictionary <span class="formerLink"><code>RegisteredKey</code></span> Members</a></li><li class="tocline"><a href="#dictionary-u2fregisterrequest-members" class="tocxref"><span class="secno">5.1.3 </span>Dictionary <span class="formerLink"><code>U2fRegisterRequest</code></span> Members</a></li><li class="tocline"><a href="#dictionary-registerresponse-members" class="tocxref"><span class="secno">5.1.4 </span>Dictionary <span class="formerLink"><code>RegisterResponse</code></span> Members</a></li></ul></li><li class="tocline"><a href="#generating-signed-identity-assertions" class="tocxref"><span class="secno">5.2 </span>Generating signed identity assertions</a><ul class="toc"><li class="tocline"><a href="#dictionary-u2fsignrequest-members" class="tocxref"><span class="secno">5.2.1 </span>Dictionary <span class="formerLink"><code>U2fSignRequest</code></span> Members</a></li><li class="tocline"><a href="#dictionary-signresponse-members" class="tocxref"><span class="secno">5.2.2 </span>Dictionary <span class="formerLink"><code>SignResponse</code></span> Members</a></li></ul></li><li class="tocline"><a href="#error-codes" class="tocxref"><span class="secno">5.3 </span>Error codes</a><ul class="toc"><li class="tocline"><a href="#constants" class="tocxref"><span class="secno">5.3.1 </span>Constants</a></li></ul></li><li class="tocline"><a href="#backward-compatibility-with-u2f-1.0-api" class="tocxref"><span class="secno">5.4 </span>Backward compatibility with U2F 1.0 API</a></li></ul></li><li class="tocline"><a href="#references" class="tocxref"><span class="secno">A. </span>References</a><ul class="toc"><li class="tocline"><a href="#normative-references" class="tocxref"><span class="secno">A.1 </span>Normative references</a></li><li class="tocline"><a href="#informative-references" class="tocxref"><span class="secno">A.2 </span>Informative references</a></li></ul></li></ul></section>
+    <section id="notation">
+      <!--OddPage--><h2 aria-level="1" role="heading" id="h2_notation"><span class="secno">1. </span>Notation</h2>
+
+      <p>Type names, attribute names and element names are written as <code>code</code>.
+      </p>
+      <p>String literals are enclosed in “”, e.g. “UAF-TLV”.
+      </p>
+      <p>In formulas we use “|” to denote byte wise concatenation
+        operations.
+      </p>
+      <p>DOM APIs are described using the ECMAScript [<cite><a class="bibref" href="#bib-ECMA-262">ECMA-262</a></cite>] bindings
+        for WebIDL [<cite><a class="bibref" href="#bib-WebIDL">WebIDL</a></cite>].
+      </p>
+      <p>U2F specific terminology used in this document is defined in
+        [<cite><a class="bibref" href="#bib-FIDOGlossary">FIDOGlossary</a></cite>].
+      </p>
+      <section id="key-words">
+        <h3 aria-level="2" role="heading" id="h3_key-words"><span class="secno">1.1 </span>Key Words</h3>
+
+        <p>The key words “<em class="rfc2119" title="MUST">MUST</em>”, “<em class="rfc2119" title="MUST NOT">MUST NOT</em>”, “<em class="rfc2119" title="REQUIRED">REQUIRED</em>”, “<em class="rfc2119" title="SHALL">SHALL</em>”, “<em class="rfc2119" title="SHALL
+          NOT">SHALL
+          NOT</em>”, “<em class="rfc2119" title="SHOULD">SHOULD</em>”, “<em class="rfc2119" title="SHOULD NOT">SHOULD NOT</em>”, “<em class="rfc2119" title="RECOMMENDED">RECOMMENDED</em>”, “<em class="rfc2119" title="MAY">MAY</em>”, and
+          “<em class="rfc2119" title="OPTIONAL">OPTIONAL</em>” in this document are to be interpreted as
+          described in [<cite><a class="bibref" href="#bib-RFC2119">RFC2119</a></cite>].
+        </p>
+      </section>
+      <p>Below we explain some of the terms used in this document:
+      </p>
+      <table title="Table 1: Definition of terms" border="1" cellpadding="5">
+        <tbody><tr><th>Term</th><th>Definition</th></tr>
+
+        <tr>
+          <td><p>websafe-base64 encoding
+          </p></td>
+          <td><p>This is the "Base 64 Encoding with URL and Filename Safe
+      Alphabet" from Section 5 in [<cite><a class="bibref" href="#bib-RFC4648">RFC4648</a></cite>] without padding.
+          </p></td>
+        </tr>
+        <tr><td><p>stringified javascript object
+        </p></td>
+        <td><p>This is the JSON object (i.e., a string starting with "{" and
+          ending with "}") whose keys are the property names of the
+          javascript object, and whose values are the corresponding
+          property values. Only "data objects" can be stringified, i.e.,
+          only objects whose property names and values are supported in
+          <strong>JSON.</strong>
+        </p>
+        </td>
+        </tr>
+      </tbody></table>
+    </section>
+    <section id="introduction">
+      <!--OddPage--><h2 aria-level="1" role="heading" id="h2_introduction"><span class="secno">2. </span>Introduction</h2>
+      <p><em>Note: Reading the 'FIDO U2F Overview' (see [<cite><a class="bibref" href="#bib-U2FOverview">U2FOverview</a></cite>]
+        in bibliography) is recommended as a background for this
+        document.
+      </em></p>
+      <p>A Relying Party (RP) consumes identity assertions from U2F tokens. The
+        RP's web pages communicate with the U2F tokens on the client through a
+        JavaScript API. The RP also needs to perform some verification steps on
+        the server side (see below). How the data obtained by the RP's
+        JavaScript is transferred to the RP's server is out of scope of this
+        document. We instead describe the JavaScript API used by the RP.
+      </p>
+    </section>
+
+    <section id="api-levels">
+      <!--OddPage--><h2 aria-level="1" role="heading" id="h2_api-levels"><span class="secno">3. </span>API Levels</h2>
+      <p>The U2F API <em class="rfc2119" title="MAY">MAY</em> be exposed to web pages on two levels.
+        On the required lower level, RPs interact with the FIDO client through
+        a MessagePort [<cite><a class="bibref" href="#bib-WEBMESSAGING">WEBMESSAGING</a></cite>] object. The low-level MessagePort API
+        defines the message formats for messages sent and received on the port,
+        for the two operations supported by the API.  This specification does
+        not describe how such a port is made available to RP web pages, as this
+        is (for now) implementation and browser dependent.
+      </p>
+
+      <p>For convenience, the FIDO client <em class="rfc2119" title="MAY">MAY</em> also expose a high-level JavaScript
+        API built on top of the MessagePort API. This API consists of functions
+        corresponding to the different requests that can be made to the FIDO
+        client. These functions respond to the RP asynchronously by invoking a
+        callback.</p>
+
+      <p><em>Why two API levels?</em> The messaging API requires only that
+        pages obtain a MessagePort instance to the FIDO client, i.e. no code
+        needs to be injected to JavaScript context of the RP's pages.
+        This allows RPs to keep full control over the JS running in
+        their pages. The JS API is offered as a convenient abstraction of the
+        messaging API, and is useful for RP developers to quickly integrate U2F
+        into their websites.</p>
+
+      <section id="low-level-messageport-api">
+        <h3 aria-level="2" role="heading" id="h3_low-level-messageport-api"><span class="secno">3.1 </span>Low-level MessagePort API</h3>
+        <p>RP web pages communicate with the FIDO client over an instance of
+          the HTML5 MessagePort interface. Client implementations may choose how
+          this instance is made available to web pages.
+        </p>
+        <p>Messages sent to the FIDO client <em class="rfc2119" title="SHOULD">SHOULD</em> be <code>U2fRequest</code>
+          dictionaries:
+          </p><pre class="idl"><span class="idlDictionary" id="idl-def-UfRequest">dictionary <span class="idlDictionaryID">U2fRequest</span> {
+<span class="idlMember">    <span class="idlMemberType">DOMString</span>      <span class="idlMemberName"><a href="#widl-UfRequest-type">type</a></span>;</span>
+<span class="idlMember">    <span class="idlMemberType">DOMString?</span>     <span class="idlMemberName"><a href="#widl-UfRequest-appId">appId</a></span>;</span>
+<span class="idlMember">    <span class="idlMemberType">unsigned long?</span> <span class="idlMemberName"><a href="#widl-UfRequest-timeoutSeconds">timeoutSeconds</a></span>;</span>
+<span class="idlMember">    <span class="idlMemberType">unsigned long?</span> <span class="idlMemberName"><a href="#widl-UfRequest-requestId">requestId</a></span>;</span>
+};</span></pre><section id="dictionary-u2frequest-members"><h4 aria-level="3" role="heading" id="h4_dictionary-u2frequest-members"><span class="secno">3.1.1 </span>Dictionary <a class="idlType" href="#idl-def-U2fRequest"><code>U2fRequest</code></a> Members</h4><dl class="dictionary-members"><dt id="widl-UfRequest-type"><code>type</code> of type <span class="idlMemberType">DOMString</span></dt><dd>The type of request, either "u2f_register_request" or
+              "u2f_sign_request".</dd><dt id="widl-UfRequest-appId"><code>appId</code> of type <span class="idlMemberType">DOMString</span>, nullable</dt><dd>An application identifer for the request. If none is given,
+                the origin of the calling web page is used.</dd><dt id="widl-UfRequest-timeoutSeconds"><code>timeoutSeconds</code> of type <span class="idlMemberType">unsigned long</span>, nullable</dt><dd>A timeout for the FIDO Client's processing, in seconds.</dd><dt id="widl-UfRequest-requestId"><code>requestId</code> of type <span class="idlMemberType">unsigned long</span>, nullable</dt><dd>An integer identifying this request from concurrent requests.</dd></dl></section>
+        <p></p>
+        <p>
+          Subtypes of <code>U2fRequest</code> for register and sign requests are
+          defined below in their respective sections.  If
+          <code>timeoutSeconds</code> is omitted, timeout behavior is
+          unspecified. If <code>requestId</code> is present, the FIDO client
+          <em class="rfc2119" title="MUST">MUST</em> include its value the corresponding <code>Response</code>
+          dictionary under the same key.
+        </p>
+        <p>
+          Responses from the FIDO client to the RP webpage <em class="rfc2119" title="SHOULD">SHOULD</em> be
+          <code>U2fResponse</code> dictionaries:
+          </p><pre class="idl"><span class="idlDictionary" id="idl-def-UfResponse">dictionary <span class="idlDictionaryID">U2fResponse</span> {
+<span class="idlMember">    <span class="idlMemberType">DOMString</span>                                   <span class="idlMemberName"><a href="#widl-UfResponse-type">type</a></span>;</span>
+<span class="idlMember">    <span class="idlMemberType">(<a href="#idl-def-Error" class="idlType"><code>Error</code></a> or <a href="#idl-def-RegisterResponse" class="idlType"><code>RegisterResponse</code></a> or <a href="#idl-def-SignResponse" class="idlType"><code>SignResponse</code></a>)</span> <span class="idlMemberName"><a href="#widl-UfResponse-responseData">responseData</a></span>;</span>
+<span class="idlMember">    <span class="idlMemberType">unsigned long?</span>                              <span class="idlMemberName"><a href="#widl-UfResponse-requestId">requestId</a></span>;</span>
+};</span></pre><section id="dictionary-u2fresponse-members"><h4 aria-level="3" role="heading" id="h4_dictionary-u2fresponse-members"><span class="secno">3.1.2 </span>Dictionary <a class="idlType" href="#idl-def-U2fResponse"><code>U2fResponse</code></a> Members</h4><dl class="dictionary-members"><dt id="widl-UfResponse-type"><code>type</code> of type <span class="idlMemberType">DOMString</span></dt><dd>
+              The response type, either "u2f_register_response" or
+              "u2f_sign_response"
+            </dd><dt id="widl-UfResponse-responseData"><code>responseData</code> of type <span class="idlMemberType">(Error or RegisterResponse or SignResponse)</span></dt><dd>The response data, see <a href="#u2f-operations" class="sec-ref"><span class="secno">5.</span> <span class="sec-title">U2F operations</span></a></dd><dt id="widl-UfResponse-requestId"><code>requestId</code> of type <span class="idlMemberType">unsigned long</span>, nullable</dt><dd>The <code>requestId</code> value of the corresponding request,
+              if present. Otherwise omitted.
+            </dd></dl></section>
+        <p></p>
+        <p>
+          Errors are indicated by an <code>Error</code> dictionary sent as the response data.
+          An error dictionary can be identified by checking for its non-zero integer <code>errorCode</code>
+          key. <code>RegisterResponse</code> and <code>SignResponse</code> do not define this
+          key. An error object may optionally contain a string <code>errorMessage</code>
+          with further description of the error.
+          </p><pre class="idl"><span class="idlDictionary" id="idl-def-Error">dictionary <span class="idlDictionaryID">Error</span> {
+<span class="idlMember">    <span class="idlMemberType"><a href="#idl-def-ErrorCode" class="idlType"><code>ErrorCode</code></a></span>  <span class="idlMemberName"><a href="#widl-Error-errorCode">errorCode</a></span>;</span>
+<span class="idlMember">    <span class="idlMemberType">DOMString?</span> <span class="idlMemberName"><a href="#widl-Error-errorMessage">errorMessage</a></span>;</span>
+};</span></pre><section id="dictionary-error-members"><h4 aria-level="3" role="heading" id="h4_dictionary-error-members"><span class="secno">3.1.3 </span>Dictionary <a class="idlType" href="#idl-def-Error"><code>Error</code></a> Members</h4><dl class="dictionary-members"><dt id="widl-Error-errorCode"><code>errorCode</code> of type <span class="idlMemberType"><a href="#idl-def-ErrorCode" class="idlType"><code>ErrorCode</code></a></span></dt><dd>An error code from the <code>ErrorCode</code> enumeration.</dd><dt id="widl-Error-errorMessage"><code>errorMessage</code> of type <span class="idlMemberType">DOMString</span>, nullable</dt><dd>A description of the error.</dd></dl></section>
+        <p></p>
+      </section>
+
+      <section id="high-level-javascript-api">
+        <h3 aria-level="2" role="heading" id="h3_high-level-javascript-api"><span class="secno">3.2 </span>High-level JavaScript API</h3>
+        <p>
+          A FIDO client <em class="rfc2119" title="MAY">MAY</em> provide a JavaScript convenience API that abstracts the
+          lower-level MessagePort API. Implementations may choose how to make such
+          an API available to RP web pages. If such an API is provided, it <em class="rfc2119" title="SHOULD">SHOULD</em>
+          provide a namespace object <code>u2f</code> of the following interface.
+          </p><pre class="idl"><span class="idlInterface" id="idl-def-uf">interface <span class="idlInterfaceID">u2f</span> {
+<span class="idlMethod">    <span class="idlMethType">void</span> <span class="idlMethName"><a href="#widl-uf-register-void-DOMString-appId-sequence-RegisterRequest--registerRequests-sequence-RegisteredKey--registeredKeys-function-RegisterResponse-or-Error--callback-unsigned-long-opt_timeoutSeconds">register</a></span> (<span class="idlParam"><span class="idlParamType">DOMString</span> <span class="idlParamName">appId</span></span>, <span class="idlParam"><span class="idlParamType">sequence&lt;<a href="#idl-def-RegisterRequest" class="idlType"><code>RegisterRequest</code></a>&gt;</span> <span class="idlParamName">registerRequests</span></span>, <span class="idlParam"><span class="idlParamType">sequence&lt;<a href="#idl-def-RegisteredKey" class="idlType"><code>RegisteredKey</code></a>&gt;</span> <span class="idlParamName">registeredKeys</span></span>, <span class="idlParam"><span class="idlParamType">function(RegisterResponse or Error)</span> <span class="idlParamName">callback</span></span>, <span class="idlParam">optional <span class="idlParamType">unsigned long?</span> <span class="idlParamName">opt_timeoutSeconds</span></span>);</span>
+<span class="idlMethod">    <span class="idlMethType">void</span> <span class="idlMethName"><a href="#widl-uf-sign-void-DOMString-appId-DOMString-challenge-sequence-RegisteredKey--registeredKeys-function-SignResponse-or-Error--callback-unsigned-long-opt_timeoutSeconds">sign</a></span> (<span class="idlParam"><span class="idlParamType">DOMString</span> <span class="idlParamName">appId</span></span>, <span class="idlParam"><span class="idlParamType">DOMString</span> <span class="idlParamName">challenge</span></span>, <span class="idlParam"><span class="idlParamType">sequence&lt;<a href="#idl-def-RegisteredKey" class="idlType"><code>RegisteredKey</code></a>&gt;</span> <span class="idlParamName">registeredKeys</span></span>, <span class="idlParam"><span class="idlParamType">function(SignResponse or Error)</span> <span class="idlParamName">callback</span></span>, <span class="idlParam">optional <span class="idlParamType">unsigned long?</span> <span class="idlParamName">opt_timeoutSeconds</span></span>);</span>
+};</span></pre><section id="methods"><h4 aria-level="3" role="heading" id="h4_methods"><span class="secno">3.2.1 </span>Methods</h4><dl class="methods"><dt id="widl-uf-register-void-DOMString-appId-sequence-RegisterRequest--registerRequests-sequence-RegisteredKey--registeredKeys-function-RegisterResponse-or-Error--callback-unsigned-long-opt_timeoutSeconds"><code>register</code></dt><dd>
+              
+            <table class="parameters"><tbody><tr><th>Parameter</th><th>Type</th><th>Nullable</th><th>Optional</th><th>Description</th></tr><tr><td class="prmName">appId</td><td class="prmType"><code>DOMString</code></td><td class="prmNullFalse"><span role="img" aria-label="False">✘</span></td><td class="prmOptFalse"><span role="img" aria-label="False">✘</span></td><td class="prmDesc">An application id for the request.</td></tr><tr><td class="prmName">registerRequests</td><td class="prmType"><code>sequence&lt;<a href="#idl-def-RegisterRequest" class="idlType"><code>RegisterRequest</code></a>&gt;</code></td><td class="prmNullFalse"><span role="img" aria-label="False">✘</span></td><td class="prmOptFalse"><span role="img" aria-label="False">✘</span></td><td class="prmDesc">Register requests, one for each U2F protocol version accepted by RP</td></tr><tr><td class="prmName">registeredKeys</td><td class="prmType"><code>sequence&lt;<a href="#idl-def-RegisteredKey" class="idlType"><code>RegisteredKey</code></a>&gt;</code></td><td class="prmNullFalse"><span role="img" aria-label="False">✘</span></td><td class="prmOptFalse"><span role="img" aria-label="False">✘</span></td><td class="prmDesc">Identifiers for already registered tokens</td></tr><tr><td class="prmName">callback</td><td class="prmType"><code>function(RegisterResponse or Error)</code></td><td class="prmNullFalse"><span role="img" aria-label="False">✘</span></td><td class="prmOptFalse"><span role="img" aria-label="False">✘</span></td><td class="prmDesc">Response handler</td></tr><tr><td class="prmName">opt_timeoutSeconds</td><td class="prmType"><code>unsigned long</code></td><td class="prmNullTrue"><span role="img" aria-label="True">✔</span></td><td class="prmOptTrue"><span role="img" aria-label="True">✔</span></td><td class="prmDesc">Timeout in seconds, for the FIDO client's handling of the request.</td></tr></tbody></table><div><em>Return type: </em><code>void</code></div></dd><dt id="widl-uf-sign-void-DOMString-appId-DOMString-challenge-sequence-RegisteredKey--registeredKeys-function-SignResponse-or-Error--callback-unsigned-long-opt_timeoutSeconds"><code>sign</code></dt><dd>
+              
+            <table class="parameters"><tbody><tr><th>Parameter</th><th>Type</th><th>Nullable</th><th>Optional</th><th>Description</th></tr><tr><td class="prmName">appId</td><td class="prmType"><code>DOMString</code></td><td class="prmNullFalse"><span role="img" aria-label="False">✘</span></td><td class="prmOptFalse"><span role="img" aria-label="False">✘</span></td><td class="prmDesc">An application id for the request.</td></tr><tr><td class="prmName">challenge</td><td class="prmType"><code>DOMString</code></td><td class="prmNullFalse"><span role="img" aria-label="False">✘</span></td><td class="prmOptFalse"><span role="img" aria-label="False">✘</span></td><td class="prmDesc">The websafe-base64-encoded challenge.</td></tr><tr><td class="prmName">registeredKeys</td><td class="prmType"><code>sequence&lt;<a href="#idl-def-RegisteredKey" class="idlType"><code>RegisteredKey</code></a>&gt;</code></td><td class="prmNullFalse"><span role="img" aria-label="False">✘</span></td><td class="prmOptFalse"><span role="img" aria-label="False">✘</span></td><td class="prmDesc">Sign requests, one for each registered token</td></tr><tr><td class="prmName">callback</td><td class="prmType"><code>function(SignResponse or Error)</code></td><td class="prmNullFalse"><span role="img" aria-label="False">✘</span></td><td class="prmOptFalse"><span role="img" aria-label="False">✘</span></td><td class="prmDesc">Response handler</td></tr><tr><td class="prmName">opt_timeoutSeconds</td><td class="prmType"><code>unsigned long</code></td><td class="prmNullTrue"><span role="img" aria-label="True">✔</span></td><td class="prmOptTrue"><span role="img" aria-label="True">✔</span></td><td class="prmDesc">Timeout in seconds, for the FIDO client's handling of the request.</td></tr></tbody></table><div><em>Return type: </em><code>void</code></div></dd></dl></section>
+        <p></p>
+        <p>
+          The JavaScript API <em class="rfc2119" title="MUST">MUST</em> invoke the provided callbacks with either
+          response objects, or an error object. An error can be detected by testing
+          for a non-zero <code>errorCode</code> key.
+          </p><div class="example"><div class="example-title"><span>Example 1</span></div><pre class="example highlight prettyprint prettyprinted" style=""><span class="pln">u2f</span><span class="pun">.</span><span class="pln">sign</span><span class="pun">(</span><span class="pln">reqs</span><span class="pun">,</span><span class="pln"> </span><span class="kwd">function</span><span class="pun">(</span><span class="pln">response</span><span class="pun">)</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+                </span><span class="kwd">if</span><span class="pln"> </span><span class="pun">(</span><span class="pln">response</span><span class="pun">.</span><span class="pln">errorCode</span><span class="pun">)</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+                  </span><span class="com">// response is an Error</span><span class="pln">
+                  </span><span class="pun">...</span><span class="pln">
+                </span><span class="pun">}</span><span class="pln"> </span><span class="kwd">else</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+                  </span><span class="com">// response is a SignResponse</span><span class="pln">
+                  </span><span class="pun">...</span><span class="pln">
+                </span><span class="pun">}</span><span class="pln">
+              </span><span class="pun">});</span></pre></div>
+      </section>
+    </section>
+
+    <section id="u2f-transports" typeof="bibo:Chapter" resource="#ref" rel="bibo:Chapter">
+      <!--OddPage--><h2 aria-level="1" role="heading" id="h2_u2f-transports"><span class="secno">4. </span>U2F transports</h2>
+      <p>
+        A U2F token may support one or more of the low-level transport
+        mechanisms. In order to improve user experience, the RP <em class="rfc2119" title="MAY">MAY</em> indicate
+        to the client which transports a particular key handle uses. It does so
+        through the use of the <code>Transport</code> enumeration:
+        </p><pre class="idl"><span class="idlEnum" id="idl-def-Transport">enum <span class="idlEnumID">Transport</span> {
+    "<a href="#idl-def-Transport.bt" class="idlEnumItem">bt</a>",
+    "<a href="#idl-def-Transport.ble" class="idlEnumItem">ble</a>",
+    "<a href="#idl-def-Transport.nfc" class="idlEnumItem">nfc</a>",
+    "<a href="#idl-def-Transport.usb" class="idlEnumItem">usb</a>"
+};</span></pre><table class="simple"><tbody><tr><th colspan="2">Enumeration description</th></tr><tr><td><code id="idl-def-Transport.bt">bt</code></td><td>Bluetooth Classic (Bluetooth BR/EDR)</td></tr><tr><td><code id="idl-def-Transport.ble">ble</code></td><td>Bluetooth Low Energy (Bluetooth Smart)</td></tr><tr><td><code id="idl-def-Transport.nfc">nfc</code></td><td>Near-Field Communications</td></tr><tr><td><code id="idl-def-Transport.usb">usb</code></td><td>USB HID</td></tr></tbody></table>
+        For convenience, all the transports supported by a token may be
+        referred to by:
+        <pre class="idl"><span class="idlTypedef" id="idl-def-Transports">typedef <span class="idlTypedefType">sequence&lt;<a href="#idl-def-Transport" class="idlType"><code>Transport</code></a>&gt;</span> <span class="idlTypedefID">Transports</span>;</span></pre><div class="idlTypedefDesc">Throughout this specification, the identifier <span class="idlTypedefID">Transports</span> is used to refer to the <span class="idlTypedefType">sequence&lt;<a href="#idl-def-Transport" class="idlType"><code>Transport</code></a>&gt;</span> type.</div>
+      <p></p>
+    </section>
+
+    <section id="u2f-operations" typeof="bibo:Chapter" resource="#ref" rel="bibo:Chapter">
+      <!--OddPage--><h2 aria-level="1" role="heading" id="h2_u2f-operations"><span class="secno">5. </span>U2F operations</h2>
+      <p>
+        Regardless of the API level used, the U2F client <em class="rfc2119" title="MUST">MUST</em> support the two
+        operations of registering a token, and generating a signed assertion.
+        This section describes the interface to each operation, their corresponding
+        request and response dictionaries and possible error codes.
+      </p>
+
+      <section id="registration">
+        <h3 aria-level="2" role="heading" id="h3_registration"><span class="secno">5.1 </span>Registration</h3>
+        <p>
+          To register a U2F token for a user account at the RP, the RP <em class="rfc2119" title="MUST">MUST</em>:
+          </p><ul>
+            <li>decide which U2F protocol version(s) of device it wants to register,</li>
+            <li>pick an appropriate application id for the registration request,</li>
+            <li>generate a random challenge, and</li>
+            <li>store all private information associated with the registration
+            (expiration times, user ids, etc.)</li>
+          </ul>
+        <p></p>
+        <p>
+          The RP may choose an application id for the registration request.
+          If none is chosen, the RP's web origin is used as the application id.
+          The new key pair that the U2F token generates will be associated with
+          this application id. (For application id details see
+          [<cite><a class="bibref" href="#bib-FIDOAppIDAndFacets">FIDOAppIDAndFacets</a></cite>] in bibliography).
+        </p><p>
+          For each version it is willing to register, it then prepares a
+          <code>RegisterRequest</code> dictionary as follows:
+          </p><pre class="idl"><span class="idlDictionary" id="idl-def-RegisterRequest">dictionary <span class="idlDictionaryID">RegisterRequest</span> {
+<span class="idlMember">    <span class="idlMemberType">DOMString</span> <span class="idlMemberName"><a href="#widl-RegisterRequest-version">version</a></span>;</span>
+<span class="idlMember">    <span class="idlMemberType">DOMString</span> <span class="idlMemberName"><a href="#widl-RegisterRequest-challenge">challenge</a></span>;</span>
+};</span></pre><section id="dictionary-registerrequest-members"><h4 aria-level="3" role="heading" id="h4_dictionary-registerrequest-members"><span class="secno">5.1.1 </span>Dictionary <a class="idlType" href="#idl-def-RegisterRequest"><code>RegisterRequest</code></a> Members</h4><dl class="dictionary-members"><dt id="widl-RegisterRequest-version"><code>version</code> of type <span class="idlMemberType">DOMString</span></dt><dd>
+              The version of the protocol that the to-be-registered token
+              must speak. E.g. "U2F_V2".
+            </dd><dt id="widl-RegisterRequest-challenge"><code>challenge</code> of type <span class="idlMemberType">DOMString</span></dt><dd>The websafe-base64-encoded challenge.</dd></dl></section>
+        <p></p>
+        <p>
+          Additionally, the RP <em class="rfc2119" title="SHOULD">SHOULD</em> prepare a <code>RegisteredKey</code>
+          for each U2F token that is already registered for the current user as
+          follows:
+          </p><pre class="idl"><span class="idlDictionary" id="idl-def-RegisteredKey">dictionary <span class="idlDictionaryID">RegisteredKey</span> {
+<span class="idlMember">    <span class="idlMemberType">DOMString</span>   <span class="idlMemberName"><a href="#widl-RegisteredKey-version">version</a></span>;</span>
+<span class="idlMember">    <span class="idlMemberType">DOMString</span>   <span class="idlMemberName"><a href="#widl-RegisteredKey-keyHandle">keyHandle</a></span>;</span>
+<span class="idlMember">    <span class="idlMemberType"><a href="#idl-def-Transports" class="idlType"><code>Transports</code></a>?</span> <span class="idlMemberName"><a href="#widl-RegisteredKey-transports">transports</a></span>;</span>
+<span class="idlMember">    <span class="idlMemberType">DOMString?</span>  <span class="idlMemberName"><a href="#widl-RegisteredKey-appId">appId</a></span>;</span>
+};</span></pre><section id="dictionary-registeredkey-members"><h4 aria-level="3" role="heading" id="h4_dictionary-registeredkey-members"><span class="secno">5.1.2 </span>Dictionary <a class="idlType" href="#idl-def-RegisteredKey"><code>RegisteredKey</code></a> Members</h4><dl class="dictionary-members"><dt id="widl-RegisteredKey-version"><code>version</code> of type <span class="idlMemberType">DOMString</span></dt><dd>
+              Version of the protocol that the to-be-registered U2F token must
+              speak. E.g. "U2F_V2"
+            </dd><dt id="widl-RegisteredKey-keyHandle"><code>keyHandle</code> of type <span class="idlMemberType">DOMString</span></dt><dd>
+              The registered keyHandle to use for signing, as a websafe-base64
+              encoding of the key handle bytes returned by the
+              U2F token during registration.
+            </dd><dt id="widl-RegisteredKey-transports"><code>transports</code> of type <span class="idlMemberType"><a href="#idl-def-Transports" class="idlType"><code>Transports</code></a></span>, nullable</dt><dd>
+              The transport(s) this token supports, if known by the RP.
+            </dd><dt id="widl-RegisteredKey-appId"><code>appId</code> of type <span class="idlMemberType">DOMString</span>, nullable</dt><dd>
+              The application id that the RP would like to assert for this key
+              handle, if it's distinct from the application id for the overall
+              request. (Ordinarily this will be omitted.)
+            </dd></dl></section>
+        <p></p>
+        <p>
+          The RP delivers a registration request to the FIDO client either
+          via the low-level MessagePort API, or by invoking the high-level
+          JavaScript API. Using the low-level MessagePort API, the RP would
+          construct a message of the <code>U2fRegisterRequest</code> type:
+          </p><pre class="idl"><span class="idlDictionary" id="idl-def-UfRegisterRequest">dictionary <span class="idlDictionaryID">U2fRegisterRequest</span> : <span class="idlSuperclass"><a href="#idl-def-U2fRequest" class="idlType"><code>U2fRequest</code></a></span> {
+<span class="idlMember">    <span class="idlMemberType">DOMString</span>                 <span class="idlMemberName"><a href="#widl-UfRegisterRequest-type">type</a></span> = <span class="idlMemberValue">'u2f_register_request'</span>;</span>
+<span class="idlMember">    <span class="idlMemberType">sequence&lt;<a href="#idl-def-RegisterRequest" class="idlType"><code>RegisterRequest</code></a>&gt;</span> <span class="idlMemberName"><a href="#widl-UfRegisterRequest-registerRequests">registerRequests</a></span>;</span>
+<span class="idlMember">    <span class="idlMemberType">sequence&lt;<a href="#idl-def-RegisteredKey" class="idlType"><code>RegisteredKey</code></a>&gt;</span>   <span class="idlMemberName"><a href="#widl-UfRegisterRequest-registeredKeys">registeredKeys</a></span>;</span>
+};</span></pre><section id="dictionary-u2fregisterrequest-members"><h4 aria-level="3" role="heading" id="h4_dictionary-u2fregisterrequest-members"><span class="secno">5.1.3 </span>Dictionary <a class="idlType" href="#idl-def-U2fRegisterRequest"><code>U2fRegisterRequest</code></a> Members</h4><dl class="dictionary-members"><dt id="widl-UfRegisterRequest-type"><code>type</code> of type <span class="idlMemberType">DOMString</span>, defaulting to <code>'u2f_register_request'</code></dt><dd>sequence&lt;RegisterRequest&gt; registerRequests</dd><dt id="widl-UfRegisterRequest-registerRequests"><code>registerRequests</code> of type <span class="idlMemberType">sequence&lt;<a href="#idl-def-RegisterRequest" class="idlType"><code>RegisterRequest</code></a>&gt;</span></dt><dd>
+            </dd><dt id="widl-UfRegisterRequest-registeredKeys"><code>registeredKeys</code> of type <span class="idlMemberType">sequence&lt;<a href="#idl-def-RegisteredKey" class="idlType"><code>RegisteredKey</code></a>&gt;</span></dt><dd>
+              An array of RegisteredKeys representing the U2F tokens registered
+              to this user.
+            </dd></dl></section>
+          <div class="example"><div class="example-title"><span>Example 2</span></div><pre class="example highlight prettyprint prettyprinted" style=""><span class="com">// Low-level API</span><span class="pln">
+</span><span class="kwd">var</span><span class="pln"> port </span><span class="pun">=</span><span class="pln"> </span><span class="pun">&lt;</span><span class="pln">obtain U2F </span><span class="typ">MessagePort</span><span class="pln"> </span><span class="kwd">in</span><span class="pln"> a browser specific manner</span><span class="pun">&gt;;</span><span class="pln">
+port</span><span class="pun">.</span><span class="pln">addEventListener</span><span class="pun">(‘</span><span class="pln">message</span><span class="pun">’,</span><span class="pln"> responseHandler</span><span class="pun">);</span><span class="pln">
+port</span><span class="pun">.</span><span class="pln">postMessage</span><span class="pun">({</span><span class="pln">
+ </span><span class="pun">‘</span><span class="pln">type</span><span class="pun">’:</span><span class="pln"> </span><span class="pun">‘</span><span class="pln">u2f_register_request</span><span class="pun">’,</span><span class="pln">
+ </span><span class="pun">‘</span><span class="pln">appId</span><span class="pun">’:</span><span class="pln"> </span><span class="pun">&lt;</span><span class="typ">Application</span><span class="pln"> id</span><span class="pun">&gt;,</span><span class="pln">
+ </span><span class="pun">‘</span><span class="pln">registerRequests</span><span class="pun">’:</span><span class="pln"> </span><span class="pun">[&lt;</span><span class="typ">RegisterRequest</span><span class="pln"> instance</span><span class="pun">&gt;,</span><span class="pln"> </span><span class="pun">...],</span><span class="pln">
+ </span><span class="pun">‘</span><span class="pln">registeredKeys</span><span class="pun">’:</span><span class="pln"> </span><span class="pun">[&lt;</span><span class="typ">RegisteredKey</span><span class="pln"> </span><span class="kwd">for</span><span class="pln"> known token </span><span class="lit">1</span><span class="pun">&gt;,</span><span class="pln"> </span><span class="pun">...],</span><span class="pln">
+ </span><span class="pun">‘</span><span class="pln">timeoutSeconds</span><span class="pun">’:</span><span class="pln"> </span><span class="lit">30</span><span class="pun">,</span><span class="pln">
+ </span><span class="pun">‘</span><span class="pln">requestId</span><span class="pun">’:</span><span class="pln"> </span><span class="pun">&lt;</span><span class="pln">unique integer</span><span class="pun">&gt;</span><span class="pln">  </span><span class="com">// optional</span><span class="pln">
+</span><span class="pun">});</span></pre></div>
+          Using the high-level API, the values are passed as parameters:
+          <div class="example"><div class="example-title"><span>Example 3</span></div><pre class="example highlight prettyprint prettyprinted" style=""><span class="com">// High-level API</span><span class="pln">
+u2f</span><span class="pun">.</span><span class="kwd">register</span><span class="pun">(&lt;</span><span class="typ">Application</span><span class="pln"> id</span><span class="pun">&gt;,</span><span class="pln">
+             </span><span class="pun">[&lt;</span><span class="typ">RegisterRequest</span><span class="pln"> instance</span><span class="pun">&gt;,</span><span class="pln"> </span><span class="pun">...],</span><span class="pln">
+             </span><span class="pun">[&lt;</span><span class="typ">RegisteredKey</span><span class="pln"> </span><span class="kwd">for</span><span class="pln"> known token </span><span class="lit">1</span><span class="pun">&gt;,</span><span class="pln"> </span><span class="pun">...],</span><span class="pln">
+             registerResponseHandler</span><span class="pun">);</span></pre></div>
+        <p></p>
+        <p>
+          The FIDO client <em class="rfc2119" title="SHOULD">SHOULD</em> treat the order of RegisterRequest dictionaries
+          in the first parameter as a prioritized list. That is, if multiple tokens
+          are present that support more than one version provided by the RP, the
+          version that appears first should be selected.
+          Note that this means multiple RegisterRequests with the same version are redundant,
+          since the first one will always be selected.
+        </p>
+        <p>
+          Note also that the responseHandler in the low-level API receives a
+          <code>Response</code> object, while the
+          <code>registerResponseHandler</code> in the high-level API receives
+          the <code>Error</code> or <code>RegisterResponse</code> objects
+          directly.
+        </p>
+        <p>
+          The FIDO client will create the raw registration messages from this
+          data (see [<cite><a class="bibref" href="#bib-U2FRawMsgs">U2FRawMsgs</a></cite>] in bibliography),
+          and attempt to perform a registration operation with a U2F token.
+          The registration request message is then used to register a U2F token
+          that is not already registered (if such a token is present).
+        </p>
+        <p>
+          Note that as part of creating the registration request message, the
+          FIDO client will create a Client Data object (see [<cite><a class="bibref" href="#bib-U2FRawMsgs">U2FRawMsgs</a></cite>]). This
+          Client Data object will be returned to the caller as part of the
+          registration response (see below).
+        </p>
+        <p>
+          If the registration is successful, the FIDO client returns (via the
+          message port, or the JS API callback) a <code>RegisterResponse</code>
+          dictionary as follows.
+          </p><pre class="idl"><span class="idlDictionary" id="idl-def-RegisterResponse">dictionary <span class="idlDictionaryID">RegisterResponse</span> {
+<span class="idlMember">    <span class="idlMemberType">DOMString</span> <span class="idlMemberName"><a href="#widl-RegisterResponse-version">version</a></span>;</span>
+<span class="idlMember">    <span class="idlMemberType">DOMString</span> <span class="idlMemberName"><a href="#widl-RegisterResponse-registrationData">registrationData</a></span>;</span>
+<span class="idlMember">    <span class="idlMemberType">DOMString</span> <span class="idlMemberName"><a href="#widl-RegisterResponse-clientData">clientData</a></span>;</span>
+};</span></pre><section id="dictionary-registerresponse-members"><h4 aria-level="3" role="heading" id="h4_dictionary-registerresponse-members"><span class="secno">5.1.4 </span>Dictionary <a class="idlType" href="#idl-def-RegisterResponse"><code>RegisterResponse</code></a> Members</h4><dl class="dictionary-members"><dt id="widl-RegisterResponse-version"><code>version</code> of type <span class="idlMemberType">DOMString</span></dt><dd>The version of the protocol that the registered token speaks.
+                E.g. "U2F_V2".</dd><dt id="widl-RegisterResponse-registrationData"><code>registrationData</code> of type <span class="idlMemberType">DOMString</span></dt><dd>The raw registration response websafe-base64</dd><dt id="widl-RegisterResponse-clientData"><code>clientData</code> of type <span class="idlMemberType">DOMString</span></dt><dd>
+              The client data created by the FIDO client, websafe-base64
+              encoded.
+            </dd></dl></section>
+          For the contents of these fields, refer to [<cite><a class="bibref" href="#bib-U2FRawMsgs">U2FRawMsgs</a></cite>] (see
+          bibliography).
+        <p></p>
+      </section>
+      <section id="generating-signed-identity-assertions">
+        <h3 aria-level="2" role="heading" id="h3_generating-signed-identity-assertions"><span class="secno">5.2 </span>Generating signed identity assertions</h3>
+        <p>
+          To obtain an identity assertion from a locally-attached U2F token, the
+          RP must
+          </p><ul>
+            <li>generate a random challenge, and</li>
+            <li>
+              prepare a <code>RegisteredKey</code> object for each U2F token
+              that the user has currently registered with the RP.
+            </li>
+          </ul>
+        <p></p>
+        <p>
+          The RP delivers a sign request to the FIDO client either via the
+          low-level MessagePort API, or by invoking the high-level JavaScript
+          API. Using the low-level MessagePort API, the RP would construct a
+          message of the <code>U2fSignRequest</code> type:
+          </p><pre class="idl"><span class="idlDictionary" id="idl-def-UfSignRequest">dictionary <span class="idlDictionaryID">U2fSignRequest</span> : <span class="idlSuperclass"><a href="#idl-def-U2fRequest" class="idlType"><code>U2fRequest</code></a></span> {
+<span class="idlMember">    <span class="idlMemberType">DOMString</span>               <span class="idlMemberName"><a href="#widl-UfSignRequest-type">type</a></span> = <span class="idlMemberValue">'u2f_sign_request'</span>;</span>
+<span class="idlMember">    <span class="idlMemberType">DOMString</span>               <span class="idlMemberName"><a href="#widl-UfSignRequest-challenge">challenge</a></span>;</span>
+<span class="idlMember">    <span class="idlMemberType">sequence&lt;<a href="#idl-def-RegisteredKey" class="idlType"><code>RegisteredKey</code></a>&gt;</span> <span class="idlMemberName"><a href="#widl-UfSignRequest-registeredKeys">registeredKeys</a></span>;</span>
+};</span></pre><section id="dictionary-u2fsignrequest-members"><h4 aria-level="3" role="heading" id="h4_dictionary-u2fsignrequest-members"><span class="secno">5.2.1 </span>Dictionary <a class="idlType" href="#idl-def-U2fSignRequest"><code>U2fSignRequest</code></a> Members</h4><dl class="dictionary-members"><dt id="widl-UfSignRequest-type"><code>type</code> of type <span class="idlMemberType">DOMString</span>, defaulting to <code>'u2f_sign_request'</code></dt><dd>DOMString challenge</dd><dt id="widl-UfSignRequest-challenge"><code>challenge</code> of type <span class="idlMemberType">DOMString</span></dt><dd>
+              The websafe-base64-encoded challenge.
+            </dd><dt id="widl-UfSignRequest-registeredKeys"><code>registeredKeys</code> of type <span class="idlMemberType">sequence&lt;<a href="#idl-def-RegisteredKey" class="idlType"><code>RegisteredKey</code></a>&gt;</span></dt><dd>
+              An array of RegisteredKeys representing the U2F tokens registered
+              to this user.
+            </dd></dl></section>
+          <div class="example"><div class="example-title"><span>Example 4</span></div><pre class="example highlight prettyprint prettyprinted" style=""><span class="com">// Low-level API</span><span class="pln">
+</span><span class="kwd">var</span><span class="pln"> port </span><span class="pun">=</span><span class="pln"> </span><span class="pun">&lt;</span><span class="pln">obtain U2F </span><span class="typ">MessagePort</span><span class="pln"> </span><span class="kwd">in</span><span class="pln"> a browser specific manner</span><span class="pun">&gt;;</span><span class="pln">
+port</span><span class="pun">.</span><span class="pln">addEventListener</span><span class="pun">(‘</span><span class="pln">message</span><span class="pun">’,</span><span class="pln"> responseHandler</span><span class="pun">);</span><span class="pln">
+port</span><span class="pun">.</span><span class="pln">postMessage</span><span class="pun">({</span><span class="pln">
+ </span><span class="pun">‘</span><span class="pln">type</span><span class="pun">’:</span><span class="pln"> </span><span class="pun">‘</span><span class="pln">u2f_sign_request</span><span class="pun">’,</span><span class="pln">
+ </span><span class="pun">‘</span><span class="pln">appId</span><span class="pun">’:</span><span class="pln"> </span><span class="pun">&lt;</span><span class="typ">Application</span><span class="pln"> id</span><span class="pun">&gt;,</span><span class="pln">
+ </span><span class="pun">‘</span><span class="pln">challenge</span><span class="pun">’:</span><span class="pln"> </span><span class="pun">&lt;</span><span class="pln">random challenge</span><span class="pun">&gt;,</span><span class="pln">
+ </span><span class="pun">‘</span><span class="pln">registeredKeys</span><span class="pun">’:</span><span class="pln"> </span><span class="pun">[&lt;</span><span class="typ">RegisteredKey</span><span class="pln"> </span><span class="kwd">for</span><span class="pln"> known token </span><span class="lit">1</span><span class="pun">&gt;,</span><span class="pln"> </span><span class="pun">...],</span><span class="pln">
+ </span><span class="pun">‘</span><span class="pln">timeoutSeconds</span><span class="pun">’:</span><span class="pln"> </span><span class="lit">30</span><span class="pun">,</span><span class="pln">
+ </span><span class="pun">‘</span><span class="pln">requestId</span><span class="pun">’:</span><span class="pln"> </span><span class="pun">&lt;</span><span class="pln">unique integer</span><span class="pun">&gt;</span><span class="pln">  </span><span class="com">// optional</span><span class="pln">
+</span><span class="pun">});</span></pre></div>
+        <p></p>
+        <p>
+          In response to a sign request, the FIDO client should perform the following steps:
+          </p><ul>
+            <li>Verify the application identity of the caller.</li>
+            <li>Using the provided challenge, create a client data object.</li>
+            <li>
+              Using the client data, the application id, and the key
+              handle, create a raw authentication request message (see
+              [<cite><a class="bibref" href="#bib-U2FRawMsgs">U2FRawMsgs</a></cite>] in bibliography) and send it to the U2F
+              token.
+            </li>
+          </ul>
+          When the RP provides the <code>transports</code> value for any
+          <code>RegisteredKey</code>, the client <em class="rfc2119" title="MAY">MAY</em> treat that value has a hint
+          about which transports to prefer for the key handle. The client <em class="rfc2119" title="MAY">MAY</em>
+          also use the transports as a hint about user interface, if the client
+          presents any. Irrespective of whether the RP sets any
+          <code>transports</code> value for any <code>RegisteredKey</code>, the
+          client <em class="rfc2119" title="SHOULD">SHOULD</em> send each key handle over all transports supported by
+          the client.
+        <p></p>
+        <p>
+          Eventually the FIDO client must respond (via the MessageChannel or
+          the provided callback). In the case of an error, an
+          <code>Error</code> dictionary is returned. In case of success, a
+          <code>SignResponse</code> is returned.
+          </p><pre class="idl"><span class="idlDictionary" id="idl-def-SignResponse">dictionary <span class="idlDictionaryID">SignResponse</span> {
+<span class="idlMember">    <span class="idlMemberType">DOMString</span> <span class="idlMemberName"><a href="#widl-SignResponse-keyHandle">keyHandle</a></span>;</span>
+<span class="idlMember">    <span class="idlMemberType">DOMString</span> <span class="idlMemberName"><a href="#widl-SignResponse-signatureData">signatureData</a></span>;</span>
+<span class="idlMember">    <span class="idlMemberType">DOMString</span> <span class="idlMemberName"><a href="#widl-SignResponse-clientData">clientData</a></span>;</span>
+};</span></pre><section id="dictionary-signresponse-members"><h4 aria-level="3" role="heading" id="h4_dictionary-signresponse-members"><span class="secno">5.2.2 </span>Dictionary <a class="idlType" href="#idl-def-SignResponse"><code>SignResponse</code></a> Members</h4><dl class="dictionary-members"><dt id="widl-SignResponse-keyHandle"><code>keyHandle</code> of type <span class="idlMemberType">DOMString</span></dt><dd>The keyHandle of the RegisteredKey that was processed.</dd><dt id="widl-SignResponse-signatureData"><code>signatureData</code> of type <span class="idlMemberType">DOMString</span></dt><dd>The raw response from U2F device, websafe-base64 encoded.</dd><dt id="widl-SignResponse-clientData"><code>clientData</code> of type <span class="idlMemberType">DOMString</span></dt><dd>
+              The client data created by the FIDO client, websafe-base64
+              encoded.
+            </dd></dl></section>
+        <p></p>
+        <p>
+          If there are multiple U2F tokens that responded to the authentication
+          request, the FIDO client will pick one of the responses and pass it
+          to the caller.
+        </p>
+      </section>
+      <section id="error-codes">
+        <h3 aria-level="2" role="heading" id="h3_error-codes"><span class="secno">5.3 </span>Error codes</h3>
+        <p>
+          When an <code>Error</code> object is returned, its <code>errorCode</code>
+          field is set to a non-negative integer indicating the general error
+          that occurred, from the following enumeration.
+          </p><pre class="idl"><span class="idlInterface" id="idl-def-ErrorCode">interface <span class="idlInterfaceID">ErrorCode</span> {
+<span class="idlConst">    const <span class="idlConstType">short</span> <span class="idlConstName"><a href="#OK">OK</a></span> = <span class="idlConstValue">0</span>;</span>
+<span class="idlConst">    const <span class="idlConstType">short</span> <span class="idlConstName"><a href="#OTHER_ERROR">OTHER_ERROR</a></span> = <span class="idlConstValue">1</span>;</span>
+<span class="idlConst">    const <span class="idlConstType">short</span> <span class="idlConstName"><a href="#BAD_REQUEST">BAD_REQUEST</a></span> = <span class="idlConstValue">2</span>;</span>
+<span class="idlConst">    const <span class="idlConstType">short</span> <span class="idlConstName"><a href="#CONFIGURATION_UNSUPPORTED">CONFIGURATION_UNSUPPORTED</a></span> = <span class="idlConstValue">3</span>;</span>
+<span class="idlConst">    const <span class="idlConstType">short</span> <span class="idlConstName"><a href="#DEVICE_INELIGIBLE">DEVICE_INELIGIBLE</a></span> = <span class="idlConstValue">4</span>;</span>
+<span class="idlConst">    const <span class="idlConstType">short</span> <span class="idlConstName"><a href="#TIMEOUT">TIMEOUT</a></span> = <span class="idlConstValue">5</span>;</span>
+};</span></pre><section id="constants"><h4 aria-level="3" role="heading" id="h4_constants"><span class="secno">5.3.1 </span>Constants</h4><dl class="constants"><dt id="widl-ErrorCode-OK"><code>OK</code> of type <span class="idlConstType">short</span></dt><dd>Success. Not used in errors but reserved</dd><dt id="widl-ErrorCode-OTHER_ERROR"><code>OTHER_ERROR</code> of type <span class="idlConstType">short</span></dt><dd>An error otherwise not enumerated here</dd><dt id="widl-ErrorCode-BAD_REQUEST"><code>BAD_REQUEST</code> of type <span class="idlConstType">short</span></dt><dd>The request cannot be processed</dd><dt id="widl-ErrorCode-CONFIGURATION_UNSUPPORTED"><code>CONFIGURATION_UNSUPPORTED</code> of type <span class="idlConstType">short</span></dt><dd>Client configuration is not supported</dd><dt id="widl-ErrorCode-DEVICE_INELIGIBLE"><code>DEVICE_INELIGIBLE</code> of type <span class="idlConstType">short</span></dt><dd>The presented device is not eligible for this request. For a registration
+            request this may mean that the token is already registered, and for a sign request
+            it may mean the token does not know the presented key handle.</dd><dt id="widl-ErrorCode-TIMEOUT"><code>TIMEOUT</code> of type <span class="idlConstType">short</span></dt><dd>Timeout reached before request could be satisfied</dd></dl></section>
+        <p></p>
+      </section>
+      <section id="backward-compatibility-with-u2f-1.0-api">
+        <h3 aria-level="2" role="heading" id="h3_backward-compatibility-with-u2f-1.0-api"><span class="secno">5.4 </span>Backward compatibility with U2F 1.0 API</h3>
+        <p>
+          For backward compatibility with the U2F 1.0 API, the RP <em class="rfc2119" title="MAY">MAY</em> prepare a
+          <code>SignRequest</code> in lieu of a <code>RegisteredKey</code> for
+          each U2F token that is already registered for the current user. See
+          JavaScript API 1.0 for the specification of <code>SignRequest</code>.
+        </p>
+        <p>
+          Similarly, U2F clients <em class="rfc2119" title="MAY">MAY</em> implement backward compatibility with
+          version 1.0 by accepting a <code>signRequests</code> key in lieu of
+          <code>registeredKeys</code>.
+        </p>
+      </section>
+    </section>
+  
+
+<section id="references" class="appendix" typeof="bibo:Chapter" resource="#ref" rel="bibo:Chapter"><!--OddPage--><h2 aria-level="1" role="heading" id="h2_references"><span class="secno">A. </span>References</h2><section id="normative-references" typeof="bibo:Chapter" resource="#ref" rel="bibo:Chapter"><h3 aria-level="2" role="heading" id="h3_normative-references"><span class="secno">A.1 </span>Normative references</h3><dl class="bibliography" about=""><dt id="bib-ECMA-262">[ECMA-262]</dt><dd rel="dcterms:requires"><a href="https://tc39.github.io/ecma262/"><cite>ECMAScript Language Specification</cite></a>. URL: <a href="https://tc39.github.io/ecma262/">https://tc39.github.io/ecma262/</a>
+</dd><dt id="bib-FIDOAppIDAndFacets">[FIDOAppIDAndFacets]</dt><dd rel="dcterms:requires">D. Balfanz, B. Hill, R. Lindemann, D. Baghdasaryan, <cite>FIDO AppID and Facets v1.0</cite>. FIDO Alliance Proposed Standard. URLs: <br>HTML: <a href="./fido-appid-and-facets-v1.1-rd-20160915.html">fido-appid-and-facets-v1.1-rd-20160915.html</a><br>PDF: <a href="./fido-appid-and-facets-v1.1-rd-20160915.pdf">fido-appid-and-facets-v1.1-rd-20160915.pdf</a>
+</dd><dt id="bib-FIDOGlossary">[FIDOGlossary]</dt><dd rel="dcterms:requires">R. Lindemann, D. Baghdasaryan, B. Hill, J. Hodges, <cite>FIDO Technical Glossary</cite>. FIDO Alliance Proposed Standard. URLs: <br>HTML: <a href="./fido-glossary-v1.1-rd-20160915.html">fido-glossary-v1.1-rd-20160915.html</a> <br>PDF: <a href="./fido-glossary-v1.1-rd-20160915.pdf">fido-glossary-v1.1-rd-20160915.pdf</a>
+</dd><dt id="bib-RFC2119">[RFC2119]</dt><dd rel="dcterms:requires">S. Bradner. <a href="https://tools.ietf.org/html/rfc2119"><cite>Key words for use in RFCs to Indicate Requirement Levels</cite></a>. March 1997. Best Current Practice. URL: <a href="https://tools.ietf.org/html/rfc2119">https://tools.ietf.org/html/rfc2119</a>
+</dd><dt id="bib-RFC4648">[RFC4648]</dt><dd rel="dcterms:requires">S. Josefsson, <a href="http://www.ietf.org/rfc/rfc4648.txt"><cite>The Base16, Base32, and Base64 Data Encodings (RFC 4648)</cite></a>, IETF, October 2006, URL: <a href="http://www.ietf.org/rfc/rfc4648.txt">http://www.ietf.org/rfc/rfc4648.txt</a>
+</dd><dt id="bib-U2FRawMsgs">[U2FRawMsgs]</dt><dd rel="dcterms:requires">D. Balfanz, <a href="./fido-u2f-raw-message-formats-v1.1-rd-20160915.pdf"><cite>FIDO U2F Raw Message Formats v1.0</cite></a>. FIDO Alliance Review Draft (Work in progress.) URL:  <a href="./fido-u2f-raw-message-formats-v1.1-rd-20160915.pdf">./fido-u2f-raw-message-formats-v1.1-rd-20160915.pdf</a>
+</dd><dt id="bib-WEBMESSAGING">[WEBMESSAGING]</dt><dd rel="dcterms:requires">Ian Hickson. <a href="https://www.w3.org/TR/webmessaging/"><cite>HTML5 Web Messaging</cite></a>. 19 May 2015. W3C Recommendation. URL: <a href="https://www.w3.org/TR/webmessaging/">https://www.w3.org/TR/webmessaging/</a>
+</dd><dt id="bib-WebIDL">[WebIDL]</dt><dd rel="dcterms:requires">Cameron McCormack; Boris Zbarsky. <a href="https://www.w3.org/TR/WebIDL-1/"><cite>WebIDL Level 1</cite></a>. 15 September 2016. W3C Proposed Recommendation. URL: <a href="https://www.w3.org/TR/WebIDL-1/">https://www.w3.org/TR/WebIDL-1/</a>
+</dd></dl></section><section id="informative-references" typeof="bibo:Chapter" resource="#ref" rel="bibo:Chapter"><h3 aria-level="2" role="heading" id="h3_informative-references"><span class="secno">A.2 </span>Informative references</h3><dl class="bibliography" about=""><dt id="bib-U2FOverview">[U2FOverview]</dt><dd rel="dcterms:references">S. Srinivas, D. Balfanz, E. Tiffany, <a href="./fido-u2f-overview-v1.1-rd-20160915.pdf"><cite>FIDO U2F Overview v1.0</cite></a>. FIDO Alliance Review Draft (Work in progress.) URL:  <a href="./fido-u2f-overview-v1.1-rd-20160915.pdf">./fido-u2f-overview-v1.1-rd-20160915.pdf</a>
+</dd></dl></section></section></body></html>

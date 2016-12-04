@@ -1,0 +1,882 @@
+<!DOCTYPE html PUBLIC '-//W3C//DTD XHTML 1.0 Strict//EN' 'http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd'>
+<html lang="en" dir="ltr" typeof="bibo:Document w3p:CR" about="" property="dcterms:language" content="en" prefix="bibo: http://purl.org/ontology/bibo/ w3p: http://www.w3.org/2001/02pd/rec54#">
+<head>
+    <title>FIDO U2F HID Protocol Specification</title>
+    <meta name="generator" content="HTML::TextToHTML v2.5201">
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    
+    
+    
+  <style>/*****************************************************************
+ * ReSpec 3 CSS
+ * Robin Berjon - http://berjon.com/
+ *****************************************************************/
+
+/* --- INLINES --- */
+em.rfc2119 { 
+    text-transform:     lowercase;
+    font-variant:       small-caps;
+    font-style:         normal;
+    color:              #900;
+}
+
+h1 acronym, h2 acronym, h3 acronym, h4 acronym, h5 acronym, h6 acronym, a acronym,
+h1 abbr, h2 abbr, h3 abbr, h4 abbr, h5 abbr, h6 abbr, a abbr {
+    border: none;
+}
+
+dfn {
+    font-weight:    bold;
+}
+
+a.internalDFN {
+    color:  inherit;
+    border-bottom:  1px solid #99c;
+    text-decoration:    none;
+}
+
+a.externalDFN {
+    color:  inherit;
+    border-bottom:  1px dotted #ccc;
+    text-decoration:    none;
+}
+
+a.bibref {
+    text-decoration:    none;
+}
+
+cite .bibref {
+    font-style: normal;
+}
+
+code {
+    color:  #ff4500;
+}
+
+/* --- TOC --- */
+.toc a, .tof a {
+    text-decoration:    none;
+}
+
+a .secno, a .figno {
+    color:  #000;
+}
+
+ul.tof, ol.tof {
+    list-style: none outside none;
+}
+
+.caption {
+    margin-top: 0.5em;
+    font-style:   italic;
+}
+
+/* --- TABLE --- */
+table.simple {
+    border-spacing: 0;
+    border-collapse:    collapse;
+    border-bottom:  3px solid #003a7c;
+}
+
+.simple th {
+    background: #003a7c;
+    color:  #fff;
+    padding:    3px 5px;
+    text-align: left;
+}
+
+.simple th[scope="row"] {
+    background: inherit;
+    color:  inherit;
+    border-top: 1px solid #ddd;
+}
+
+.simple td {
+    padding:    3px 10px;
+    border-top: 1px solid #ddd;
+}
+
+.simple tr:nth-child(even) {
+    background: #f0f6ff;
+}
+
+/* --- DL --- */
+.section dd > p:first-child {
+    margin-top: 0;
+}
+
+.section dd > p:last-child {
+    margin-bottom: 0;
+}
+
+.section dd {
+    margin-bottom:  1em;
+}
+
+.section dl.attrs dd, .section dl.eldef dd {
+    margin-bottom:  0;
+}
+
+@media print {
+    .removeOnSave {
+        display: none;
+    }
+}
+</style><style>/* --- EXAMPLES --- */
+div.example-title {
+    min-width: 7.5em;
+    color: #b9ab2d;
+}
+div.example-title span {
+    text-transform: uppercase;   
+}
+aside.example, div.example, div.illegal-example {
+    padding: 0.5em;
+    margin: 1em 0;
+    position: relative;
+    clear: both;
+}
+div.illegal-example { color: red }
+div.illegal-example p { color: black }
+aside.example, div.example {
+    padding: .5em;
+    border-left-width: .5em;
+    border-left-style: solid;
+    border-color: #e0cb52;
+    //background: #fcfaee;    
+    background: rgba(252,250,238,0.3);    
+}
+
+aside.example div.example {
+    border-left-width: .1em;
+    border-color: #999;
+    background: #fff;
+}
+aside.example div.example div.example-title {
+    color: #999;
+}
+</style><link rel="stylesheet" href="resources/FIDO-RD.css"><!--[if lt IE 9]><script src='https://www.w3.org/2008/site/js/html5shiv.js'></script><![endif]--></head>
+  <body class="h-entry" style="" role="document" id="respecDocument"><div class="head" role="contentinfo" id="respecHeader">
+  <p>
+    
+      <a href="https://www.fidoalliance.org/"><img width="250" id="toplogo" src="resources/logo.png" alt="FIDO Alliance"></a>
+    
+  </p>
+  <h1 class="title p-name" id="title" property="dcterms:title">FIDO U2F HID Protocol Specification</h1>
+  
+  <h2 property="dcterms:issued" datatype="xsd:dateTime" content="2016-09-15T07:00:00.000Z" id="fido-alliance-review-draft-15-september-2016"><abbr title="FIDO Alliance">FIDO Alliance</abbr> Review Draft <time class="dt-published" datetime="2016-09-15">15 September 2016</time></h2>
+  <dl>
+    
+      <dt>This version:</dt>
+      <dd><a class="u-url" href="https://fidoalliance.org/specs/fido-u2f-v1.1-rd-20160915/fido-u2f-hid-protocol-v1.1-v1.1-rd-20160915.html">https://fidoalliance.org/specs/fido-u2f-v1.1-rd-20160915/fido-u2f-hid-protocol-v1.1-v1.1-rd-20160915.html</a></dd>
+      <!--<dt>Latest published version:</dt>
+      <dd><a href='https://fidoalliance.org/specs/fido-u2f-hid-protocol-v1.1/'>https://fidoalliance.org/specs/fido-u2f-hid-protocol-v1.1/</a></dd>
+    
+    -->
+    
+    
+    
+    
+    
+      <dt>Previous version:</dt>
+      <dd><a rel="dcterms:replaces" href="https://fidoalliance.org/specs/fido-u2f-hid-protocol-v1.1-Member Submission-20140721.html">https://fidoalliance.org/specs/fido-u2f-hid-protocol-v1.1-Member Submission-20140721.html</a></dd>
+    
+    
+    <dt>Editors:</dt>
+    <dd class="p-author h-card vcard" rel="bibo:editor" inlist=""><span typeof="foaf:Person"><a class="u-url url p-name fn" rel="foaf:homepage" property="foaf:name" content="Jakob Ehrensvärd" href="mailto:jakob@yubico.com">Jakob Ehrensvärd</a>, <a rel="foaf:workplaceHomepage" class="p-org org h-org h-card" href="https://www.yubico.com/">Yubico</a></span>
+</dd>
+<dd class="p-author h-card vcard" rel="bibo:editor" inlist=""><span typeof="foaf:Person"><a class="u-url url p-name fn" rel="foaf:homepage" property="foaf:name" content="John Kemp" href="mailto:john@jkemp.net">John Kemp</a>, <a rel="foaf:workplaceHomepage" class="p-org org h-org h-card" href="https://fidoalliance.org"><abbr title="FIDO Alliance">FIDO Alliance</abbr></a></span>
+</dd>
+
+    
+    
+  </dl>
+  
+  
+  
+  
+    
+      <p class="copyright">
+        Copyright ©
+        2014-2016
+        
+        <a href="https://www.fidoalliance.org/"><abbr title="FIDO Alliance">FIDO Alliance</abbr></a>
+        All Rights Reserved.
+      </p>
+    
+  
+  <hr>
+</div>
+    
+    <section id="abstract" class="introductory" property="dcterms:abstract" datatype="" typeof="bibo:Chapter" resource="#ref" rel="bibo:Chapter"><h2 aria-level="1" role="heading" id="h2_abstract">Abstract</h2>
+      <p>U2FHID protocol description and implementation specification
+      </p>
+      <p>The purpose of this documentation is to provide a complete
+	specification how to implement the U2FHID protocol, where FIDO
+	U2F messages are framed for USB transport, using the HID
+	protocol. General FIDO and U2F- concepts, semantics, meaning is
+	beyond the scope of this document and for information on these
+	topics, please refer to the appropriate related documentation.
+      </p>
+    </section><section id="sotd" class="introductory" typeof="bibo:Chapter" resource="#ref" rel="bibo:Chapter"><h2 aria-level="1" role="heading" id="h2_sotd">Status of This Document</h2>
+  
+    
+      
+        <p>
+          <em>This section describes the status of this document at the time of its publication.
+          Other documents may supersede this document. A list of current <abbr title="FIDO Alliance">FIDO Alliance</abbr> publications and the
+          latest revision of this technical report can be found in the <a href="https://www.fidoalliance.org/specifications/"><abbr title="FIDO Alliance">FIDO Alliance</abbr> specifications index</a> at
+          https://www.fidoalliance.org/specifications/.</em>
+        </p>
+        
+        <p>
+          This document was published by the <a href="http://www.fidoalliance.org/"><abbr title="FIDO Alliance">FIDO Alliance</abbr></a> as a Review Draft.
+          
+            This document is intended to become a <abbr title="FIDO Alliance">FIDO Alliance</abbr> Proposed Standard.
+          
+          
+            If you wish to make comments regarding this document, please 
+            <a href="https://fidoalliance.org/contact">Contact Us</a>.
+          
+          
+          
+          
+            All comments are welcome.
+          
+        </p>
+        
+	
+	
+	  <div class="ribbon-wrapper"><div class="ribbon">REVIEW DRAFT</div></div>
+	  <p>
+	    <strong>This is a Review Draft Specification and
+            is not intended to be a basis for any implementations as the Specification may change.</strong> Permission is
+            hereby granted to use the Specification solely for the purpose of reviewing the Specification. No rights
+            are granted to prepare derivative works of this Specification. Entities seeking permission to reproduce
+            portions of this Specification for other uses must contact the <abbr title="FIDO Alliance">FIDO Alliance</abbr> to determine whether an 
+            appropriate license for such use is available.
+	  </p>
+	
+	
+        
+          <p>
+	    Implementation of certain elements of this Specification may require licenses under third party intellectual 
+	    property rights, including without limitation, patent rights. The <abbr title="FIDO Alliance">FIDO Alliance</abbr>, Inc. and its Members
+            and any other contributors to the Specification are not, and shall not be held, responsible in any manner
+            for identifying or failing to identify any or all such third party intellectual property rights.
+	  </p>
+	  <p>
+	    THIS FIDO ALLIANCE SPECIFICATION IS PROVIDED “AS IS” AND WITHOUT ANY 
+            WARRANTY OF ANY KIND, INCLUDING, WITHOUT LIMITATION, ANY EXPRESS OR IMPLIED
+	    WARRANTY OF NON-INFRINGEMENT, MERCHANTABILITY OR FITNESS FOR A
+	    PARTICULAR PURPOSE.
+          </p>
+        
+        
+        
+        
+      
+    
+  
+</section><section id="toc"><h2 class="introductory" aria-level="1" role="heading" id="h2_toc">Table of Contents</h2><ul class="toc" role="directory" id="respecContents"><li class="tocline"><a href="#document-information" class="tocxref"><span class="secno">1. </span>Document Information</a><ul class="toc"><li class="tocline"><a href="#notation" class="tocxref"><span class="secno">1.1 </span>Notation</a><ul class="toc"><li class="tocline"><a href="#key-words" class="tocxref"><span class="secno">1.1.1 </span>Key Words</a></li></ul></li><li class="tocline"><a href="#definitions" class="tocxref"><span class="secno">1.2 </span>Definitions</a></li></ul></li><li class="tocline"><a href="#u2fhid-protocol-implementation" class="tocxref"><span class="secno">2. </span>U2FHID protocol implementation</a><ul class="toc"><li class="tocline"><a href="#u2fhid-implementation-rationale" class="tocxref"><span class="secno">2.1 </span>U2FHID implementation rationale</a></li><li class="tocline"><a href="#protocol-structure-and-data-framing" class="tocxref"><span class="secno">2.2 </span>Protocol structure and data framing
+	</a></li><li class="tocline"><a href="#concurrency-and-channels" class="tocxref"><span class="secno">2.3 </span>Concurrency and channels
+	</a></li><li class="tocline"><a href="#message--and-packet-structure" class="tocxref"><span class="secno">2.4 </span>Message- and packet structure
+      </a></li><li class="tocline"><a href="#arbitration" class="tocxref"><span class="secno">2.5 </span>Arbitration
+	</a><ul class="toc"><li class="tocline"><a href="#transaction-atomicity-idle--and-busy-states.x" class="tocxref"><span class="secno">2.5.1 </span>Transaction atomicity, idle- and busy states.</a></li><li class="tocline"><a href="#transaction-timeout" class="tocxref"><span class="secno">2.5.2 </span>Transaction timeout</a></li><li class="tocline"><a href="#transaction-abort-and-re-synchronization" class="tocxref"><span class="secno">2.5.3 </span>Transaction abort and re-synchronization</a></li><li class="tocline"><a href="#packet-sequencing" class="tocxref"><span class="secno">2.5.4 </span>Packet sequencing</a></li></ul></li><li class="tocline"><a href="#channel-locking" class="tocxref"><span class="secno">2.6 </span>Channel locking</a></li><li class="tocline"><a href="#protocol-version-and-compatibility" class="tocxref"><span class="secno">2.7 </span>Protocol version and compatibility
+	  </a></li></ul></li><li class="tocline"><a href="#hid-device-implementation" class="tocxref"><span class="secno">3. </span>HID device implementation</a><ul class="toc"><li class="tocline"><a href="#interface--and-endpoint-descriptors" class="tocxref"><span class="secno">3.1 </span>Interface- and endpoint descriptors
+	  </a></li><li class="tocline"><a href="#hid-report-descriptor-and-device-discovery" class="tocxref"><span class="secno">3.2 </span>HID report descriptor and device discovery
+	  </a></li></ul></li><li class="tocline"><a href="#u2fhid-commands" class="tocxref"><span class="secno">4. </span>U2FHID commands
+	</a><ul class="toc"><li class="tocline"><a href="#mandatory-commands" class="tocxref"><span class="secno">4.1 </span>Mandatory commands
+	  </a><ul class="toc"><li class="tocline"><a href="#u2fhid_msg" class="tocxref"><span class="secno">4.1.1 </span>U2FHID_MSG</a></li><li class="tocline"><a href="#u2fhid_init" class="tocxref"><span class="secno">4.1.2 </span>U2FHID_INIT</a></li><li class="tocline"><a href="#u2fhid_ping" class="tocxref"><span class="secno">4.1.3 </span>U2FHID_PING</a></li><li class="tocline"><a href="#u2fhid_error" class="tocxref"><span class="secno">4.1.4 </span>U2FHID_ERROR</a></li></ul></li><li class="tocline"><a href="#optional-commands" class="tocxref"><span class="secno">4.2 </span>Optional commands
+	  </a><ul class="toc"><li class="tocline"><a href="#u2fhid_wink" class="tocxref"><span class="secno">4.2.1 </span>U2FHID_WINK</a></li><li class="tocline"><a href="#u2fhid_lock" class="tocxref"><span class="secno">4.2.2 </span>U2FHID_LOCK</a></li></ul></li><li class="tocline"><a href="#vendor-specific-commands" class="tocxref"><span class="secno">4.3 </span>Vendor specific commands
+	  </a></li></ul></li><li class="tocline"><a href="#references" class="tocxref"><span class="secno">A. </span>References</a><ul class="toc"><li class="tocline"><a href="#normative-references" class="tocxref"><span class="secno">A.1 </span>Normative references</a></li></ul></li></ul></section>
+    <section id="document-information">
+      <!--OddPage--><h2 aria-level="1" role="heading" id="h2_document-information"><span class="secno">1. </span>Document Information</h2>
+      <section id="notation">
+	<h3 aria-level="2" role="heading" id="h3_notation"><span class="secno">1.1 </span>Notation</h3>
+
+	<p>Type names, attribute names and element names are written as <code>code</code>.
+	</p>
+	<p>String literals are enclosed in “”, e.g. “UAF-TLV”.
+	</p>
+	<p>In formulas we use “|” to denote byte wise concatenation
+	  operations.
+	</p>
+	<p>DOM APIs are described using the ECMAScript [<cite><a class="bibref" href="#bib-ECMA-262">ECMA-262</a></cite>] bindings
+	  for WebIDL [<cite><a class="bibref" href="#bib-WebIDL">WebIDL</a></cite>].
+	</p>
+       <p>Symbolic constants such as <b>U2FHID_MSG</b> which are
+       referred to when defining messages in this documents have their
+       values defined in [<cite><a class="bibref" href="#bib-U2FHIDHeader">U2FHIDHeader</a></cite>] in the bibliography.
+       </p>
+	<p>UAF specific terminology used in this document is defined in
+	  [<cite><a class="bibref" href="#bib-FIDOGlossary">FIDOGlossary</a></cite>].
+	</p>
+	<section id="key-words">
+	  <h4 aria-level="3" role="heading" id="h4_key-words"><span class="secno">1.1.1 </span>Key Words</h4>
+
+	  <p>The key words “<em class="rfc2119" title="MUST">MUST</em>”, “<em class="rfc2119" title="MUST NOT">MUST NOT</em>”, “<em class="rfc2119" title="REQUIRED">REQUIRED</em>”, “<em class="rfc2119" title="SHALL">SHALL</em>”, “<em class="rfc2119" title="SHALL
+	    NOT">SHALL
+	    NOT</em>”, “<em class="rfc2119" title="SHOULD">SHOULD</em>”, “<em class="rfc2119" title="SHOULD NOT">SHOULD NOT</em>”, “<em class="rfc2119" title="RECOMMENDED">RECOMMENDED</em>”, “<em class="rfc2119" title="MAY">MAY</em>”, and
+	    “<em class="rfc2119" title="OPTIONAL">OPTIONAL</em>” in this document are to be interpreted as
+	    described in [<cite><a class="bibref" href="#bib-RFC2119">RFC2119</a></cite>].</p>
+	</section>
+      </section>
+      <section id="definitions">
+	<h3 aria-level="2" role="heading" id="h3_definitions"><span class="secno">1.2 </span>Definitions</h3>
+	<table title="Definitions" border="1" cellspacing="0" cellpadding="5">
+	  <tbody><tr><th>Term</th><th>Definition</th></tr>
+	  <tr><td>U2F</td><td>Universal Second Factor</td></tr>
+	  <tr><td>USB</td><td>Universal Serial Bus</td></tr>
+	  <tr><td>HID</td><td>Human Interface Device. A specification of typical USB devices
+	    used for human interaction, such as keyboards, mice, joysticks
+	    etc.</td></tr>
+	  <tr><td>U2FHID</td><td>U2F transport over HID as defined by this document</td></tr>
+	</tbody></table>
+      </section>
+    </section>
+    <section id="u2fhid-protocol-implementation">
+      <!--OddPage--><h2 aria-level="1" role="heading" id="h2_u2fhid-protocol-implementation"><span class="secno">2. </span>U2FHID protocol implementation</h2>
+      <p>This description does not describe the actual raw U2F
+	messages, semantics and functionality but rather how such
+	messages are framed for HID transport. The raw U2F messages
+        are defined in [<cite><a class="bibref" href="#bib-U2FRawMsgs">U2FRawMsgs</a></cite>]. For the U2FHID protocol, all raw U2F
+        messages are encoded using <b>extended length</b> APDU encoding.
+      </p>
+      <section id="u2fhid-implementation-rationale">
+	<h3 aria-level="2" role="heading" id="h3_u2fhid-implementation-rationale"><span class="secno">2.1 </span>U2FHID implementation rationale</h3>
+	<p>The U2FHID protocol is designed with the following design
+	  objectives in mind
+	</p>
+	<ul>
+	  <li>Driver-less installation on all major host platforms
+	  </li>
+	  <li>Multi-application support with concurrent application access
+	    without the need for serialization and centralized dispatching.
+	  </li>
+	  <li>Fixed latency response and low protocol overhead
+	  </li>
+	  <li>Scalable method for U2FHID device discovery
+	  </li>
+	</ul>
+	<p>Since HID data is sent as interrupt packets and multiple
+	  applications may access the HID stack at once, a non-trivial
+	  level of complexity has to be added to handle this.
+	</p>
+      </section>
+      <section id="protocol-structure-and-data-framing">
+	<h3 aria-level="2" role="heading" id="h3_protocol-structure-and-data-framing"><span class="secno">2.2 </span>Protocol structure and data framing
+	</h3>
+	<p>The U2F protocol is designed to be concurrent and state-less in
+	  such a way that each performed function is not dependent on
+	  previous actions. However, there has to be some form of
+	  "atomicity" that varies between the characteristics of the
+	  underlying transport protocol, which for the U2FHID protocol
+	  introduces the following terminology:
+	</p>
+	<ul>
+	  <li>Transaction
+	  </li>
+	  <li>Message
+	  </li>
+	  <li>Packet
+	  </li>
+	</ul>
+	<p>A <strong>transaction</strong> is the highest level of aggregated functionality,
+	  which in turn consists of a request, followed by a response
+	  message. Once a request has been initiated, the transaction has
+	  to be entirely completed before a second transaction can take
+	  place and a response is never sent without a previous request.
+	</p>
+	<p>Request- and response <strong>messages</strong> are in turn divided into
+	  individual fragments, known as <strong>packets</strong>. The packet is the
+	  smallest form of protocol data unit, which in the case of
+	  U2FHID are mapped into HID reports.
+	</p>
+      </section>
+      <section id="concurrency-and-channels">
+	<h3 aria-level="2" role="heading" id="h3_concurrency-and-channels"><span class="secno">2.3 </span>Concurrency and channels
+	</h3>
+	<p>Additional logic and overhead is required to allow a U2FHID
+	  device to deal with multiple "clients", i.e. multiple
+	  applications accessing the single resource through the HID
+	  stack. Each client communicates with a U2FHID device through a
+	  logical <strong>channel</strong>, where each application uses a unique 32-bit
+	  <strong>channel identifier</strong> for routing- and arbitration purposes.
+	</p>
+	<p>A channel identifier is allocated by the U2F device to ensure
+	  its system-wide uniqueness. The actual algorithm for generation
+	  of channel identifiers is vendor specific and not defined by
+	  this specification.
+	</p>
+	<p>Channel ID 0 is reserved and <code>0xffffffff</code> is reserved for
+	  broadcast commands, i.e. at the time of channel allocation.
+	</p>
+      </section>
+      <section id="message--and-packet-structure">
+	<h3 aria-level="2" role="heading" id="h3_message--and-packet-structure"><span class="secno">2.4 </span>Message- and packet structure
+      </h3>
+      <p>Packets are one of two types, <strong>initialization packets</strong> and
+	<strong>continuation packets</strong>. As the name suggests, the first packet
+	sent in a message is an initialization packet, which also
+	becomes the start of a transaction. If the entire message does
+	not fit into one packet (including the U2FHID protocol
+	overhead), one or more continuation packets have to be sent in
+	strict ascending order to complete the message transfer.
+      </p>
+      <p>A message sent from a host to a device is known as a <strong>request</strong> and
+	a message sent from a device back to the host is known as a
+	<strong>response</strong>. A request always triggers a response and response
+	messages are never sent ad-hoc, i.e. without a prior request
+	message.
+      </p>
+      <p>The request and response messages have an identical structure. A
+	transaction is started with the initialization packet of the
+	request message and ends with the last packet of the response
+	message.
+      </p>
+      <p>Packets are always fixed size (defined by the endpoint- and HID
+	report descriptors) and although all bytes may not be needed in
+	a particular packet, the full size always has to be sent. Unused
+	bytes should be set to zero.
+      </p>
+      <p>An initialization packet is defined as
+      </p>
+      <table title="Initialization Packet Definition" border="1" cellspacing="0" cellpadding="5">
+	<tbody><tr><th>Offset</th><th>Length</th><th>Mnemonic</th><th>Description</th></tr>
+	<tr><td>0</td><td>4</td><td>CID</td><td>Channel identifier</td></tr>
+	<tr><td>4</td><td>1</td><td>CMD</td><td>Command identifier (bit 7 always set)</td></tr>
+	<tr><td>5</td><td>1</td><td>BCNTH</td><td>High part of payload length</td></tr>
+	<tr><td>6</td><td>1</td><td>BCNTL</td><td>Low part of payload length</td></tr>
+	<tr><td>7</td><td>(s - 7)</td><td>DATA</td><td>Payload data (s is equal to the fixed packet size)</td></tr>
+      </tbody></table>
+      <p>The command byte has always the highest bit set to distinguish
+	it from a continuation packet, which is described below.
+      </p>
+      <p>A continuation packet is defined as
+      </p>
+       <table title="Continuation Packet Definition" border="1" cellspacing="0" cellpadding="5">
+	 <tbody><tr><th>Offset</th><th>Length</th><th>Mnemonic</th><th>Description</th></tr>
+	 <tr><td>0</td><td>4</td><td>CID</td><td>Channel identifier</td></tr>
+	 <tr><td>4</td><td>1</td><td>SEQ</td><td>Packet sequence 0x00..0x7f (bit 7 always cleared)</td></tr>
+	 <tr><td>5</td><td>(s - 5)</td><td>DATA</td><td>Payload data (s is equal to the fixed packet size)</td></tr>
+       </tbody></table>
+       <p>With this approach, a message with a payload less or equal to (s
+	 - 7) may be sent as one packet. A larger message is then divided
+	 into one or more continuation packets, starting with sequence
+	 number 0, which then increments by one to a maximum of 127.
+       </p>
+       <p>With a packet size of 64 bytes (max for full-speed devices),
+	 this means that the maximum message payload length is 64 - 7 +
+	 128 * (64 - 5) = 7609 bytes.
+       </p>
+      </section>
+      <section id="arbitration">
+	<h3 aria-level="2" role="heading" id="h3_arbitration"><span class="secno">2.5 </span>Arbitration
+	</h3>
+	<p>In order to handle multiple channels and clients concurrency,
+	  the U2FHID protocol has to maintain certain internal states,
+	  block conflicting requests and maintain protocol integrity. The
+	  protocol relies on each client application (channel) behaves
+	  politely, i.e. does not actively act to destroy for other
+	  channels. With this said, a malign- or malfunctioning
+	  application can cause issues for other channels. Expected
+	  errors and potentially stalling applications should however be
+	  handled properly.
+	</p>
+	<section id="transaction-atomicity-idle--and-busy-states.x">
+	  <h4 aria-level="3" role="heading" id="h4_transaction-atomicity-idle--and-busy-states.x"><span class="secno">2.5.1 </span>Transaction atomicity, idle- and busy states.</h4>
+
+	  <p>A transaction always consists of three stages:
+	  </p>
+	  <ol>
+	    <li>A message is sent from the host to the device
+	    </li>
+	    <li>The device processes the message
+	    </li>
+	    <li>A response is sent back from the device to the host
+	    </li>
+	  </ol>
+	  <p>The protocol is built on the assumption that a plurality of
+	    concurrent applications may try ad-hoc to perform transactions
+	    at any time, with each transaction being atomic, i.e. it cannot
+	    be interrupted by another application once started.
+	  </p>
+	  <p>The application channel that manages to get through the first
+	    initialization packet when the device is in idle state will
+	    keep the device locked for other channels until the last packet
+	    of the response message has been received. The device then
+	    returns to idle state, ready to perform another transaction for
+	    the same or a different channel. Between two transactions, no
+	    state is maintained in the device and a host application must
+	    assume that any other process may execute other transactions at
+	    any time.
+	  </p>
+	  <p>If an application tries to access the device from a different
+	    channel while the device is busy with a transaction, that
+	    request will immediately fail with a busy-error message sent to
+	    the requesting channel.
+	  </p>
+	</section>
+	<section id="transaction-timeout">
+	  <h4 aria-level="3" role="heading" id="h4_transaction-timeout"><span class="secno">2.5.2 </span>Transaction timeout</h4>
+	  <p>A transaction has to be completed within a specified period of
+	    time to prevent a stalling application to cause the device to
+	    be completely locked out for access by other applications. If
+	    for example an application sends an initialization packet that
+	    signals that continuation packets will follow and that
+	    application crashes, the device will back out that pending
+	    channel request and return to an idle state.
+	  </p>
+	</section>
+	<section id="transaction-abort-and-re-synchronization">
+	  <h4 aria-level="3" role="heading" id="h4_transaction-abort-and-re-synchronization"><span class="secno">2.5.3 </span>Transaction abort and re-synchronization</h4>
+	  <p>If an application for any reason "gets lost", gets an unexpected
+	    response or error, it may at any time issue an
+	    abort-and-resynchronize command. If the device detects a SYNC
+	    command during a transaction that has the same channel id as
+	    the active transaction, the transaction is aborted (if
+	    possible) and all buffered data flushed (if any). The device
+	    then returns to idle state to become ready for a new
+	    transaction.
+	  </p>
+	</section>
+	<section id="packet-sequencing">
+	  <h4 aria-level="3" role="heading" id="h4_packet-sequencing"><span class="secno">2.5.4 </span>Packet sequencing</h4>
+
+	    <p>The device keeps track of packets arriving in correct and
+	      ascending order and that no expected packets are missing. The
+	      device will continue to assemble a message until all parts of
+	      it has been received or that the transaction times out.
+	      Spurious continuation packets appearing without a prior
+	      initialization packet will be ignored.
+	    </p>
+	  </section>
+	</section>
+	<section id="channel-locking">
+	  <h3 aria-level="2" role="heading" id="h3_channel-locking"><span class="secno">2.6 </span>Channel locking</h3>
+	  <p>In order to deal with aggregated transactions that may not be
+	    interrupted, such as vendor specific tunneling of APDUs, a
+	    channel lock command may be implemented. By sending a channel
+	    lock command, the device prevents other channels from
+	    communicating with the device until the channel lock has timed
+	    out or been explicitly unlocked by the application.
+	  </p>
+	  <p>This feature is optional and has not to be considered by general
+	    U2F HID applications.
+	  </p>
+	</section>
+	<section id="protocol-version-and-compatibility">
+	  <h3 aria-level="2" role="heading" id="h3_protocol-version-and-compatibility"><span class="secno">2.7 </span>Protocol version and compatibility
+	  </h3>
+	  <p>The U2FHID protocol is designed to be extensible, yet
+	    maintaining backwards compatibility to the extent it is
+	    applicable. This means that a U2FHID host shall support any
+	    version of a device with the command set available in that
+	    particular version.
+	  </p>
+	</section>
+      </section>
+      <section id="hid-device-implementation">
+	<!--OddPage--><h2 aria-level="1" role="heading" id="h2_hid-device-implementation"><span class="secno">3. </span>HID device implementation</h2>
+
+	<p>This description assumes knowledge of the USB- and HID
+	  specifications and is intended to provide the basics for
+	  implementing a U2FHID device. There are several ways to
+	  implement USB devices and reviewing these different methods is
+	  beyond the scope of this document. This specification targets
+	  the interface part, where a device is regarded as either a
+	  single- or multiple interface (composite) device.
+	</p>
+	<p>The description further assumes (but is not limited to) a
+	  full-speed USB device (12 Mbit/s). Although not excluded per
+	  se, USB low-speed devices are not practical to use given the
+	  8-byte report size limitation together with the protocol
+	  overhead.
+	</p>
+	<section id="interface--and-endpoint-descriptors">
+	  <h3 aria-level="2" role="heading" id="h3_interface--and-endpoint-descriptors"><span class="secno">3.1 </span>Interface- and endpoint descriptors
+	  </h3>
+	  <p>The device implements two endpoints (except the control endpoint
+	    0), one for IN- and one for OUT transfers. The packet size is
+	    vendor defined, but the reference implementation assumes a
+	    full-speed device with two 64-byte endpoints.
+	  </p>
+	  <p><strong>Interface Descriptor</strong></p>
+	  <table title="Interface Descriptor" border="1" cellspacing="0" cellpadding="5">
+	    <tbody><tr><th>Mnemonic</th><th>Value</th><th>Description</th></tr>
+	    <tr><td>bNumEndpoints</td><td>2</td><td>One IN- and one OUT endpoint</td></tr>
+	    <tr><td>bInterfaceClass</td><td>0x03</td><td>HID</td></tr>
+	    <tr><td>bInterfaceSubClass</td><td>0x00</td><td>No interface subclass</td></tr>
+	    <tr><td>bInterfaceProtocol</td><td>0x00</td><td>No interface protocol</td></tr>
+	  </tbody></table>
+	  <p><strong>Endpoint 1 descriptor</strong></p>
+	  <table title="Endpoint 1 descriptor" border="1" cellspacing="0" cellpadding="5">
+	    <tbody><tr><th>Mnemonic</th><th>Value</th><th>Description</th></tr>
+	    <tr><td>bmAttributes</td><td>0x03</td><td>Interrupt transfer</td></tr>
+	    <tr><td>bEndpointAdresss</td><td>0x01</td><td>1, OUT</td></tr>
+	    <tr><td>bMaxPacketSize</td><td>64</td><td>64 bytes packets</td></tr>
+	    <tr><td>bInterval</td><td>5</td><td>Poll every 5 millisecond</td></tr>
+	  </tbody></table>
+	  <p><strong>Endpoint 2 descriptor</strong></p>
+	  <table title="Endpoint 2 descriptor" border="1" cellspacing="0" cellpadding="5">
+	    <tbody><tr><th>Mnemonic</th><th>Value</th><th>Description</th></tr>
+	    <tr><td>bmAttributes</td><td>0x03</td><td>Interrupt transfer</td></tr>
+	    <tr><td>bEndpointAdresss</td><td>0x81</td><td>1, IN</td></tr>
+	    <tr><td>bMaxPacketSize</td><td>64</td><td>64 bytes packets</td></tr>
+	    <tr><td>bInterval</td><td>5</td><td>Poll every 5 millisecond</td></tr>
+	  </tbody></table>
+	  <p>The actual endpoint order, intervals, endpoint numbers and
+	    endpoint packet size may be defined freely by the vendor and
+	    the host application is responsible for querying these values
+	    and handle these accordingly. For the sake of clarity, the
+	    values listed above are used in the following examples.
+	  </p>
+	</section>
+	<section id="hid-report-descriptor-and-device-discovery">
+	  <h3 aria-level="2" role="heading" id="h3_hid-report-descriptor-and-device-discovery"><span class="secno">3.2 </span>HID report descriptor and device discovery
+	  </h3>
+	  <p>A HID report descriptor is required for all HID devices, even
+	    though the reports and their interpretation (scope, range,
+	    etc.) makes very little sense from an operating system
+	    perspective. The U2FHID just provides two "raw" reports, which
+	    basically map directly to the IN and OUT endpoints. However,
+	    the HID report descriptor has an important purpose in U2FHID,
+	    as it is used for device discovery.
+	  </p>
+	  <p>For the sake of clarity, a bit of high-level C-style abstraction
+	    is provided
+	  </p>
+	  <div class="example"><div class="example-title"><span>Example 1</span></div><pre class="example">// HID report descriptor
+
+const uint8_t HID_ReportDescriptor[] = {
+  HID_UsagePage ( FIDO_USAGE_PAGE ),
+  HID_Usage ( FIDO_USAGE_U2FHID ),
+  HID_Collection ( HID_Application ),
+  HID_Usage ( FIDO_USAGE_DATA_IN ),
+  HID_LogicalMin ( 0 ),
+  HID_LogicalMaxS ( 0xff ),
+  HID_ReportSize ( 8 ),
+  HID_ReportCount ( HID_INPUT_REPORT_BYTES ),
+  HID_Input ( HID_Data | HID_Absolute | HID_Variable ),
+  HID_Usage ( FIDO_USAGE_DATA_OUT ),
+  HID_LogicalMin ( 0 ),
+  HID_LogicalMaxS ( 0xff ),
+  HID_ReportSize ( 8 ),
+  HID_ReportCount ( HID_OUTPUT_REPORT_BYTES ),
+  HID_Output ( HID_Data | HID_Absolute | HID_Variable ),
+HID_EndCollection
+};</pre></div>
+
+	  <p>A unique <strong>Usage Page</strong> is defined for the FIDO alliance and under
+	    this realm, a U2FHID <strong>Usage</strong> is defined as well. During U2FHID
+	    device discovery, all HID devices present in the system are
+	    examined and devices that match this usage pages and usage are
+	    then considered to be U2FHID devices.
+	  </p>
+	  <p>The length values specified by the <code>HID_INPUT_REPORT_BYTES</code> and
+	    the <code>HID_OUTPUT_REPORT_BYTES</code> should typically match the
+	    respective endpoint sizes defined in the endpoint descriptors.
+	  </p>
+	</section>
+      </section>
+
+      <section id="u2fhid-commands">
+	<!--OddPage--><h2 aria-level="1" role="heading" id="h2_u2fhid-commands"><span class="secno">4. </span>U2FHID commands
+	</h2>
+	<p>The U2FHID protocol implements the following commands. </p>
+	<section id="mandatory-commands">
+	  <h3 aria-level="2" role="heading" id="h3_mandatory-commands"><span class="secno">4.1 </span>Mandatory commands
+	  </h3>
+	  <p>The following list describes the minimum set of commands
+	    required by an U2FHID device. Optional- and vendor-specific
+	    commands may be implemented as described in respective sections
+	  of this document.
+	</p>
+	<section id="u2fhid_msg">
+	  <h4 aria-level="3" role="heading" id="h4_u2fhid_msg"><span class="secno">4.1.1 </span>U2FHID_MSG</h4>
+	<p></p>
+	<p>This command sends an encapsulated U2F message to the device.
+	  The semantics of the data message is defined in the U2F
+	  protocol specification.
+	</p>
+	<p><strong>Request</strong></p>
+	<table title="Request" border="1" cellspacing="0" cellpadding="5">
+	  <tbody><tr><td>CMD</td><td>U2FHID_MSG</td></tr>
+	  <tr><td>BCNT</td><td>4..n</td></tr>
+	  <tr><td>DATA</td><td>n bytes</td></tr>
+	</tbody></table>
+	<p><strong>Response at success</strong></p>
+	<table title="Response at success" border="1" cellspacing="0" cellpadding="5">
+	  <tbody><tr><td>CMD</td><td>U2FHID_MSG</td></tr>
+	  <tr><td>BCNT</td><td>2..n</td></tr>
+	  <tr><td>DATA</td><td>N bytes</td></tr>
+	</tbody></table>
+	</section>
+	<section id="u2fhid_init">
+	  <h4 aria-level="3" role="heading" id="h4_u2fhid_init"><span class="secno">4.1.2 </span>U2FHID_INIT</h4>
+
+	  <p>This command synchronizes a channel and optionally requests the
+	    device to allocate a unique 32-bit channel identifier (CID)
+	    that can be used by the requesting application during its
+	    lifetime. The requesting application generates a nonce that is
+	    used to match the response. When the response is received, the
+	    application compares the sent nonce with the received one.
+	    After a positive match, the application stores the received
+	    channel id and uses that for subsequent transactions.
+	  </p>
+	  <p>To allocate a new channel, the requesting application shall use
+	    the broadcast channel U2FHID_BROADCAST_CID. The device then
+	    responds the newly allocated channel in the response, using the
+	    broadcast channel.
+	  </p>
+	  <p><strong>Request</strong></p>
+	  <table title="Request" border="1" cellspacing="0" cellpadding="5">
+	    <tbody><tr><td>CMD</td><td>U2FHID _INIT</td></tr>
+	    <tr><td>BCNT</td><td>8</td></tr>
+	    <tr><td>DATA</td><td>8 byte nonce</td></tr>
+	  </tbody></table>
+	  <p><strong>Response at success</strong></p>
+	  <table title="Response at success" border="1" cellspacing="0" cellpadding="5">
+	    <tbody><tr><td>CMD</td><td>U2FHID _INIT</td></tr>
+	    <tr><td>BCNT</td><td>17 (see note below)</td></tr>
+	    <tr><td>DATA</td><td>8 byte nonce</td></tr>
+	    <tr><td>DATA+8</td><td>4 byte channel ID</td></tr>
+	    <tr><td>DATA+12</td><td>U2FHID protocol version identifier</td></tr>
+	    <tr><td>DATA+13</td><td>Major device version number</td></tr>
+	    <tr><td>DATA+14</td><td>Minor device version number</td></tr>
+	    <tr><td>DATA+15</td><td>Build device version number</td></tr>
+	    <tr><td>DATA+16</td><td>Capabilities flags</td></tr>
+	  </tbody></table>
+	  <p>The protocol version identifies the protocol version implemented
+	    by the device. An U2FHID host shall accept a response size that
+	    is longer than the anticipated size to allow for future
+	    extensions of the protocol, yet maintaining backwards
+	    compatibility. Future versions will maintain the response
+	    structure to this current version, but additional fields may be
+	    added.
+	  </p>
+	    <p>The meaning and interpretation of the version number is vendor
+	      defined.
+	    </p>
+	    <p>The following device capabilities flags are defined. Unused
+	      values are reserved for future use and must be set to zero by
+	      device vendors.
+	    </p>
+	    <table title="Capabilities flags" border="1" cellspacing="0" cellpadding="5">
+	      <tbody><tr><td>CAPABILITY_WINK</td><td>Implements the WINK function</td></tr>
+	    </tbody></table>
+	</section>
+	<section id="u2fhid_ping">
+	  <h4 aria-level="3" role="heading" id="h4_u2fhid_ping"><span class="secno">4.1.3 </span>U2FHID_PING</h4>
+	  <p>Sends a transaction to the device, which immediately echoes the
+	    same data back. This command is defined to be an uniform
+	    function for debugging-, latency- and performance measurements.
+	  </p>
+	  <p><strong>Request</strong></p>
+	  <table title="Request" border="1" cellspacing="0" cellpadding="5">
+	    <tbody><tr><td>CMD</td><td>U2FHID_PING</td></tr>
+	    <tr><td>BCNT</td><td>0..n</td></tr>
+	    <tr><td>DATA</td><td>n bytes</td></tr>
+	  </tbody></table>
+	  <p><strong>Response at success</strong></p>
+	  <table title="Response at success" border="1" cellspacing="0" cellpadding="5">
+	    <tbody><tr><td>CMD</td><td>U2FHID_PING</td></tr>
+	    <tr><td>BCNT</td><td>n</td></tr>
+	    <tr><td>DATA</td><td>N bytes</td></tr>
+	  </tbody></table>
+	</section>
+	<section id="u2fhid_error">
+	  <h4 aria-level="3" role="heading" id="h4_u2fhid_error"><span class="secno">4.1.4 </span>U2FHID_ERROR</h4>
+
+	  <p>This command code is used in response messages only.
+	  </p>
+	  <table title="Response" border="1" cellspacing="0" cellpadding="5">
+	    <tbody><tr><td>CMD</td><td>U2FHID_ERROR</td></tr>
+	    <tr><td>BCNT</td><td>1</td></tr>
+	    <tr><td>DATA</td><td>Error code</td></tr>
+	  </tbody></table>
+	  <p>The following error codes are defined
+	  </p>
+	  <table title="Error Codes" border="1" cellspacing="0" cellpadding="5">
+	    <tbody><tr><td>ERR_INVALID_CMD</td><td>The command in the request is invalid</td></tr>
+	    <tr><td>ERR_INVALID_PAR</td><td>The parameter(s) in the request is invalid</td></tr>
+	    <tr><td>ERR_INVALID_LEN</td><td>The length field (BCNT) is invalid for the request</td></tr>
+	    <tr><td>ERR_INVALID_SEQ</td><td>The sequence does not match expected value</td></tr>
+	    <tr><td>ERR_MSG_TIMEOUT</td><td>The message has timed out</td></tr>
+	    <tr><td>ERR_CHANNEL_BUSY</td><td>The device is busy for the requesting channel</td></tr>
+	  </tbody></table>
+	</section>
+	</section>
+	<section id="optional-commands">
+	  <h3 aria-level="2" role="heading" id="h3_optional-commands"><span class="secno">4.2 </span>Optional commands
+	  </h3>
+	  <p>The following commands are defined by this specification but are
+	    optional and does not have to be implemented.
+	  </p>
+	  <section id="u2fhid_wink"><h4 aria-level="3" role="heading" id="h4_u2fhid_wink"><span class="secno">4.2.1 </span>U2FHID_WINK</h4>
+
+	    <p>The wink command performs a vendor-defined action that provides
+	      some visual- or audible identification a particular U2F device.
+	      A typical implementation will do a short burst of flashes with a
+	      LED or something similar. This is useful when more than one
+	      device is attached to a computer and there is confusion which
+	      device is paired with which connection.
+	    </p>
+	    <p><strong>Request</strong></p>
+	    <table title="Request" border="1" cellspacing="0" cellpadding="5">
+	      <tbody><tr><td>CMD</td><td>U2FHID_WINK</td></tr>
+	      <tr><td>BCNT</td><td>0</td></tr>
+	      <tr><td>DATA</td><td>N/A</td></tr>
+	    </tbody></table>
+	    <p><strong>Response at success</strong></p>
+	    <table title="Response at success" border="1" cellspacing="0" cellpadding="5">
+	      <tbody><tr><td>CMD</td><td>U2FHID_WINK</td></tr>
+	      <tr><td>BCNT</td><td>0</td></tr>
+	      <tr><td>DATA</td><td>N/A</td></tr>
+	    </tbody></table>
+	  </section>
+	  <section id="u2fhid_lock">
+	    <h4 aria-level="3" role="heading" id="h4_u2fhid_lock"><span class="secno">4.2.2 </span>U2FHID_LOCK</h4>
+      <p></p>
+      <p>The lock command places an exclusive lock for one channel to
+	communicate with the device. As long as the lock is active, any
+	other channel trying to send a message will fail. In order to
+	prevent a stalling- or crashing application to lock the device
+	indefinitely, a lock time up to 10 seconds may be set. An
+	application requiring a longer lock has to send repeating lock
+	commands to maintain the lock.
+      </p>
+      <p><strong>Request</strong></p>
+      <table title="Request" border="1" cellspacing="0" cellpadding="5">
+	<tbody><tr><td>CMD</td><td>U2FHID_LOCK</td></tr>
+	<tr><td>BCNT</td><td>1</td></tr>
+	<tr><td>DATA</td><td>Lock time in seconds 0..10. A value of 0 immediately releases the lock</td></tr>
+      </tbody></table>
+      <p><strong>Response at success</strong></p>
+      <table title="Response at success" border="1" cellspacing="0" cellpadding="5">
+	<tbody><tr><td>CMD</td><td>U2FHID_LOCK</td></tr>
+	<tr><td>BCNT</td><td>0</td></tr>
+	<tr><td>DATA</td><td>N/A</td></tr>
+      </tbody></table>
+	  </section>
+	</section>
+	<section id="vendor-specific-commands">
+	  <h3 aria-level="2" role="heading" id="h3_vendor-specific-commands"><span class="secno">4.3 </span>Vendor specific commands
+	  </h3>
+	  <p>A U2FHID may implement additional vendor specific commands that
+	    are not defined in this specification, yet being U2FHID
+	    compliant. Such commands, if implemented must have a command in
+	    the range between U2FHID_VENDOR_FIRST and U2FHID_VENDOR_LAST.
+	  </p>
+	</section>
+      </section>
+  
+
+<section id="references" class="appendix" typeof="bibo:Chapter" resource="#ref" rel="bibo:Chapter"><!--OddPage--><h2 aria-level="1" role="heading" id="h2_references"><span class="secno">A. </span>References</h2><section id="normative-references" typeof="bibo:Chapter" resource="#ref" rel="bibo:Chapter"><h3 aria-level="2" role="heading" id="h3_normative-references"><span class="secno">A.1 </span>Normative references</h3><dl class="bibliography" about=""><dt id="bib-ECMA-262">[ECMA-262]</dt><dd rel="dcterms:requires"><a href="https://tc39.github.io/ecma262/"><cite>ECMAScript Language Specification</cite></a>. URL: <a href="https://tc39.github.io/ecma262/">https://tc39.github.io/ecma262/</a>
+</dd><dt id="bib-FIDOGlossary">[FIDOGlossary]</dt><dd rel="dcterms:requires">R. Lindemann, D. Baghdasaryan, B. Hill, J. Hodges, <cite>FIDO Technical Glossary</cite>. FIDO Alliance Proposed Standard. URLs: <br>HTML: <a href="./fido-glossary-v1.1-rd-20160915.html">fido-glossary-v1.1-rd-20160915.html</a> <br>PDF: <a href="./fido-glossary-v1.1-rd-20160915.pdf">fido-glossary-v1.1-rd-20160915.pdf</a>
+</dd><dt id="bib-RFC2119">[RFC2119]</dt><dd rel="dcterms:requires">S. Bradner. <a href="https://tools.ietf.org/html/rfc2119"><cite>Key words for use in RFCs to Indicate Requirement Levels</cite></a>. March 1997. Best Current Practice. URL: <a href="https://tools.ietf.org/html/rfc2119">https://tools.ietf.org/html/rfc2119</a>
+</dd><dt id="bib-U2FHIDHeader">[U2FHIDHeader]</dt><dd rel="dcterms:requires">J. Ehrensvard, <a href="https://github.com/fido-alliance/u2f-specs/blob/master/inc/u2f_hid.h"><cite>FIDO U2F HID Header Files v1.0</cite></a>. FIDO Alliance Review Draft (Work in progress.) URL:  <a href="https://github.com/fido-alliance/u2f-specs/blob/master/inc/u2f_hid.h">https://github.com/fido-alliance/u2f-specs/blob/master/inc/u2f_hid.h</a>
+</dd><dt id="bib-U2FRawMsgs">[U2FRawMsgs]</dt><dd rel="dcterms:requires">D. Balfanz, <a href="./fido-u2f-raw-message-formats-v1.1-rd-20160915.pdf"><cite>FIDO U2F Raw Message Formats v1.0</cite></a>. FIDO Alliance Review Draft (Work in progress.) URL:  <a href="./fido-u2f-raw-message-formats-v1.1-rd-20160915.pdf">./fido-u2f-raw-message-formats-v1.1-rd-20160915.pdf</a>
+</dd><dt id="bib-WebIDL">[WebIDL]</dt><dd rel="dcterms:requires">Cameron McCormack; Boris Zbarsky. <a href="https://www.w3.org/TR/WebIDL-1/"><cite>WebIDL Level 1</cite></a>. 15 September 2016. W3C Proposed Recommendation. URL: <a href="https://www.w3.org/TR/WebIDL-1/">https://www.w3.org/TR/WebIDL-1/</a>
+</dd></dl></section></section></body></html>

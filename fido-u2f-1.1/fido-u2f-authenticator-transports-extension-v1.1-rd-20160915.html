@@ -1,0 +1,385 @@
+<!DOCTYPE html PUBLIC '-//W3C//DTD XHTML 1.0 Strict//EN' 'http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd'>
+<html lang="en" dir="ltr" typeof="bibo:Document w3p:CR" about="" property="dcterms:language" content="en" prefix="bibo: http://purl.org/ontology/bibo/ w3p: http://www.w3.org/2001/02pd/rec54#">
+<head>
+    <title>FIDO U2F Authenticator Transports Extension</title>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    
+    
+    
+  <style>/*****************************************************************
+ * ReSpec 3 CSS
+ * Robin Berjon - http://berjon.com/
+ *****************************************************************/
+
+/* --- INLINES --- */
+em.rfc2119 { 
+    text-transform:     lowercase;
+    font-variant:       small-caps;
+    font-style:         normal;
+    color:              #900;
+}
+
+h1 acronym, h2 acronym, h3 acronym, h4 acronym, h5 acronym, h6 acronym, a acronym,
+h1 abbr, h2 abbr, h3 abbr, h4 abbr, h5 abbr, h6 abbr, a abbr {
+    border: none;
+}
+
+dfn {
+    font-weight:    bold;
+}
+
+a.internalDFN {
+    color:  inherit;
+    border-bottom:  1px solid #99c;
+    text-decoration:    none;
+}
+
+a.externalDFN {
+    color:  inherit;
+    border-bottom:  1px dotted #ccc;
+    text-decoration:    none;
+}
+
+a.bibref {
+    text-decoration:    none;
+}
+
+cite .bibref {
+    font-style: normal;
+}
+
+code {
+    color:  #ff4500;
+}
+
+/* --- TOC --- */
+.toc a, .tof a {
+    text-decoration:    none;
+}
+
+a .secno, a .figno {
+    color:  #000;
+}
+
+ul.tof, ol.tof {
+    list-style: none outside none;
+}
+
+.caption {
+    margin-top: 0.5em;
+    font-style:   italic;
+}
+
+/* --- TABLE --- */
+table.simple {
+    border-spacing: 0;
+    border-collapse:    collapse;
+    border-bottom:  3px solid #003a7c;
+}
+
+.simple th {
+    background: #003a7c;
+    color:  #fff;
+    padding:    3px 5px;
+    text-align: left;
+}
+
+.simple th[scope="row"] {
+    background: inherit;
+    color:  inherit;
+    border-top: 1px solid #ddd;
+}
+
+.simple td {
+    padding:    3px 10px;
+    border-top: 1px solid #ddd;
+}
+
+.simple tr:nth-child(even) {
+    background: #f0f6ff;
+}
+
+/* --- DL --- */
+.section dd > p:first-child {
+    margin-top: 0;
+}
+
+.section dd > p:last-child {
+    margin-bottom: 0;
+}
+
+.section dd {
+    margin-bottom:  1em;
+}
+
+.section dl.attrs dd, .section dl.eldef dd {
+    margin-bottom:  0;
+}
+
+@media print {
+    .removeOnSave {
+        display: none;
+    }
+}
+</style><style>/* --- EXAMPLES --- */
+div.example-title {
+    min-width: 7.5em;
+    color: #b9ab2d;
+}
+div.example-title span {
+    text-transform: uppercase;   
+}
+aside.example, div.example, div.illegal-example {
+    padding: 0.5em;
+    margin: 1em 0;
+    position: relative;
+    clear: both;
+}
+div.illegal-example { color: red }
+div.illegal-example p { color: black }
+aside.example, div.example {
+    padding: .5em;
+    border-left-width: .5em;
+    border-left-style: solid;
+    border-color: #e0cb52;
+    //background: #fcfaee;    
+    background: rgba(252,250,238,0.3);    
+}
+
+aside.example div.example {
+    border-left-width: .1em;
+    border-color: #999;
+    background: #fff;
+}
+aside.example div.example div.example-title {
+    color: #999;
+}
+</style><link rel="stylesheet" href="resources/FIDO-RD.css"><!--[if lt IE 9]><script src='https://www.w3.org/2008/site/js/html5shiv.js'></script><![endif]--></head>
+  <body class="h-entry" style="" role="document" id="respecDocument"><div class="head" role="contentinfo" id="respecHeader">
+  <p>
+    
+      <a href="https://www.fidoalliance.org/"><img width="250" id="toplogo" src="resources/logo.png" alt="FIDO Alliance"></a>
+    
+  </p>
+  <h1 class="title p-name" id="title" property="dcterms:title">FIDO U2F Authenticator Transports Extension</h1>
+  
+  <h2 property="dcterms:issued" datatype="xsd:dateTime" content="2016-09-15T07:00:00.000Z" id="fido-alliance-review-draft-15-september-2016"><abbr title="FIDO Alliance">FIDO Alliance</abbr> Review Draft <time class="dt-published" datetime="2016-09-15">15 September 2016</time></h2>
+  <dl>
+    
+      <dt>This version:</dt>
+      <dd><a class="u-url" href="https://fidoalliance.org/specs/fido-u2f-v1.1-rd-20160915/fido-u2f-authenticator-transports-v1.1-v1.1-rd-20160915.html">https://fidoalliance.org/specs/fido-u2f-v1.1-rd-20160915/fido-u2f-authenticator-transports-v1.1-v1.1-rd-20160915.html</a></dd>
+      <!--<dt>Latest published version:</dt>
+      <dd><a href='https://fidoalliance.org/specs/fido-u2f-authenticator-transports-v1.1/'>https://fidoalliance.org/specs/fido-u2f-authenticator-transports-v1.1/</a></dd>
+    
+    -->
+    
+    
+    
+    
+    
+    
+    <dt>Editors:</dt>
+    <dd class="p-author h-card vcard" rel="bibo:editor" inlist=""><span typeof="foaf:Person"><a class="u-url url p-name fn" rel="foaf:homepage" property="foaf:name" content="Juan Lang" href="mailto:juanlang@google.com">Juan Lang</a>, <a rel="foaf:workplaceHomepage" class="p-org org h-org h-card" href="https://www.google.com/">Google, Inc.</a></span>
+</dd>
+<dd class="p-author h-card vcard" rel="bibo:editor" inlist=""><span typeof="foaf:Person"><a class="u-url url p-name fn" rel="foaf:homepage" property="foaf:name" content="Robin Bertels" href="mailto:robin.bertels@st.com">Robin Bertels</a>, <a rel="foaf:workplaceHomepage" class="p-org org h-org h-card" href="https://www.st.com">STMicroelectronics</a></span>
+</dd>
+<dd class="p-author h-card vcard" rel="bibo:editor" inlist=""><span typeof="foaf:Person"><a class="u-url url p-name fn" rel="foaf:homepage" property="foaf:name" content="Alexei Czeskis" href="mailto:aczeskis@google.com">Alexei Czeskis</a>, <a rel="foaf:workplaceHomepage" class="p-org org h-org h-card" href="https://www.google.com/">Google, Inc.</a></span>
+</dd>
+
+    
+    
+  </dl>
+  
+  
+  
+  
+    
+      <p class="copyright">
+        Copyright ©
+        2015-2016
+        
+        <a href="https://www.fidoalliance.org/"><abbr title="FIDO Alliance">FIDO Alliance</abbr></a>
+        All Rights Reserved.
+      </p>
+    
+  
+  <hr>
+</div>
+    
+    <section id="abstract" class="introductory" property="dcterms:abstract" datatype="" typeof="bibo:Chapter" resource="#ref" rel="bibo:Chapter"><h2 aria-level="1" role="heading" id="h2_abstract">Abstract</h2>
+      <p>
+        FIDO-compliant relying parties may wish to offer tailored user
+        interfaces based on the transports a FIDO U2F authenticator
+        supports. This standard describes one way relying parties may learn
+        which transports an authenticator supports, by allowing authenticator
+        vendors to embed hardware features as an optional extension in the
+        authenticator’s attestation certificate.
+      </p>
+    </section><section id="sotd" class="introductory" typeof="bibo:Chapter" resource="#ref" rel="bibo:Chapter"><h2 aria-level="1" role="heading" id="h2_sotd">Status of This Document</h2>
+  
+    
+      
+        <p>
+          <em>This section describes the status of this document at the time of its publication.
+          Other documents may supersede this document. A list of current <abbr title="FIDO Alliance">FIDO Alliance</abbr> publications and the
+          latest revision of this technical report can be found in the <a href="https://www.fidoalliance.org/specifications/"><abbr title="FIDO Alliance">FIDO Alliance</abbr> specifications index</a> at
+          https://www.fidoalliance.org/specifications/.</em>
+        </p>
+        
+        <p>
+          This document was published by the <a href="http://www.fidoalliance.org/"><abbr title="FIDO Alliance">FIDO Alliance</abbr></a> as a Review Draft.
+          
+            This document is intended to become a <abbr title="FIDO Alliance">FIDO Alliance</abbr> Proposed Standard.
+          
+          
+            If you wish to make comments regarding this document, please 
+            <a href="https://fidoalliance.org/contact">Contact Us</a>.
+          
+          
+          
+          
+            All comments are welcome.
+          
+        </p>
+        
+	
+	
+	  <div class="ribbon-wrapper"><div class="ribbon">REVIEW DRAFT</div></div>
+	  <p>
+	    <strong>This is a Review Draft Specification and
+            is not intended to be a basis for any implementations as the Specification may change.</strong> Permission is
+            hereby granted to use the Specification solely for the purpose of reviewing the Specification. No rights
+            are granted to prepare derivative works of this Specification. Entities seeking permission to reproduce
+            portions of this Specification for other uses must contact the <abbr title="FIDO Alliance">FIDO Alliance</abbr> to determine whether an 
+            appropriate license for such use is available.
+	  </p>
+	
+	
+        
+          <p>
+	    Implementation of certain elements of this Specification may require licenses under third party intellectual 
+	    property rights, including without limitation, patent rights. The <abbr title="FIDO Alliance">FIDO Alliance</abbr>, Inc. and its Members
+            and any other contributors to the Specification are not, and shall not be held, responsible in any manner
+            for identifying or failing to identify any or all such third party intellectual property rights.
+	  </p>
+	  <p>
+	    THIS FIDO ALLIANCE SPECIFICATION IS PROVIDED “AS IS” AND WITHOUT ANY 
+            WARRANTY OF ANY KIND, INCLUDING, WITHOUT LIMITATION, ANY EXPRESS OR IMPLIED
+	    WARRANTY OF NON-INFRINGEMENT, MERCHANTABILITY OR FITNESS FOR A
+	    PARTICULAR PURPOSE.
+          </p>
+        
+        
+        
+        
+      
+    
+  
+</section><section id="toc"><h2 class="introductory" aria-level="1" role="heading" id="h2_toc">Table of Contents</h2><ul class="toc" role="directory" id="respecContents"><li class="tocline"><a href="#document-information" class="tocxref"><span class="secno">1. </span>Document Information</a><ul class="toc"><li class="tocline"><a href="#notation" class="tocxref"><span class="secno">1.1 </span>Notation</a><ul class="toc"><li class="tocline"><a href="#key-words" class="tocxref"><span class="secno">1.1.1 </span>Key Words</a></li></ul></li></ul></li><li class="tocline"><a href="#attestation-certificates" class="tocxref"><span class="secno">2. </span>Attestation certificates</a></li><li class="tocline"><a href="#fido-u2f-extensions" class="tocxref"><span class="secno">3. </span>FIDO U2F extensions</a><ul class="toc"><li class="tocline"><a href="#fido-u2f-oid-arc" class="tocxref"><span class="secno">3.1 </span>FIDO U2F OID arc</a></li><li class="tocline"><a href="#fido-u2f-certificate-extensions" class="tocxref"><span class="secno">3.2 </span>FIDO U2F certificate extensions</a><ul class="toc"><li class="tocline"><a href="#fido-u2f-certificate-transports-extension" class="tocxref"><span class="secno">3.2.1 </span>FIDO U2F certificate transports extension</a></li></ul></li><li class="tocline"><a href="#examples" class="tocxref"><span class="secno">3.3 </span>Examples</a><ul class="toc"><li class="tocline"><a href="#bt-classic-authenticator" class="tocxref"><span class="secno">3.3.1 </span>BT classic authenticator</a></li><li class="tocline"><a href="#usb-nfc-authenticator" class="tocxref"><span class="secno">3.3.2 </span>USB + NFC authenticator</a></li></ul></li></ul></li><li class="tocline"><a href="#references" class="tocxref"><span class="secno">A. </span>References</a><ul class="toc"><li class="tocline"><a href="#normative-references" class="tocxref"><span class="secno">A.1 </span>Normative references</a></li></ul></li></ul></section>
+    <section id="document-information">
+      <!--OddPage--><h2 aria-level="1" role="heading" id="h2_document-information"><span class="secno">1. </span>Document Information</h2>
+      <section id="notation">
+        <h3 aria-level="2" role="heading" id="h3_notation"><span class="secno">1.1 </span>Notation</h3>
+          <p>Type names, attribute names and element names are written as <code>code</code>.</p>
+          <section id="key-words">
+            <h4 aria-level="3" role="heading" id="h4_key-words"><span class="secno">1.1.1 </span>Key Words</h4>
+            <p>
+              The key words “<em class="rfc2119" title="MUST">MUST</em>”, “<em class="rfc2119" title="MUST NOT">MUST NOT</em>”, “<em class="rfc2119" title="REQUIRED">REQUIRED</em>”, “<em class="rfc2119" title="SHALL">SHALL</em>”, “<em class="rfc2119" title="SHALL
+              NOT">SHALL
+              NOT</em>”, “<em class="rfc2119" title="SHOULD">SHOULD</em>”, “<em class="rfc2119" title="SHOULD NOT">SHOULD NOT</em>”, “<em class="rfc2119" title="RECOMMENDED">RECOMMENDED</em>”, “<em class="rfc2119" title="MAY">MAY</em>”, and
+              “<em class="rfc2119" title="OPTIONAL">OPTIONAL</em>” in this document are to be interpreted as
+              described in [<cite><a class="bibref" href="#bib-RFC2119">RFC2119</a></cite>].
+            </p>
+          </section>
+      </section>
+    </section>
+    <section id="attestation-certificates">
+      <!--OddPage--><h2 aria-level="1" role="heading" id="h2_attestation-certificates"><span class="secno">2. </span>Attestation certificates</h2>
+      <p>
+        Attestation certificates are X.509 certificates. Transports supported by an authenticator can
+        be embedded as an extension in the authenticator's attestation certificate. As certificate
+        extensions are only available since [<cite><a class="bibref" href="#bib-X509V3">X509V3</a></cite>], the attestation certificate's version <em class="rfc2119" title="MUST">MUST</em> be v3.
+      </p>
+      <p>
+        As such, this specification is a profile of [<cite><a class="bibref" href="#bib-RFC5280">RFC5280</a></cite>] which is itself a profile of the ISO/IEC/ITU-T
+        [<cite><a class="bibref" href="#bib-X509V3">X509V3</a></cite>] specifications for public key certificates. All syntax and semantics are inherited from those
+        specifications unless explicitly documented otherwise. In this document, all fields are defined in
+        ASN.1 and <em class="rfc2119" title="MUST">MUST</em> be DER-encoded ([<cite><a class="bibref" href="#bib-X690">X690</a></cite>]).
+      </p>
+    </section>
+    <section id="fido-u2f-extensions">
+      <!--OddPage--><h2 aria-level="1" role="heading" id="h2_fido-u2f-extensions"><span class="secno">3. </span>FIDO U2F extensions</h2>
+      <section id="fido-u2f-oid-arc">
+        <h3 aria-level="2" role="heading" id="h3_fido-u2f-oid-arc"><span class="secno">3.1 </span>FIDO U2F OID arc</h3>
+        <p>The FIDO OID arc and its FIDO U2F OID subarc are defined as:</p>
+        <pre>-- FIDO Alliance’s OID
+id-fido OBJECT IDENTIFIER ::= 1.3.6.1.4.1.45724
+
+-- FIDO U2F protocol OID
+id-fido-u2f OBJECT IDENTIFIER ::= { id-fido 2 }
+        </pre>
+      </section>
+      <section id="fido-u2f-certificate-extensions">
+        <h3 aria-level="2" role="heading" id="h3_fido-u2f-certificate-extensions"><span class="secno">3.2 </span>FIDO U2F certificate extensions</h3>
+        <p>The FIDO U2F certificate extensions arc is defined as:</p>
+        <pre>-- FIDO U2F certificate extensions arc
+id-fido-u2f-ce OBJECT IDENTIFIER ::= { id-fido-u2f 1 }
+        </pre>
+        <section id="fido-u2f-certificate-transports-extension">
+          <h4 aria-level="3" role="heading" id="h4_fido-u2f-certificate-transports-extension"><span class="secno">3.2.1 </span>FIDO U2F certificate transports extension</h4>
+          <p>
+            This extension is identified by <code>id-fido-u2f-ce-transports</code>
+            and specifies the transports supported by the authenticator. It's a
+            non-critical extension and therefore FIDO clients and relying parties
+            <em class="rfc2119" title="MAY">MAY</em> ignore it, if present.
+          </p>
+          <p>
+            The FIDO U2F certificate transports extension is defined as:
+          </p>
+          <pre>-- FIDO U2F certificate extensions
+id-fido-u2f-ce-transports OBJECT IDENTIFIER ::= { id-fido-u2f-ce 1 }
+
+fidoU2FTransports EXTENSION ::= {
+  WITH SYNTAX FIDOU2FTransports
+  ID id-fido-u2f-ce-transports
+}
+
+FIDOU2FTransports ::= BIT STRING {
+  bluetoothRadio(0), -- Bluetooth Classic
+  bluetoothLowEnergyRadio(1),
+  uSB(2),
+  nFC(3)
+}
+          </pre>
+        </section>
+      </section>
+      <section id="examples">
+    <h3 aria-level="2" role="heading" id="h3_examples"><span class="secno">3.3 </span>Examples</h3>
+        <section id="bt-classic-authenticator">
+          <h4 aria-level="3" role="heading" id="h4_bt-classic-authenticator"><span class="secno">3.3.1 </span>BT classic authenticator</h4>
+          <div class="example"><div class="example-title"><span>Example 1</span></div><pre class="example">SEQUENCE                              |  30 13
+  OBJECT IDENTIFIER                   |    06 0B
+    value: id-fido-u2f-ce-transports  |      2B 06 01 04 01 82 E5 1C 02 01 01
+  OCTET STRING                        |    04 04
+    BIT STRING                        |      03 02
+      unused bits: 7                  |        07
+      value: 0x80                     |        80</pre></div>
+        </section>
+        <section id="usb-nfc-authenticator">
+          <h4 aria-level="3" role="heading" id="h4_usb-nfc-authenticator"><span class="secno">3.3.2 </span>USB + NFC authenticator</h4>
+          <div class="example"><div class="example-title"><span>Example 2</span></div><pre class="example">SEQUENCE                              |  30 13
+  OBJECT IDENTIFIER                   |    06 0B
+    value: id-fido-u2f-ce-transports  |      2B 06 01 04 01 82 E5 1C 02 01 01
+  OCTET STRING                        |    04 04
+    BIT STRING                        |      03 02
+      unused bits: 4                  |        04
+      value: 0x30                     |        30</pre></div>
+        </section>
+      </section>
+  
+
+</section><section id="references" class="appendix" typeof="bibo:Chapter" resource="#ref" rel="bibo:Chapter"><!--OddPage--><h2 aria-level="1" role="heading" id="h2_references"><span class="secno">A. </span>References</h2><section id="normative-references" typeof="bibo:Chapter" resource="#ref" rel="bibo:Chapter"><h3 aria-level="2" role="heading" id="h3_normative-references"><span class="secno">A.1 </span>Normative references</h3><dl class="bibliography" about=""><dt id="bib-RFC2119">[RFC2119]</dt><dd rel="dcterms:requires">S. Bradner. <a href="https://tools.ietf.org/html/rfc2119"><cite>Key words for use in RFCs to Indicate Requirement Levels</cite></a>. March 1997. Best Current Practice. URL: <a href="https://tools.ietf.org/html/rfc2119">https://tools.ietf.org/html/rfc2119</a>
+</dd><dt id="bib-RFC5280">[RFC5280]</dt><dd rel="dcterms:requires">D. Cooper; S. Santesson; S. Farrell; S. Boeyen; R. Housley; W. Polk. <a href="https://tools.ietf.org/html/rfc5280"><cite>Internet X.509 Public Key Infrastructure Certificate and Certificate Revocation List (CRL) Profile</cite></a>. May 2008. Proposed Standard. URL: <a href="https://tools.ietf.org/html/rfc5280">https://tools.ietf.org/html/rfc5280</a>
+</dd><dt id="bib-X509V3">[X509V3]</dt><dd rel="dcterms:requires"><cite>ITU-T Recommendation X.509 version 3 (1997). "Information Technology - Open Systems Interconnection - The Directory Authentication Framework"&nbsp; ISO/IEC 9594-8:1997</cite>.
+</dd><dt id="bib-X690">[X690]</dt><dd rel="dcterms:requires"><cite><a href="http://www.itu.int/ITU-T/studygroups/com17/languages/X.690-0207.pdf">Recommendation X.690 — Information Technology — ASN.1 Encoding Rules — Specification of Basic Encoding Rules (BER), Canonical Encoding Rules (CER), and Distinguished Encoding Rules (DER)</a></cite>. International Telecommunication Union.
+</dd></dl></section></section></body></html>

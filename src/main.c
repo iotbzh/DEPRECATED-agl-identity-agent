@@ -10,6 +10,7 @@
 
 #include "u2f-protocol.h"
 #include "u2f-bluez.h"
+#include "u2f-bt.h"
 
 #ifndef ERROR
 #define ERROR(...)  (fprintf(stderr,"ERROR: ")|fprintf(stderr,__VA_ARGS__)|fprintf(stderr," (%s:%d)\n",__FILE__,__LINE__))
@@ -87,63 +88,111 @@ int b2a(const uint8_t *b, size_t l, char **a)
 }
 
 
-static void on_found_u2f_bluez_device(const char *address);
+static void on_found_u2f_bluez_device(struct u2f_bluez *device);
+
+static void pbuf(const char *name, struct u2f_proto *proto, int (*gbuf)(struct u2f_proto*,const uint8_t**,size_t*))
+{
+	const uint8_t *b;
+	size_t i, j, s;
+
+	printf("buffer %s:", name);
+	if (!gbuf(proto, &b, &s))
+		printf("    <NOTHING>\n");
+	else {
+		for (i = 0 ; i < s ; i += 16) {
+			printf("\n   %04x:", i);
+			for (j = 0 ; j < 16 && i + j < s ; j++)
+				printf(" %02x", b[i+j]);
+			for (; j < 16 ; j++)
+				printf("   ");
+			printf("  ");
+			for (j = 0 ; j < 16 && i + j < s ; j++)
+				printf("%c", b[i+j]<32 || b[i+j]>126 ? '.' : b[i+j]);
+		}
+		printf("\n");
+	}
+}
+
+static void dumpproto(const char *message, struct u2f_proto *proto)
+{
+	printf("\n========={ %s }============\n", message);
+	printf("Status: %d  %x\n", (int)u2f_protocol_get_status(proto), (int)u2f_protocol_get_status(proto));
+	printf("Presence: %d\n", (int)u2f_protocol_get_userpresence(proto));
+	printf("Counter: %u\n", (unsigned)u2f_protocol_get_counter(proto));
+	pbuf("challenge", proto, u2f_protocol_get_challenge);
+	pbuf("appid", proto, u2f_protocol_get_appid);
+	pbuf("keyhandle", proto, u2f_protocol_get_keyhandle);
+	pbuf("version", proto, u2f_protocol_get_version);
+	pbuf("publickey", proto, u2f_protocol_get_publickey);
+	pbuf("certificate", proto, u2f_protocol_get_certificate);
+	pbuf("signature", proto, u2f_protocol_get_signature);
+	pbuf("signedpart", proto, u2f_protocol_get_signedpart);
+}
+
+static void test_authorize_cb(void *closure, int status, struct u2f_proto *proto)
+{
+	struct u2f_bluez *device = closure;
+
+	dumpproto("AFTER AUTHORIZE", proto);
+
+}
 
 static void test_register_cb(void *closure, int status, struct u2f_proto *proto)
 {
-	u2f_bluez_scan_stop();
-	u2f_bluez_scan_start(on_found_u2f_bluez_device);
+	struct u2f_bluez *device = closure;
+
+	dumpproto("AFTER REGISTER", proto);
+
+	u2f_protocol_addref(proto);
+	u2f_protocol_set_authenticate_check(proto);
+	u2f_bt_message(device, proto, test_authorize_cb, (void*)device);
 }
 
-int test_register(const char *buezaddr, const char *challenge, const char *appid)
+int test_register(struct u2f_bluez *device, const char *challenge, const char *appid)
 {
 	int rc;
-	struct u2f_proto *t = 0;
+	struct u2f_proto *proto = 0;
 	size_t chasz;
 	size_t appsz;
 	uint8_t *cha = 0;
 	uint8_t *app = 0;
 
-	rc = u2f_protocol_new(&t);
+	rc = u2f_protocol_new(&proto);
 	CRC(end);
 
 	rc = a2b(challenge, &cha, &chasz);
 	CRC(end);
 
-	rc = u2f_protocol_set_challenge(t, cha, chasz);
+	rc = u2f_protocol_set_challenge(proto, cha, chasz);
 	CRC(end);
 
 	rc = a2b(appid, &app, &appsz);
 	CRC(end);
 
-	rc = u2f_protocol_set_appid(t, app, appsz);
+	rc = u2f_protocol_set_appid(proto, app, appsz);
 	CRC(end);
 
-	rc = u2f_protocol_set_register(t);
+	rc = u2f_protocol_set_register(proto);
 	CRC(end);
 
-	rc = u2f_bluez_is_paired(buezaddr);
-	CRC(end);
+	if (!u2f_bluez_is_paired(device))
+		printf("THE DEVICE %s MUST BE PAIRED\n", u2f_bluez_address(device));
 
-	if (!rc)
-		printf("THE DEVICE %s MUST BE PAIRED\n", buezaddr);
-
-	rc = u2f_bluez_send_message(buezaddr, t, test_register_cb, (void*)buezaddr);
+	rc = u2f_bt_message(device, proto, test_register_cb, (void*)device);
 	CRC(end);
 	
 end:
-	u2f_protocol_unref(t);
+	u2f_protocol_unref(proto);
 	free(app);
 	free(cha);
 	return rc;
 }	
 
-static void on_found_u2f_bluez_device(const char *address)
+static void on_found_u2f_bluez_device(struct u2f_bluez *device)
 {
-	printf("\n       signaling %s\n", address);
+	printf("\n       signaling %s\n", u2f_bluez_address(device));
 
-	test_register(address, ex1, ex2);
-
+	test_register(device, ex1, ex2);
 }
 
 int main(int ac, char **av)
@@ -171,7 +220,7 @@ int main(int ac, char **av)
 		return 1;
 	}
 
-	rc = u2f_bluez_scan_start(on_found_u2f_bluez_device);
+	rc = u2f_bluez_scan(on_found_u2f_bluez_device);
 	if (rc < 0) {
 		ERROR("scanning of bluez devices failed: %s", strerror(-rc));
 		return 1;
@@ -182,3 +231,9 @@ int main(int ac, char **av)
 	return 0;
 }
 
+/*
+      83 00 49 00 01 00 00 00 00 40 e2 8b 13 83 f0 01 9e ff ef 83
+      00 34 e7 f4 c8 5d 28 6b d2 a9 3a b3 16 51 71 ff e3 7c ab 27
+      01 4b ee 56 48 ff 29 ea ba 82 f6 e6 a7 b8 4f ff 1d f8 3a 85
+      02 50 b6 2d 33 9f e5 d0 f1 43 be 24 d8 29 9b d7 9f 09 0b
+*/
