@@ -26,6 +26,14 @@ static const char ex1[] = "e28b1383f0019effef8334e7f4c85d286bd2a93ab3165171ffe37
 /* sha 256 of u2f_hid.h */
 static const char ex2[] = "48ff29eaba82f6e6a7b84fff1df83a8550b62d339fe5d0f143be24d8299bd79f";
 
+static const char green_kh[] =
+	"cd4057400bd365708ae8b820cec74248"
+	"b721dc1314a1c9d7fd4086c90834c692"
+	"4ec40e41dd6ff7fa979d1ad8a71ccbcf"
+	"4d9220d4cc26eceadecd5554a67e9461"
+	"c92d76e4e93a03b6db2f1499675331f7"
+;
+
 int a2b(const char *a, uint8_t **b, size_t *l)
 {
 	char c;
@@ -127,9 +135,10 @@ static void dumpproto(const char *message, struct u2f_proto *proto)
 	pbuf("certificate", proto, u2f_protocol_get_certificate);
 	pbuf("signature", proto, u2f_protocol_get_signature);
 	pbuf("signedpart", proto, u2f_protocol_get_signedpart);
+	printf("\n=========\n\n");
 }
 
-static void test_authorize_cb(void *closure, int status, struct u2f_proto *proto)
+static void test_authenticate_cb(void *closure, int status, struct u2f_proto *proto)
 {
 	struct u2f_bluez *device = closure;
 
@@ -137,15 +146,60 @@ static void test_authorize_cb(void *closure, int status, struct u2f_proto *proto
 
 }
 
+int test_authenticate(struct u2f_bluez *device, const char *challenge, const char *appid, const char *keyhandle)
+{
+	int rc;
+	struct u2f_proto *proto = 0;
+	size_t chasz;
+	size_t appsz;
+	size_t khsz;
+	uint8_t *cha = 0;
+	uint8_t *app = 0;
+	uint8_t *kh = 0;
+
+	rc = u2f_protocol_new(&proto);
+	CRC(end);
+
+	rc = a2b(challenge, &cha, &chasz);
+	CRC(end);
+
+	rc = u2f_protocol_set_challenge(proto, cha, chasz);
+	CRC(end);
+
+	rc = a2b(appid, &app, &appsz);
+	CRC(end);
+
+	rc = u2f_protocol_set_appid(proto, app, appsz);
+	CRC(end);
+
+	rc = a2b(keyhandle, &kh, &khsz);
+	CRC(end);
+
+	rc = u2f_protocol_set_keyhandle(proto, kh, khsz);
+	CRC(end);
+
+	rc = u2f_protocol_set_authenticate(proto, 1);
+	CRC(end);
+
+	if (!u2f_bluez_is_paired(device))
+		printf("THE DEVICE %s MUST BE PAIRED\n", u2f_bluez_address(device));
+
+	rc = u2f_bt_message(device, proto, test_authenticate_cb, (void*)device);
+	CRC(end);
+	
+end:
+	u2f_protocol_unref(proto);
+	free(app);
+	free(cha);
+	free(kh);
+	return rc;
+}	
+
 static void test_register_cb(void *closure, int status, struct u2f_proto *proto)
 {
 	struct u2f_bluez *device = closure;
 
 	dumpproto("AFTER REGISTER", proto);
-
-	u2f_protocol_addref(proto);
-	u2f_protocol_set_authenticate_check(proto);
-	u2f_bt_message(device, proto, test_authorize_cb, (void*)device);
 }
 
 int test_register(struct u2f_bluez *device, const char *challenge, const char *appid)
@@ -192,7 +246,8 @@ static void on_found_u2f_bluez_device(struct u2f_bluez *device)
 {
 	printf("\n       signaling %s\n", u2f_bluez_address(device));
 
-	test_register(device, ex1, ex2);
+	//test_register(device, ex1, ex2);
+	test_authenticate(device, ex1, ex2, green_kh);
 }
 
 int main(int ac, char **av)
@@ -231,9 +286,3 @@ int main(int ac, char **av)
 	return 0;
 }
 
-/*
-      83 00 49 00 01 00 00 00 00 40 e2 8b 13 83 f0 01 9e ff ef 83
-      00 34 e7 f4 c8 5d 28 6b d2 a9 3a b3 16 51 71 ff e3 7c ab 27
-      01 4b ee 56 48 ff 29 ea ba 82 f6 e6 a7 b8 4f ff 1d f8 3a 85
-      02 50 b6 2d 33 9f e5 d0 f1 43 be 24 d8 29 9b d7 9f 09 0b
-*/

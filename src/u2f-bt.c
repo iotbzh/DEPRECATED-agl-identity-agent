@@ -37,6 +37,7 @@ enum u2f_bt_state
 	Idle,
 	Connecting,
 	Dialing,
+	Stopping,
 	Disconnecting
 };
 
@@ -110,6 +111,7 @@ printf("got error: %d, %s\n", error, message);
 	if (bt->state != Idle) {
 		bt->errmsg = message;
 		bt->state = Idle;
+		u2f_bluez_stop(bt->device);
 		bt->callback(bt->closure, error, message, message ? strlen(message) : 0);
 	}
 }
@@ -186,8 +188,8 @@ printf("on_received\n");
 	bt->read.offset = offset;
 
 	if (offset == size) {
-		bt->state = Idle;
-		bt->callback(bt->closure, bt->read.head, bt->read.data, bt->read.size);
+		bt->state = Stopping;
+		u2f_bluez_stop(bt->device);
 	}
 }
 
@@ -200,6 +202,20 @@ printf("on_sent\n");
 	bt->sent = 0;
 	try_send(bt);
 }
+
+static void on_stopped(void *closure)
+{
+	struct u2f_bt *bt = closure;
+
+printf("on_stopped\n");
+
+	if (bt->state == Stopping) {
+		bt->state = Idle;
+		bt->callback(bt->closure, bt->read.head, bt->read.data, bt->read.size);
+	} else if (bt->state != Idle)
+		set_error(bt, -EINVAL, "Unexpected stop");
+}
+
 
 static void on_error(void *closure, int error, const char *message)
 {
@@ -216,6 +232,7 @@ static struct u2f_bluez_observer bt_callbacks =
 	.disconnected = on_disconnected,
 	.received = on_received,
 	.sent = on_sent,
+	.stopped = on_stopped,
 	.error = on_error
 };
 

@@ -108,7 +108,7 @@ static struct adapter *adalist;
 static struct u2f_bluez *devlist;
 static void (*scanning_callback)(struct u2f_bluez *device);
 
-/********************************************************************************************************/
+/************************************************/
 
 static int isprefix(const char *what, const char *where)
 {
@@ -118,7 +118,7 @@ static int isprefix(const char *what, const char *where)
 	return !what[n] && (!where[n] || where[n] == '/');
 }
 
-/********************************************************************************************************/
+/************************************************/
 
 static int add_on_signal(const char *sender, const char *path, const char *itf, const char *member,
 				sd_bus_slot **slot, sd_bus_message_handler_t callback, void *closure)
@@ -138,9 +138,9 @@ static int add_on_signal(const char *sender, const char *path, const char *itf, 
 	return rc;
 }
 
-/********************************************************************************************************/
+/************************************************/
 
-/********************************************************************************************************/
+/************************************************/
 /* ADAPTER */
 
 static int adapter_properties_scan(sd_bus_message *m, struct adapter_properties *props)
@@ -282,7 +282,7 @@ static int get_adapter(const char *path, struct adapter **ada, int create)
 	return 0;
 }
 
-/********************************************************************************************************/
+/************************************************/
 
 static void signal_connected(struct u2f_bluez *device)
 {
@@ -336,6 +336,19 @@ static void signal_sent(struct u2f_bluez *device)
 	}
 }
 
+static void signal_stopped(struct u2f_bluez *device)
+{
+	struct observer *obs, *nxt;
+
+	obs = device->observers;
+	while (obs) {
+		nxt = obs->next;
+		if (obs->callbacks.stopped)
+			obs->callbacks.stopped(obs->closure);
+		obs = nxt;
+	}
+}
+
 static void signal_error(struct u2f_bluez *device, int status, const char *message)
 {
 	struct observer *obs, *nxt;
@@ -349,7 +362,7 @@ static void signal_error(struct u2f_bluez *device, int status, const char *messa
 	}
 }
 
-/********************************************************************************************************/
+/************************************************/
 /* DEVICE */
 
 static struct adapter *adapter_of_device(const char *path)
@@ -557,7 +570,7 @@ static int get_device(const char *path, struct u2f_bluez **dev, int create)
 	return 0;
 }
 
-/********************************************************************************************************/
+/************************************************/
 /* CHARACTERISTIC */
 
 static struct u2f_bluez *device_of_characteristic(const char *path)
@@ -625,7 +638,7 @@ static int add_characteristic(const char *path, const char *uuid)
 	return 0;
 }
 
-/********************************************************************************************************/
+/************************************************/
 /* Discovering */
 
 static int scan(const char *adapter_path, int on)
@@ -639,7 +652,7 @@ static int scan(const char *adapter_path, int on)
 	return rc;
 }
 
-/********************************************************************************************************/
+/************************************************/
 /* Observers for InterfacesAdded / InterfacesRemoved */
 
 static int add_bluez_adapter(sd_bus_message *m, const char *path)
@@ -883,7 +896,7 @@ end:
 	return rc;
 }
 
-/********************************************************************************************************/
+/************************************************/
 /* PAIRING AGENT */
 
 static sd_bus_slot *pairing_slot;
@@ -922,7 +935,7 @@ end:
 	return rc;
 }
 
-/********************************************************************************************************/
+/************************************************/
 
 static int add_all_bluez_objects()
 {
@@ -968,7 +981,7 @@ end:
 	return rc;
 }
 
-/********************************************************************************************************/
+/************************************************/
 
 
 int u2f_bluez_init(sd_bus *bus)
@@ -1106,7 +1119,7 @@ int u2f_bluez_observer_delete(struct u2f_bluez *device, struct u2f_bluez_observe
 
 
 
-/********************************************************************************************************/
+/************************************************/
 
 static int charac_status_changed(sd_bus_message *m, void *userdata, sd_bus_error *error)
 {
@@ -1171,7 +1184,42 @@ end:
 	return 0;
 }
 
-/********************************************************************************************************/
+/************************************************/
+
+static int stop_complete(sd_bus_message *m, void *userdata, sd_bus_error *error)
+{
+	struct u2f_bluez *device = userdata;
+
+	if (sd_bus_error_is_set(error) || sd_bus_message_is_method_error(m, NULL)) {
+		signal_error(device, -EPROTO, "failed to stop notify");
+	} else
+		signal_stopped(device);
+
+	u2f_bluez_unref(device);
+	//sd_bus_message_unref(m);
+	return 0;
+}
+
+void u2f_bluez_stop(struct u2f_bluez *device)
+{
+	int rc;
+
+	if (!device->slotc)
+		signal_stopped(device);
+	else {
+		sd_bus_slot_unref(device->slotc);
+		device->slotc = 0;
+		device->mtu = 0;
+		rc = sd_bus_call_method_async(sbus, NULL, BLUEZ_DEST, device->status, BLUEZ_GATT_CHARACTERISTIC_ITF, "StopNotify", stop_complete, device, NULL);
+		if (rc >= 0)
+			u2f_bluez_addref(device);
+		else
+			signal_error(device, -EPROTO, "can't stop notify");
+	}	
+}
+
+
+/************************************************/
 
 static void disconnecting_error(struct u2f_bluez *device, int status, const char *message)
 {
@@ -1187,17 +1235,12 @@ static int ignoremsg(sd_bus_message *m, void *userdata, sd_bus_error *error)
 
 void u2f_bluez_disconnect(struct u2f_bluez *device)
 {
-	if (device->slotc) {
-		sd_bus_slot_unref(device->slotc);
-		sd_bus_call_method_async(sbus, NULL, BLUEZ_DEST, device->status, BLUEZ_GATT_CHARACTERISTIC_ITF, "StopNotify",
-				ignoremsg, NULL, NULL);
-		device->slotc = 0;
-	}
+	u2f_bluez_stop(device);
 	sd_bus_call_method_async(sbus, NULL, BLUEZ_DEST, device->path, BLUEZ_DEVICE_ITF, "Disconnect", ignoremsg, NULL, NULL);
 	device->mtu = 0;
 }
 
-/********************************************************************************************************/
+/************************************************/
 
 static int notify_status_complete(sd_bus_message *m, void *userdata, sd_bus_error *error)
 {
@@ -1239,7 +1282,7 @@ static void notify_status(struct u2f_bluez *device)
 	}
 }
 
-/********************************************************************************************************/
+/************************************************/
 
 static int get_mtu_complete(sd_bus_message *m, void *userdata, sd_bus_error *error)
 {
@@ -1289,7 +1332,7 @@ static void get_mtu(struct u2f_bluez *device)
 	}
 }
 
-/********************************************************************************************************/
+/************************************************/
 
 static int connecting_complete(sd_bus_message *m, void *userdata, sd_bus_error *error)
 {
@@ -1319,7 +1362,7 @@ static void connect(struct u2f_bluez *device)
 	}
 }
 
-/********************************************************************************************************/
+/************************************************/
 
 static int pairing_complete(sd_bus_message *m, void *userdata, sd_bus_error *error)
 {
@@ -1350,7 +1393,7 @@ void u2f_bluez_connect(struct u2f_bluez *device)
 	}
 }
 
-/********************************************************************************************************/
+/************************************************/
 
 static int send_complete(sd_bus_message *m, void *userdata, sd_bus_error *error)
 {
