@@ -13,7 +13,7 @@
 #include "u2f-bluez.h"
 
 #ifndef ERROR
-#define ERROR(...)  (fprintf(stderr,"ERROR: "),fprintf(stderr,__VA_ARGS__),fprintf(stderr," (%s:%d)\n",__FILE__,__LINE__),1)
+#define ERROR(...)  (fprintf(stderr,"ERROR: ")&&fprintf(stderr,__VA_ARGS__)&&fprintf(stderr," (%s:%d)\n",__FILE__,__LINE__))
 #endif
 
 #define CIF(expr)   if((expr) ? (ERROR("%s",#expr), 1) : 0)
@@ -70,11 +70,13 @@ struct device_properties {
 	int address_set;
 	int paired_set;
 	int connected_set;
+	int resolved_set;
 	int rssi_set;
 	int service_data_set;
 	const char *address;
 	int paired;
 	int connected;
+	int resolved;
 	int rssi;
 	int is_fido;
 };
@@ -90,6 +92,7 @@ struct u2f_bluez {
 	struct u2f_bluez *next;
 	struct observer *observers;
 	unsigned refcount;
+	int starting;
 	char *path;
 	char *address;
 	char *controlpoint;
@@ -100,6 +103,7 @@ struct u2f_bluez {
 	size_t mtu;
 	int paired;
 	int connected;
+	int resolved;
 	int rssi;
 	int signaled;
 };
@@ -292,7 +296,7 @@ static void signal_connected(struct u2f_bluez *device)
 	while (obs) {
 		nxt = obs->next;
 		if (obs->callbacks.connected)
-			obs->callbacks.connected(obs->closure, device->mtu);
+			obs->callbacks.connected(obs->closure);
 		obs = nxt;
 	}
 }
@@ -306,6 +310,19 @@ static void signal_disconnected(struct u2f_bluez *device)
 		nxt = obs->next;
 		if (obs->callbacks.disconnected)
 			obs->callbacks.disconnected(obs->closure);
+		obs = nxt;
+	}
+}
+
+static void signal_started(struct u2f_bluez *device)
+{
+	struct observer *obs, *nxt;
+
+	obs = device->observers;
+	while (obs) {
+		nxt = obs->next;
+		if (obs->callbacks.started)
+			obs->callbacks.started(obs->closure, device->mtu);
 		obs = nxt;
 	}
 }
@@ -410,6 +427,11 @@ static int device_properties_scan(sd_bus_message *m, struct device_properties *p
 			CRC(end);
 			props->connected = b;
 			props->connected_set = 1;
+		} else if (!strcmp(name, "ServicesResolved") && !strcmp(type, "b")) {
+			rc = sd_bus_message_read_basic(m, 'b', &b);
+			CRC(end);
+			props->resolved = b;
+			props->resolved_set = 1;
 		} else if (!strcmp(name, "RSSI") && !strcmp(type, "n")) {
 			rc = sd_bus_message_read_basic(m, 'n', &rssi);
 			CRC(end);
@@ -469,10 +491,14 @@ end:
 static int signal_device(struct u2f_bluez *device)
 {
 	if (scanning_callback && !device->signaled) {
+/*
 		device->signaled = 1;
+*/
 		scanning_callback(device);
 	}
 }
+
+static void get_mtu(struct u2f_bluez *device);
 
 static int update_device_property(sd_bus_message *m, struct u2f_bluez *device)
 {
@@ -482,17 +508,35 @@ static int update_device_property(sd_bus_message *m, struct u2f_bluez *device)
 	rc = device_properties_scan(m, &props);
 	CRC(end);
 
-	if (props.paired_set)
+	if (props.paired_set) {
 		device->paired = props.paired;
+printf("props of itf: paired = %d\n", props.paired);
+	}
 
 	if (props.connected_set) {
 		device->connected = props.connected;
-		if (!props.connected)
+printf("props of itf: connected = %d\n", props.connected);
+		if (props.connected)
+			signal_connected(device);
+		else
 			signal_disconnected(device);
+	}
+
+	if (props.resolved_set) {
+		device->resolved = props.resolved;
+printf("props of itf: resolved = %d\n", props.resolved);
+		if (device->resolved && device->starting)
+			get_mtu(device);
 	}
 
 	if (props.rssi_set) {
 		device->rssi = props.rssi;
+printf("props of itf: rssi = %d\n", props.rssi);
+		signal_device(device);
+	}
+
+	if (!props.rssi_set && props.service_data_set && props.is_fido) {
+printf("props of itf: extra signaling\n");
 		signal_device(device);
 	}
 
@@ -507,7 +551,7 @@ static int device_property_changed(sd_bus_message *m, void *userdata, sd_bus_err
 
 	rc = sd_bus_message_read_basic(m, SD_BUS_TYPE_STRING, &itf);
 	CRC(end);
-
+printf("props of itf %s\n", itf);
 	if (!strcmp(itf, BLUEZ_DEVICE_ITF))
 		rc = update_device_property(m, userdata);
 	else
@@ -697,6 +741,7 @@ static int add_bluez_device(sd_bus_message *m, const char *path)
 		device->address = address;
 		device->paired = props.paired;
 		device->connected = props.connected;
+		device->resolved = props.resolved;
 		if (props.rssi_set) {
 			device->rssi = props.rssi;
 			signal_device(device);
@@ -1204,6 +1249,7 @@ void u2f_bluez_stop(struct u2f_bluez *device)
 {
 	int rc;
 
+	device->starting = 0;
 	if (!device->slotc)
 		signal_stopped(device);
 	else {
@@ -1235,12 +1281,19 @@ static int ignoremsg(sd_bus_message *m, void *userdata, sd_bus_error *error)
 
 void u2f_bluez_disconnect(struct u2f_bluez *device)
 {
-	u2f_bluez_stop(device);
+	if (device->slotc)
+		u2f_bluez_stop(device);
 	sd_bus_call_method_async(sbus, NULL, BLUEZ_DEST, device->path, BLUEZ_DEVICE_ITF, "Disconnect", ignoremsg, NULL, NULL);
 	device->mtu = 0;
 }
 
 /************************************************/
+
+static void start(struct u2f_bluez *device)
+{
+	device->starting = 0;
+	signal_started(device);
+}
 
 static int notify_status_complete(sd_bus_message *m, void *userdata, sd_bus_error *error)
 {
@@ -1251,7 +1304,7 @@ static int notify_status_complete(sd_bus_message *m, void *userdata, sd_bus_erro
 		sd_bus_slot_unref(device->slotc);
 		device->slotc = 0;
 	} else
-		signal_connected(device);
+		start(device);
 
 	u2f_bluez_unref(device);
 	//sd_bus_message_unref(m);
@@ -1263,7 +1316,7 @@ static void notify_status(struct u2f_bluez *device)
 	int rc;
 
 	if (device->slotc)
-		signal_connected(device);
+		start(device);
 	else {
 		rc = add_on_signal(BLUEZ_DEST, device->status, DBUS_PROPERTIES_ITF, "PropertiesChanged", &device->slotc, charac_status_changed, device);
 		if (rc < 0)
@@ -1334,14 +1387,20 @@ static void get_mtu(struct u2f_bluez *device)
 
 /************************************************/
 
+static void connected(struct u2f_bluez *device)
+{
+	if (device->starting && device->resolved)
+		get_mtu(device);
+}
+
 static int connecting_complete(sd_bus_message *m, void *userdata, sd_bus_error *error)
 {
 	struct u2f_bluez *device = userdata;
 
-	if (device->connected)
-		get_mtu(device);
-	else
+	if (!device->connected)
 		disconnecting_error(device, -EPROTO, "failed to connect");
+	else
+		connected(device);
 
 	u2f_bluez_unref(device);
 	//sd_bus_message_unref(m);
@@ -1352,7 +1411,7 @@ static void connect(struct u2f_bluez *device)
 {
 	int rc;
 	if (device->connected)
-		get_mtu(device);
+		connected(device);
 	else {
 		rc = sd_bus_call_method_async(sbus, NULL, BLUEZ_DEST, device->path, BLUEZ_DEVICE_ITF, "Connect", connecting_complete, device, NULL);
 		if (rc >= 0)
@@ -1391,6 +1450,12 @@ void u2f_bluez_connect(struct u2f_bluez *device)
 		else
 			disconnecting_error(device, -EPROTO, "can't pair");
 	}
+}
+
+void u2f_bluez_start(struct u2f_bluez *device)
+{
+	device->starting = 1;
+	u2f_bluez_connect(device);
 }
 
 /************************************************/

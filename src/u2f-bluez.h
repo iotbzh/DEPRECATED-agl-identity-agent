@@ -18,11 +18,12 @@ extern int u2f_bluez_is_connected(struct u2f_bluez *device);
 
 struct u2f_bluez_observer
 {
-	void (*connected)(void *closure, size_t mtu);
-	void (*disconnected)(void *closure);
+	void (*connected)(void *closure);
+	void (*started)(void *closure, size_t mtu);
 	void (*received)(void *closure, const uint8_t *buffer, size_t size);
 	void (*sent)(void *closure);
 	void (*stopped)(void *closure);
+	void (*disconnected)(void *closure);
 	void (*error)(void *closure, int error, const char *message);
 };
 
@@ -30,6 +31,7 @@ extern int u2f_bluez_observer_add(struct u2f_bluez *device, struct u2f_bluez_obs
 extern int u2f_bluez_observer_delete(struct u2f_bluez *device, struct u2f_bluez_observer *observer, void *closure);
 
 extern void u2f_bluez_connect(struct u2f_bluez *device);
+extern void u2f_bluez_start(struct u2f_bluez *device);
 extern void u2f_bluez_stop(struct u2f_bluez *device);
 extern void u2f_bluez_disconnect(struct u2f_bluez *device);
 extern void u2f_bluez_send(struct u2f_bluez *device, const uint8_t *buffer, size_t size);

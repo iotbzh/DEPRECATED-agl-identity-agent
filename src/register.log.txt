@@ -1,0 +1,365 @@
+WHITE:
+
+       signaling EA:00:44:68:CF:35
+********* MTU = 20 *******
+on_connected
+on_sent
+on_sent
+on_sent
+on_sent
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_stopped
+
+========={ AFTER REGISTER }============
+Status: 36864  9000
+Presence: 0
+Counter: 0
+buffer challenge:
+   0000: e2 8b 13 83 f0 01 9e ff ef 83 34 e7 f4 c8 5d 28  ..........4...](
+   0010: 6b d2 a9 3a b3 16 51 71 ff e3 7c ab 27 4b ee 56  k..:..Qq..|.'K.V
+buffer appid:
+   0000: 48 ff 29 ea ba 82 f6 e6 a7 b8 4f ff 1d f8 3a 85  H.).......O...:.
+   0010: 50 b6 2d 33 9f e5 d0 f1 43 be 24 d8 29 9b d7 9f  P.-3....C.$.)...
+buffer keyhandle:
+   0000: 7a 5e de ce 43 a2 f9 26 e1 ae 8c 81 60 e4 1f 44  z^..C..&....`..D
+   0010: e8 8f 1b 73 e3 5b 8d d4 3f 94 e8 4e d1 d3 02 2c  ...s.[..?..N...,
+   0020: a7 49 4b 4a ee 7f 4e 1a 0b 55 d6 e8 ba 50 a8 cf  .IKJ..N..U...P..
+   0030: a6 07 e8 f9 a4 74 c3 30 3d b7 5b f2 2e ff 18 12  .....t.0=.[.....
+   0040: 3a 8b 36 50 61 34 d4 80 7a 46 73 74 da 24 38 d1  :.6Pa4..zFst.$8.
+buffer version:    <NOTHING>
+buffer publickey:
+   0000: 04 5e ca fd 15 59 5e 55 58 b2 76 af 38 dc 34 92  .^...Y^UX.v.8.4.
+   0010: fd 0a 6b 76 f9 81 3b b7 5c 1d 48 e3 30 d4 fd 60  ..kv..;.\.H.0..`
+   0020: 1e e2 85 66 7b 13 dd 68 21 1f f2 66 54 5d 16 73  ...f{..h!..fT].s
+   0030: e8 e4 4e b7 bd d0 54 35 53 f6 fe d7 48 6b 61 37  ..N...T5S...Hka7
+   0040: 47                                               G
+buffer certificate:
+   0000: 30 82 01 ac 30 82 01 53 a0 03 02 01 02 02 04 78  0...0..S.......x
+   0010: 2a 0e b9 30 0a 06 08 2a 86 48 ce 3d 04 03 02 30  *..0...*.H.=...0
+   0020: 46 31 1c 30 1a 06 03 55 04 0a 13 13 56 41 53 43  F1.0...U....VASC
+   0030: 4f 20 44 61 74 61 20 53 65 63 75 72 69 74 79 31  O Data Security1
+   0040: 26 30 24 06 03 55 04 03 13 1d 56 41 53 43 4f 20  &0$..U....VASCO 
+   0050: 44 49 47 49 50 41 53 53 20 53 65 63 75 72 65 43  DIGIPASS SecureC
+   0060: 6c 69 63 6b 20 43 41 30 1e 17 0d 31 36 30 32 32  lick CA0...16022
+   0070: 32 30 38 33 39 30 30 5a 17 0d 34 31 30 32 32 32  2083900Z..410222
+   0080: 30 38 33 39 30 30 5a 30 53 31 1c 30 1a 06 03 55  083900Z0S1.0...U
+   0090: 04 0a 13 13 56 41 53 43 4f 20 44 61 74 61 20 53  ....VASCO Data S
+   00a0: 65 63 75 72 69 74 79 31 33 30 31 06 03 55 04 03  ecurity1301..U..
+   00b0: 13 2a 56 41 53 43 4f 20 44 49 47 49 50 41 53 53  .*VASCO DIGIPASS
+   00c0: 20 53 65 63 75 72 65 43 6c 69 63 6b 20 41 74 74   SecureClick Att
+   00d0: 65 73 74 61 74 69 6f 6e 20 4b 65 79 30 59 30 13  estation Key0Y0.
+   00e0: 06 07 2a 86 48 ce 3d 02 01 06 08 2a 86 48 ce 3d  ..*.H.=....*.H.=
+   00f0: 03 01 07 03 42 00 04 46 12 a2 20 e5 78 b3 4f 6a  ....B..F.. .x.Oj
+   0100: 89 1e 23 d6 5a 9e 89 64 98 01 1e a9 be 30 29 bc  ..#.Z..d.....0).
+   0110: cf 1a 8f ca 46 5b 17 66 97 af 67 e0 d9 12 38 6d  ....F[.f..g...8m
+   0120: 48 44 df 23 3c 01 e0 14 ba d9 de 9b 39 32 61 4e  HD.#<.......92aN
+   0130: 65 d9 4c 21 bf cc 83 a3 22 30 20 30 09 06 03 55  e.L!...."0 0...U
+   0140: 1d 13 04 02 30 00 30 13 06 0b 2b 06 01 04 01 82  ....0.0...+.....
+   0150: e5 1c 02 01 01 04 04 03 02 05 60 30 0a 06 08 2a  ..........`0...*
+   0160: 86 48 ce 3d 04 03 02 03 47 00 30 44 02 20 39 5e  .H.=....G.0D. 9^
+   0170: 8b 68 c0 43 a7 7c 8f dc 4c 6e f9 b1 19 4d 39 3b  .h.C.|..Ln...M9;
+   0180: 69 4c e5 bf 61 6a e9 44 b0 cb 1c 7b cc 60 02 20  iL..aj.D...{.`. 
+   0190: 11 cc d2 7a 79 97 10 e4 fe 5b 0a 64 c0 cf f3 2f  ...zy....[.d.../
+   01a0: ef f5 05 f7 9d c4 3d 47 53 08 79 37 c3 17 b1 05  ......=GS.y7....
+buffer signature:
+   0000: 30 45 02 20 5f d0 36 19 18 88 3d 04 ec f3 e2 ef  0E. _.6...=.....
+   0010: 22 d6 1c cc b8 ae fd cd 68 67 ff bc 5b 22 6f 0d  ".......hg..["o.
+   0020: 91 b6 7b 9c 02 21 00 f3 4f 80 1d e2 5e d4 cf 56  ..{..!..O...^..V
+   0030: 3e a3 f9 95 e1 5e 0e 20 87 db 39 39 6a 42 80 12  >....^. ..99jB..
+   0040: 6f 99 dd 6c 6e dd bc                             o..ln..
+buffer signedpart:
+   0000: 00 48 ff 29 ea ba 82 f6 e6 a7 b8 4f ff 1d f8 3a  .H.).......O...:
+   0010: 85 50 b6 2d 33 9f e5 d0 f1 43 be 24 d8 29 9b d7  .P.-3....C.$.)..
+   0020: 9f e2 8b 13 83 f0 01 9e ff ef 83 34 e7 f4 c8 5d  ...........4...]
+   0030: 28 6b d2 a9 3a b3 16 51 71 ff e3 7c ab 27 4b ee  (k..:..Qq..|.'K.
+   0040: 56 7a 5e de ce 43 a2 f9 26 e1 ae 8c 81 60 e4 1f  Vz^..C..&....`..
+   0050: 44 e8 8f 1b 73 e3 5b 8d d4 3f 94 e8 4e d1 d3 02  D...s.[..?..N...
+   0060: 2c a7 49 4b 4a ee 7f 4e 1a 0b 55 d6 e8 ba 50 a8  ,.IKJ..N..U...P.
+   0070: cf a6 07 e8 f9 a4 74 c3 30 3d b7 5b f2 2e ff 18  ......t.0=.[....
+   0080: 12 3a 8b 36 50 61 34 d4 80 7a 46 73 74 da 24 38  .:.6Pa4..zFst.$8
+   0090: d1 04 5e ca fd 15 59 5e 55 58 b2 76 af 38 dc 34  ..^...Y^UX.v.8.4
+   00a0: 92 fd 0a 6b 76 f9 81 3b b7 5c 1d 48 e3 30 d4 fd  ...kv..;.\.H.0..
+   00b0: 60 1e e2 85 66 7b 13 dd 68 21 1f f2 66 54 5d 16  `...f{..h!..fT].
+   00c0: 73 e8 e4 4e b7 bd d0 54 35 53 f6 fe d7 48 6b 61  s..N...T5S...Hka
+   00d0: 37 47                                            7G
+
+=========
+
+BLUE
+
+
+       signaling EB:7C:23:C6:21:BF
+********* MTU = 20 *******
+on_connected
+on_sent
+on_sent
+on_sent
+on_sent
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_stopped
+
+========={ AFTER REGISTER }============
+Status: 36864  9000
+Presence: 0
+Counter: 0
+buffer challenge:
+   0000: e2 8b 13 83 f0 01 9e ff ef 83 34 e7 f4 c8 5d 28  ..........4...](
+   0010: 6b d2 a9 3a b3 16 51 71 ff e3 7c ab 27 4b ee 56  k..:..Qq..|.'K.V
+buffer appid:
+   0000: 48 ff 29 ea ba 82 f6 e6 a7 b8 4f ff 1d f8 3a 85  H.).......O...:.
+   0010: 50 b6 2d 33 9f e5 d0 f1 43 be 24 d8 29 9b d7 9f  P.-3....C.$.)...
+buffer keyhandle:
+   0000: 1b 68 af 97 9b 08 8c f0 ae da f9 d0 48 4c c0 cb  .h..........HL..
+   0010: f9 73 a3 c3 ce 3b 02 98 82 00 69 a1 9a c6 2c 1f  .s...;....i...,.
+   0020: f8 90 e7 ec 56 80 52 67 95 48 8a 09 8b 30 fd 53  ....V.Rg.H...0.S
+   0030: 33 83 b2 e6 2c 9d 85 53 a6 08 d2 ec 15 70 ee 46  3...,..S.....p.F
+   0040: 40 73 2b 03 4c 5a bb ad 3e bd a4 58 77 c3 e4 97  @s+.LZ..>..Xw...
+buffer version:    <NOTHING>
+buffer publickey:
+   0000: 04 de 27 af e8 35 c6 fb 02 9c a2 04 c0 e1 31 1d  ..'..5........1.
+   0010: 6d ac 53 9c c5 ce 4d d7 63 b6 ad 1b 3f 0e 07 00  m.S...M.c...?...
+   0020: e5 48 75 89 16 fe 13 5f 64 1d 8a 26 ca 3e 6d 76  .Hu...._d..&.>mv
+   0030: 5f 12 95 19 fc d9 a2 bc 8f 1b b7 31 49 44 c3 27  _..........1ID.'
+   0040: ee                                               .
+buffer certificate:
+   0000: 30 82 01 ac 30 82 01 53 a0 03 02 01 02 02 04 78  0...0..S.......x
+   0010: 2a 0e b9 30 0a 06 08 2a 86 48 ce 3d 04 03 02 30  *..0...*.H.=...0
+   0020: 46 31 1c 30 1a 06 03 55 04 0a 13 13 56 41 53 43  F1.0...U....VASC
+   0030: 4f 20 44 61 74 61 20 53 65 63 75 72 69 74 79 31  O Data Security1
+   0040: 26 30 24 06 03 55 04 03 13 1d 56 41 53 43 4f 20  &0$..U....VASCO 
+   0050: 44 49 47 49 50 41 53 53 20 53 65 63 75 72 65 43  DIGIPASS SecureC
+   0060: 6c 69 63 6b 20 43 41 30 1e 17 0d 31 36 30 32 32  lick CA0...16022
+   0070: 32 30 38 33 39 30 30 5a 17 0d 34 31 30 32 32 32  2083900Z..410222
+   0080: 30 38 33 39 30 30 5a 30 53 31 1c 30 1a 06 03 55  083900Z0S1.0...U
+   0090: 04 0a 13 13 56 41 53 43 4f 20 44 61 74 61 20 53  ....VASCO Data S
+   00a0: 65 63 75 72 69 74 79 31 33 30 31 06 03 55 04 03  ecurity1301..U..
+   00b0: 13 2a 56 41 53 43 4f 20 44 49 47 49 50 41 53 53  .*VASCO DIGIPASS
+   00c0: 20 53 65 63 75 72 65 43 6c 69 63 6b 20 41 74 74   SecureClick Att
+   00d0: 65 73 74 61 74 69 6f 6e 20 4b 65 79 30 59 30 13  estation Key0Y0.
+   00e0: 06 07 2a 86 48 ce 3d 02 01 06 08 2a 86 48 ce 3d  ..*.H.=....*.H.=
+   00f0: 03 01 07 03 42 00 04 46 12 a2 20 e5 78 b3 4f 6a  ....B..F.. .x.Oj
+   0100: 89 1e 23 d6 5a 9e 89 64 98 01 1e a9 be 30 29 bc  ..#.Z..d.....0).
+   0110: cf 1a 8f ca 46 5b 17 66 97 af 67 e0 d9 12 38 6d  ....F[.f..g...8m
+   0120: 48 44 df 23 3c 01 e0 14 ba d9 de 9b 39 32 61 4e  HD.#<.......92aN
+   0130: 65 d9 4c 21 bf cc 83 a3 22 30 20 30 09 06 03 55  e.L!...."0 0...U
+   0140: 1d 13 04 02 30 00 30 13 06 0b 2b 06 01 04 01 82  ....0.0...+.....
+   0150: e5 1c 02 01 01 04 04 03 02 05 60 30 0a 06 08 2a  ..........`0...*
+   0160: 86 48 ce 3d 04 03 02 03 47 00 30 44 02 20 39 5e  .H.=....G.0D. 9^
+   0170: 8b 68 c0 43 a7 7c 8f dc 4c 6e f9 b1 19 4d 39 3b  .h.C.|..Ln...M9;
+   0180: 69 4c e5 bf 61 6a e9 44 b0 cb 1c 7b cc 60 02 20  iL..aj.D...{.`. 
+   0190: 11 cc d2 7a 79 97 10 e4 fe 5b 0a 64 c0 cf f3 2f  ...zy....[.d.../
+   01a0: ef f5 05 f7 9d c4 3d 47 53 08 79 37 c3 17 b1 05  ......=GS.y7....
+buffer signature:
+   0000: 30 45 02 20 6b b1 71 7c 0f 53 bd b9 4e b5 15 c4  0E. k.q|.S..N...
+   0010: 9c a5 ba f8 73 e4 8e 6b da ac 06 d0 b5 a8 4d e8  ....s..k......M.
+   0020: c7 23 80 58 02 21 00 ee ec 7e dd 22 08 a8 fa 8f  .#.X.!...~."....
+   0030: 61 ed 16 10 82 f9 8e dd bf b0 4e 47 a1 0b 72 20  a.........NG..r 
+   0040: 05 72 86 9e e9 07 84                             .r.....
+buffer signedpart:
+   0000: 00 48 ff 29 ea ba 82 f6 e6 a7 b8 4f ff 1d f8 3a  .H.).......O...:
+   0010: 85 50 b6 2d 33 9f e5 d0 f1 43 be 24 d8 29 9b d7  .P.-3....C.$.)..
+   0020: 9f e2 8b 13 83 f0 01 9e ff ef 83 34 e7 f4 c8 5d  ...........4...]
+   0030: 28 6b d2 a9 3a b3 16 51 71 ff e3 7c ab 27 4b ee  (k..:..Qq..|.'K.
+   0040: 56 1b 68 af 97 9b 08 8c f0 ae da f9 d0 48 4c c0  V.h..........HL.
+   0050: cb f9 73 a3 c3 ce 3b 02 98 82 00 69 a1 9a c6 2c  ..s...;....i...,
+   0060: 1f f8 90 e7 ec 56 80 52 67 95 48 8a 09 8b 30 fd  .....V.Rg.H...0.
+   0070: 53 33 83 b2 e6 2c 9d 85 53 a6 08 d2 ec 15 70 ee  S3...,..S.....p.
+   0080: 46 40 73 2b 03 4c 5a bb ad 3e bd a4 58 77 c3 e4  F@s+.LZ..>..Xw..
+   0090: 97 04 de 27 af e8 35 c6 fb 02 9c a2 04 c0 e1 31  ...'..5........1
+   00a0: 1d 6d ac 53 9c c5 ce 4d d7 63 b6 ad 1b 3f 0e 07  .m.S...M.c...?..
+   00b0: 00 e5 48 75 89 16 fe 13 5f 64 1d 8a 26 ca 3e 6d  ..Hu...._d..&.>m
+   00c0: 76 5f 12 95 19 fc d9 a2 bc 8f 1b b7 31 49 44 c3  v_..........1ID.
+   00d0: 27 ee                                            '.
+
+=========
+
+GREEN
+
+       signaling D2:D4:71:0D:B5:F1
+********* MTU = 20 *******
+on_connected
+on_sent
+on_sent
+on_sent
+on_sent
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_received
+on_stopped
+
+========={ AFTER REGISTER }============
+Status: 36864  9000
+Presence: 0
+Counter: 0
+buffer challenge:
+   0000: e2 8b 13 83 f0 01 9e ff ef 83 34 e7 f4 c8 5d 28  ..........4...](
+   0010: 6b d2 a9 3a b3 16 51 71 ff e3 7c ab 27 4b ee 56  k..:..Qq..|.'K.V
+buffer appid:
+   0000: 48 ff 29 ea ba 82 f6 e6 a7 b8 4f ff 1d f8 3a 85  H.).......O...:.
+   0010: 50 b6 2d 33 9f e5 d0 f1 43 be 24 d8 29 9b d7 9f  P.-3....C.$.)...
+buffer keyhandle:
+   0000: f0 be 37 81 d4 27 5a b5 0e 6e 3f 19 2d 16 90 87  ..7..'Z..n?.-...
+   0010: 7b a1 2a e6 b2 bc 73 05 bc 8c 8c ef 3d 20 0d f2  {.*...s.....= ..
+   0020: 99 10 12 3c e7 2e 4d a6 70 5c 59 86 66 87 e4 25  ...<..M.p\Y.f..%
+   0030: 00 d4 91 ee 1a 8d 6c d4 ea c7 c9 14 22 2e 2f 7e  ......l....."./~
+   0040: b3 df 3d 79 3d dd 87 1c f4 f8 22 b2 a2 56 af 7c  ..=y=....."..V.|
+buffer version:    <NOTHING>
+buffer publickey:
+   0000: 04 72 1d ae a3 33 60 92 81 30 63 29 87 8f 46 ee  .r...3`..0c)..F.
+   0010: 19 19 70 fd 28 6d 87 2d fa 8c 37 03 95 da 8d 24  ..p.(m.-..7....$
+   0020: f1 ed 42 13 63 b5 36 a8 4b 36 fa da 8a 36 19 df  ..B.c.6.K6...6..
+   0030: 32 90 ef 9c c7 ee ec 80 fd 5e 99 0d 2a 5d b1 72  2........^..*].r
+   0040: 7b                                               {
+buffer certificate:
+   0000: 30 82 01 ac 30 82 01 53 a0 03 02 01 02 02 04 78  0...0..S.......x
+   0010: 2a 0e b9 30 0a 06 08 2a 86 48 ce 3d 04 03 02 30  *..0...*.H.=...0
+   0020: 46 31 1c 30 1a 06 03 55 04 0a 13 13 56 41 53 43  F1.0...U....VASC
+   0030: 4f 20 44 61 74 61 20 53 65 63 75 72 69 74 79 31  O Data Security1
+   0040: 26 30 24 06 03 55 04 03 13 1d 56 41 53 43 4f 20  &0$..U....VASCO 
+   0050: 44 49 47 49 50 41 53 53 20 53 65 63 75 72 65 43  DIGIPASS SecureC
+   0060: 6c 69 63 6b 20 43 41 30 1e 17 0d 31 36 30 32 32  lick CA0...16022
+   0070: 32 30 38 33 39 30 30 5a 17 0d 34 31 30 32 32 32  2083900Z..410222
+   0080: 30 38 33 39 30 30 5a 30 53 31 1c 30 1a 06 03 55  083900Z0S1.0...U
+   0090: 04 0a 13 13 56 41 53 43 4f 20 44 61 74 61 20 53  ....VASCO Data S
+   00a0: 65 63 75 72 69 74 79 31 33 30 31 06 03 55 04 03  ecurity1301..U..
+   00b0: 13 2a 56 41 53 43 4f 20 44 49 47 49 50 41 53 53  .*VASCO DIGIPASS
+   00c0: 20 53 65 63 75 72 65 43 6c 69 63 6b 20 41 74 74   SecureClick Att
+   00d0: 65 73 74 61 74 69 6f 6e 20 4b 65 79 30 59 30 13  estation Key0Y0.
+   00e0: 06 07 2a 86 48 ce 3d 02 01 06 08 2a 86 48 ce 3d  ..*.H.=....*.H.=
+   00f0: 03 01 07 03 42 00 04 46 12 a2 20 e5 78 b3 4f 6a  ....B..F.. .x.Oj
+   0100: 89 1e 23 d6 5a 9e 89 64 98 01 1e a9 be 30 29 bc  ..#.Z..d.....0).
+   0110: cf 1a 8f ca 46 5b 17 66 97 af 67 e0 d9 12 38 6d  ....F[.f..g...8m
+   0120: 48 44 df 23 3c 01 e0 14 ba d9 de 9b 39 32 61 4e  HD.#<.......92aN
+   0130: 65 d9 4c 21 bf cc 83 a3 22 30 20 30 09 06 03 55  e.L!...."0 0...U
+   0140: 1d 13 04 02 30 00 30 13 06 0b 2b 06 01 04 01 82  ....0.0...+.....
+   0150: e5 1c 02 01 01 04 04 03 02 05 60 30 0a 06 08 2a  ..........`0...*
+   0160: 86 48 ce 3d 04 03 02 03 47 00 30 44 02 20 39 5e  .H.=....G.0D. 9^
+   0170: 8b 68 c0 43 a7 7c 8f dc 4c 6e f9 b1 19 4d 39 3b  .h.C.|..Ln...M9;
+   0180: 69 4c e5 bf 61 6a e9 44 b0 cb 1c 7b cc 60 02 20  iL..aj.D...{.`. 
+   0190: 11 cc d2 7a 79 97 10 e4 fe 5b 0a 64 c0 cf f3 2f  ...zy....[.d.../
+   01a0: ef f5 05 f7 9d c4 3d 47 53 08 79 37 c3 17 b1 05  ......=GS.y7....
+buffer signature:
+   0000: 30 46 02 21 00 bc 8c 23 a2 43 3a ca 02 b2 16 c0  0F.!...#.C:.....
+   0010: 32 bc eb 83 1b b4 a5 2e c7 84 d9 c9 44 2c f7 4b  2...........D,.K
+   0020: ff 17 78 25 c8 02 21 00 c2 cf cb 7d 5d e6 c3 47  ..x%..!....}]..G
+   0030: e6 ec 72 3a c4 47 a8 34 91 56 4c 66 8e 85 90 df  ..r:.G.4.VLf....
+   0040: 47 04 d8 a5 28 4f 4c ce                          G...(OL.
+buffer signedpart:
+   0000: 00 48 ff 29 ea ba 82 f6 e6 a7 b8 4f ff 1d f8 3a  .H.).......O...:
+   0010: 85 50 b6 2d 33 9f e5 d0 f1 43 be 24 d8 29 9b d7  .P.-3....C.$.)..
+   0020: 9f e2 8b 13 83 f0 01 9e ff ef 83 34 e7 f4 c8 5d  ...........4...]
+   0030: 28 6b d2 a9 3a b3 16 51 71 ff e3 7c ab 27 4b ee  (k..:..Qq..|.'K.
+   0040: 56 f0 be 37 81 d4 27 5a b5 0e 6e 3f 19 2d 16 90  V..7..'Z..n?.-..
+   0050: 87 7b a1 2a e6 b2 bc 73 05 bc 8c 8c ef 3d 20 0d  .{.*...s.....= .
+   0060: f2 99 10 12 3c e7 2e 4d a6 70 5c 59 86 66 87 e4  ....<..M.p\Y.f..
+   0070: 25 00 d4 91 ee 1a 8d 6c d4 ea c7 c9 14 22 2e 2f  %......l....."./
+   0080: 7e b3 df 3d 79 3d dd 87 1c f4 f8 22 b2 a2 56 af  ~..=y=....."..V.
+   0090: 7c 04 72 1d ae a3 33 60 92 81 30 63 29 87 8f 46  |.r...3`..0c)..F
+   00a0: ee 19 19 70 fd 28 6d 87 2d fa 8c 37 03 95 da 8d  ...p.(m.-..7....
+   00b0: 24 f1 ed 42 13 63 b5 36 a8 4b 36 fa da 8a 36 19  $..B.c.6.K6...6.
+   00c0: df 32 90 ef 9c c7 ee ec 80 fd 5e 99 0d 2a 5d b1  .2........^..*].
+   00d0: 72 7b                                            r{
+
+=========
+
+

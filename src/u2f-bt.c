@@ -35,7 +35,7 @@ struct buffer
 enum u2f_bt_state
 {
 	Idle,
-	Connecting,
+	Starting,
 	Dialing,
 	Stopping,
 	Disconnecting
@@ -100,7 +100,9 @@ static void try_send(struct u2f_bt *bt)
 			len = remain;
 		memcpy(&frame[head], &bt->write.data[offset], len);
 		bt->sent = len;
+		u2f_bt_addref(bt);
 		u2f_bluez_send(bt->device, frame, len + head);
+		u2f_bt_unref(bt);
 	}
 }
 
@@ -116,13 +118,13 @@ printf("got error: %d, %s\n", error, message);
 	}
 }
 
-static void on_connected(void *closure, size_t mtu)
+static void on_started(void *closure, size_t mtu)
 {
 	struct u2f_bt *bt = closure;
 
-printf("on_connected\n");
+printf("on_started\n");
 	bt->mtu = mtu;
-	if (bt->state == Connecting) {
+	if (bt->state == Starting) {
 		bt->state = Dialing;
 		try_send(bt);
 	}
@@ -143,11 +145,14 @@ static void on_received(void *closure, const uint8_t *frame, size_t framesize)
 	struct u2f_bt *bt = closure;
 
 printf("on_received\n");
+
+	u2f_bt_addref(bt);
+
 	offset = bt->read.offset;
 	if (offset == 0) {
 		if (framesize < 3) {
 			set_error(bt, -EINVAL, "first frame should be of at least 3 bytes");
-			return;
+			goto end;
 		}
 
 		size = (((size_t)frame[1]) << 8) | (size_t)frame[2];
@@ -155,7 +160,7 @@ printf("on_received\n");
 		rc = buffer_make(&bt->read, NULL, size, frame[0]);
 		if (rc < 0) {
 			set_error(bt, rc, "allocation failed for received bytes");
-			return;
+			goto end;
 		}
 
 		frame += 3;
@@ -163,12 +168,12 @@ printf("on_received\n");
 	} else {
 		if (framesize < 2) {
 			set_error(bt, -EINVAL, "next frames should be of at least 2 bytes");
-			return;
+			goto end;
 		}
 
 		if (frame[0] != bt->read.counter) {
 			set_error(bt, -EINVAL, "invalid frame sequence detected");
-			return;
+			goto end;
 		}
 
 		bt->read.counter = (bt->read.counter + 1) & 0x7f;
@@ -180,7 +185,7 @@ printf("on_received\n");
 	/* check remaining size */
 	if (offset + framesize > size) {
 		set_error(bt, -EINVAL, "received size mismatch (overflow)");
-		return;
+		goto end;
 	}
 
 	memcpy(&bt->read.data[offset], frame, framesize);
@@ -191,6 +196,8 @@ printf("on_received\n");
 		bt->state = Stopping;
 		u2f_bluez_stop(bt->device);
 	}
+end:
+	u2f_bt_unref(bt);
 }
 
 static void on_sent(void *closure)
@@ -209,11 +216,15 @@ static void on_stopped(void *closure)
 
 printf("on_stopped\n");
 
+	u2f_bt_addref(bt);
 	if (bt->state == Stopping) {
 		bt->state = Idle;
 		bt->callback(bt->closure, bt->read.head, bt->read.data, bt->read.size);
 	} else if (bt->state != Idle)
 		set_error(bt, -EINVAL, "Unexpected stop");
+
+	u2f_bluez_disconnect(bt->device);
+	u2f_bt_unref(bt);
 }
 
 
@@ -221,30 +232,22 @@ static void on_error(void *closure, int error, const char *message)
 {
 	struct u2f_bt *bt = closure;
 printf("on_error\n");
+	u2f_bt_addref(bt);
 	set_error(bt, error, message);
+	u2f_bt_unref(bt);
 }
 
 /********************************************************************************************************/
 
 static struct u2f_bluez_observer bt_callbacks =
 {
-	.connected = on_connected,
+	.started = on_started,
 	.disconnected = on_disconnected,
 	.received = on_received,
 	.sent = on_sent,
 	.stopped = on_stopped,
 	.error = on_error
 };
-
-static int set_observe_on(struct u2f_bt *bt)
-{
-	return u2f_bluez_observer_add(bt->device, &bt_callbacks, bt);
-}
-
-static void set_observe_off(struct u2f_bt *bt)
-{
-	u2f_bluez_observer_delete(bt->device, &bt_callbacks, bt);
-}
 
 /********************************************************************************************************/
 
@@ -294,6 +297,7 @@ struct u2f_bt *u2f_bt_addref(struct u2f_bt *bt)
 void u2f_bt_unref(struct u2f_bt *bt)
 {
 	if (bt && !--bt->refcount) {
+		u2f_bluez_observer_delete(bt->device, &bt_callbacks, bt);
 		u2f_bluez_unref(bt->device);
 		free(bt->write.data);
 		free(bt->read.data);
@@ -317,8 +321,8 @@ int u2f_bt_send(struct u2f_bt *bt, uint8_t cmd, const uint8_t *data, size_t size
 	if (rc < 0)
 		return rc;
 
-	bt->state = Connecting;
-	u2f_bluez_connect(bt->device);
+	bt->state = Starting;
+	u2f_bluez_start(bt->device);
 	return 0;
 }
 
@@ -334,54 +338,55 @@ struct message {
 static void message_complete(void *closure, int status, const uint8_t *buffer, size_t size)
 {
 	int rc;
-	struct message *sending = closure;
+	struct message *message = closure;
 	if (status == U2F_BT_MSG) {
-		rc = u2f_protocol_put_extended_reply(sending->message, buffer, size);
+		rc = u2f_protocol_put_extended_reply(message->message, buffer, size);
 	} else {
-		rc = u2f_protocol_put_error_status(sending->message, 0x1234);
+		rc = u2f_protocol_put_error_status(message->message, 0x1234);
 		rc = status < 0 ? status : -EACCES;
 	}
-	sending->callback(sending->closure, rc, sending->message);
-	u2f_protocol_unref(sending->message);
-	free(sending);
+	u2f_bt_unref(message->bt);
+	message->callback(message->closure, rc, message->message);
+	u2f_protocol_unref(message->message);
+	free(message);
 }
 
 int u2f_bt_message(struct u2f_bluez *device, struct u2f_proto *msg, void (*callback)(void *closure, int status, struct u2f_proto *msg), void *closure)
 {
 	int rc;
-	struct message *sending = 0;
+	struct message *message = 0;
 	const uint8_t *buffer;
 	size_t size;
 
-	sending = calloc(1, sizeof *sending);
-	if (!sending)
+	message = calloc(1, sizeof *message);
+	if (!message)
 		return -ENOMEM;
 
-	sending->message = u2f_protocol_addref(msg);
-	sending->callback = callback;
-	sending->closure = closure;
+	message->message = u2f_protocol_addref(msg);
+	message->callback = callback;
+	message->closure = closure;
 
-	rc = u2f_bt_create(&sending->bt, device);
+	rc = u2f_bt_create(&message->bt, device);
 	if (rc < 0)
 		goto error;
 
-	u2f_bt_set_callback(sending->bt, message_complete, sending);
+	u2f_bt_set_callback(message->bt, message_complete, message);
 
 	rc = u2f_protocol_get_extended_request(msg, &buffer, &size);
 	if (rc < 0)
 		goto error;
 
-	rc = u2f_bt_send(sending->bt, U2F_BT_MSG, buffer, size);
+	rc = u2f_bt_send(message->bt, U2F_BT_MSG, buffer, size);
 	if (rc < 0)
 		goto error;
 
 	return 0;
 
 error:
-	if (sending) {
-		u2f_bt_unref(sending->bt);
-		u2f_protocol_unref(sending->message);
-		free(sending);
+	if (message) {
+		u2f_bt_unref(message->bt);
+		u2f_protocol_unref(message->message);
+		free(message);
 	}
 	return rc;
 }

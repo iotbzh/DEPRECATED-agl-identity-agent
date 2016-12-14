@@ -21,18 +21,158 @@
 
 
 /* sha 256 of u2f.h */
-static const char ex1[] = "e28b1383f0019effef8334e7f4c85d286bd2a93ab3165171ffe37cab274bee56";
+static const char ex_challenge[] = "e28b1383f0019effef8334e7f4c85d286bd2a93ab3165171ffe37cab274bee56";
 
 /* sha 256 of u2f_hid.h */
-static const char ex2[] = "48ff29eaba82f6e6a7b84fff1df83a8550b62d339fe5d0f143be24d8299bd79f";
+static const char ex_appid[] = "48ff29eaba82f6e6a7b84fff1df83a8550b62d339fe5d0f143be24d8299bd79f";
 
-static const char green_kh[] =
-	"cd4057400bd365708ae8b820cec74248"
-	"b721dc1314a1c9d7fd4086c90834c692"
-	"4ec40e41dd6ff7fa979d1ad8a71ccbcf"
-	"4d9220d4cc26eceadecd5554a67e9461"
-	"c92d76e4e93a03b6db2f1499675331f7"
-;
+struct keydesc
+{
+	const char *name;
+	const char *address;
+	const char *keyhandle;
+	const char *publickey;
+	const char *certificate;
+};
+
+enum { WHITE = 0, BLUE = 1, GREEN = 2 };
+
+static const struct keydesc keys[] =
+{
+ {
+  .name = "WHITE",
+  .address = "EA:00:44:68:CF:35",
+  .keyhandle =
+     "7a5edece43a2f926e1ae8c8160e41f44"
+     "e88f1b73e35b8dd43f94e84ed1d3022c"
+     "a7494b4aee7f4e1a0b55d6e8ba50a8cf"
+     "a607e8f9a474c3303db75bf22eff1812"
+     "3a8b36506134d4807a467374da2438d1",
+  .publickey =
+     "045ecafd15595e5558b276af38dc3492"
+     "fd0a6b76f9813bb75c1d48e330d4fd60"
+     "1ee285667b13dd68211ff266545d1673"
+     "e8e44eb7bdd0543553f6fed7486b6137"
+     "47",
+  .certificate =
+     "308201ac30820153a003020102020478"
+     "2a0eb9300a06082a8648ce3d04030230"
+     "46311c301a060355040a131356415343"
+     "4f204461746120536563757269747931"
+     "2630240603550403131d564153434f20"
+     "44494749504153532053656375726543"
+     "6c69636b204341301e170d3136303232"
+     "323038333930305a170d343130323232"
+     "3038333930305a3053311c301a060355"
+     "040a1313564153434f20446174612053"
+     "65637572697479313330310603550403"
+     "132a564153434f204449474950415353"
+     "20536563757265436c69636b20417474"
+     "6573746174696f6e204b657930593013"
+     "06072a8648ce3d020106082a8648ce3d"
+     "030107034200044612a220e578b34f6a"
+     "891e23d65a9e896498011ea9be3029bc"
+     "cf1a8fca465b176697af67e0d912386d"
+     "4844df233c01e014bad9de9b3932614e"
+     "65d94c21bfcc83a32230203009060355"
+     "1d13040230003013060b2b0601040182"
+     "e51c020101040403020560300a06082a"
+     "8648ce3d04030203470030440220395e"
+     "8b68c043a77c8fdc4c6ef9b1194d393b"
+     "694ce5bf616ae944b0cb1c7bcc600220"
+     "11ccd27a799710e4fe5b0a64c0cff32f"
+     "eff505f79dc43d4753087937c317b105"
+ },
+ {
+  .name = "BLUE",
+  .address = "EB:7C:23:C6:21:BF",
+  .keyhandle =
+     "1b68af979b088cf0aedaf9d0484cc0cb"
+     "f973a3c3ce3b0298820069a19ac62c1f"
+     "f890e7ec5680526795488a098b30fd53"
+     "3383b2e62c9d8553a608d2ec1570ee46"
+     "40732b034c5abbad3ebda45877c3e497",
+  .publickey =
+     "04de27afe835c6fb029ca204c0e1311d"
+     "6dac539cc5ce4dd763b6ad1b3f0e0700"
+     "e548758916fe135f641d8a26ca3e6d76"
+     "5f129519fcd9a2bc8f1bb7314944c327"
+     "ee",
+  .certificate =
+     "308201ac30820153a003020102020478"
+     "2a0eb9300a06082a8648ce3d04030230"
+     "46311c301a060355040a131356415343"
+     "4f204461746120536563757269747931"
+     "2630240603550403131d564153434f20"
+     "44494749504153532053656375726543"
+     "6c69636b204341301e170d3136303232"
+     "323038333930305a170d343130323232"
+     "3038333930305a3053311c301a060355"
+     "040a1313564153434f20446174612053"
+     "65637572697479313330310603550403"
+     "132a564153434f204449474950415353"
+     "20536563757265436c69636b20417474"
+     "6573746174696f6e204b657930593013"
+     "06072a8648ce3d020106082a8648ce3d"
+     "030107034200044612a220e578b34f6a"
+     "891e23d65a9e896498011ea9be3029bc"
+     "cf1a8fca465b176697af67e0d912386d"
+     "4844df233c01e014bad9de9b3932614e"
+     "65d94c21bfcc83a32230203009060355"
+     "1d13040230003013060b2b0601040182"
+     "e51c020101040403020560300a06082a"
+     "8648ce3d04030203470030440220395e"
+     "8b68c043a77c8fdc4c6ef9b1194d393b"
+     "694ce5bf616ae944b0cb1c7bcc600220"
+     "11ccd27a799710e4fe5b0a64c0cff32f"
+     "eff505f79dc43d4753087937c317b105"
+ },
+ {
+  .name = "GREEN",
+  .address = "D2:D4:71:0D:B5:F1",
+  .keyhandle =
+     "f0be3781d4275ab50e6e3f192d169087"
+     "7ba12ae6b2bc7305bc8c8cef3d200df2"
+     "9910123ce72e4da6705c59866687e425"
+     "00d491ee1a8d6cd4eac7c914222e2f7e"
+     "b3df3d793ddd871cf4f822b2a256af7c",
+  .publickey =
+     "04721daea333609281306329878f46ee"
+     "191970fd286d872dfa8c370395da8d24"
+     "f1ed421363b536a84b36fada8a3619df"
+     "3290ef9cc7eeec80fd5e990d2a5db172"
+     "7b",
+  .certificate =
+     "308201ac30820153a003020102020478"
+     "2a0eb9300a06082a8648ce3d04030230"
+     "46311c301a060355040a131356415343"
+     "4f204461746120536563757269747931"
+     "2630240603550403131d564153434f20"
+     "44494749504153532053656375726543"
+     "6c69636b204341301e170d3136303232"
+     "323038333930305a170d343130323232"
+     "3038333930305a3053311c301a060355"
+     "040a1313564153434f20446174612053"
+     "65637572697479313330310603550403"
+     "132a564153434f204449474950415353"
+     "20536563757265436c69636b20417474"
+     "6573746174696f6e204b657930593013"
+     "06072a8648ce3d020106082a8648ce3d"
+     "030107034200044612a220e578b34f6a"
+     "891e23d65a9e896498011ea9be3029bc"
+     "cf1a8fca465b176697af67e0d912386d"
+     "4844df233c01e014bad9de9b3932614e"
+     "65d94c21bfcc83a32230203009060355"
+     "1d13040230003013060b2b0601040182"
+     "e51c020101040403020560300a06082a"
+     "8648ce3d04030203470030440220395e"
+     "8b68c043a77c8fdc4c6ef9b1194d393b"
+     "694ce5bf616ae944b0cb1c7bcc600220"
+     "11ccd27a799710e4fe5b0a64c0cff32f"
+     "eff505f79dc43d4753087937c317b105"
+ }
+};
+
 
 int a2b(const char *a, uint8_t **b, size_t *l)
 {
@@ -143,7 +283,6 @@ static void test_authenticate_cb(void *closure, int status, struct u2f_proto *pr
 	struct u2f_bluez *device = closure;
 
 	dumpproto("AFTER AUTHORIZE", proto);
-
 }
 
 int test_authenticate(struct u2f_bluez *device, const char *challenge, const char *appid, const char *keyhandle)
@@ -244,10 +383,18 @@ end:
 
 static void on_found_u2f_bluez_device(struct u2f_bluez *device)
 {
+	int i;
+
 	printf("\n       signaling %s\n", u2f_bluez_address(device));
 
-	//test_register(device, ex1, ex2);
-	test_authenticate(device, ex1, ex2, green_kh);
+#if 0
+	test_register(device, ex_challenge, ex_appid);
+#else
+	i = (int)(sizeof keys / sizeof *keys) - 1;
+	while(i && strcasecmp(keys[i].address, u2f_bluez_address(device)))
+		i--;
+	test_authenticate(device, ex_challenge, ex_appid, keys[i].keyhandle);
+#endif
 }
 
 int main(int ac, char **av)
@@ -275,11 +422,7 @@ int main(int ac, char **av)
 		return 1;
 	}
 
-	rc = u2f_bluez_scan(on_found_u2f_bluez_device);
-	if (rc < 0) {
-		ERROR("scanning of bluez devices failed: %s", strerror(-rc));
-		return 1;
-	}
+	u2f_bluez_scan(on_found_u2f_bluez_device);
 
 	/* wait forever */
 	sd_event_loop(e);
