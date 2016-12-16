@@ -8,9 +8,11 @@
 #include <systemd/sd-event.h>
 
 
+#include "u2f.h"
 #include "u2f-protocol.h"
 #include "u2f-bluez.h"
 #include "u2f-bt.h"
+#include "u2f-crypto.h"
 
 #ifndef ERROR
 #define ERROR(...)  (fprintf(stderr,"ERROR: ")|fprintf(stderr,__VA_ARGS__)|fprintf(stderr," (%s:%d)\n",__FILE__,__LINE__))
@@ -281,20 +283,28 @@ static void dumpproto(const char *message, struct u2f_proto *proto)
 static void test_authenticate_cb(void *closure, int status, struct u2f_proto *proto)
 {
 	struct u2f_bluez *device = closure;
+	int rc;
 
 	dumpproto("AFTER AUTHORIZE", proto);
+
+	if (u2f_protocol_get_status(proto) == U2F_SW_NO_ERROR) {
+		rc = u2f_crypto_verify(proto);
+		printf("!!!!! crypto resolution: %d   !!!!!\n\n\n", rc);
+	}
 }
 
-int test_authenticate(struct u2f_bluez *device, const char *challenge, const char *appid, const char *keyhandle)
+int test_authenticate(struct u2f_bluez *device, const char *challenge, const char *appid, const char *keyhandle, const char *point)
 {
 	int rc;
 	struct u2f_proto *proto = 0;
 	size_t chasz;
 	size_t appsz;
 	size_t khsz;
+	size_t ptsz;
 	uint8_t *cha = 0;
 	uint8_t *app = 0;
 	uint8_t *kh = 0;
+	uint8_t *pt = 0;
 
 	rc = u2f_protocol_new(&proto);
 	CRC(end);
@@ -317,6 +327,12 @@ int test_authenticate(struct u2f_bluez *device, const char *challenge, const cha
 	rc = u2f_protocol_set_keyhandle(proto, kh, khsz);
 	CRC(end);
 
+	rc = a2b(point, &pt, &ptsz);
+	CRC(end);
+
+	rc = u2f_protocol_set_publickey(proto, pt, ptsz);
+	CRC(end);
+
 	rc = u2f_protocol_set_authenticate(proto, 1);
 	CRC(end);
 
@@ -325,20 +341,27 @@ int test_authenticate(struct u2f_bluez *device, const char *challenge, const cha
 
 	rc = u2f_bt_message(device, proto, test_authenticate_cb, (void*)device);
 	CRC(end);
-	
+
 end:
 	u2f_protocol_unref(proto);
 	free(app);
 	free(cha);
 	free(kh);
+	free(pt);
 	return rc;
 }	
 
 static void test_register_cb(void *closure, int status, struct u2f_proto *proto)
 {
 	struct u2f_bluez *device = closure;
+	int rc;
 
 	dumpproto("AFTER REGISTER", proto);
+
+	if (u2f_protocol_get_status(proto) == U2F_SW_NO_ERROR) {
+		rc = u2f_crypto_verify(proto);
+		printf("!!!!! crypto resolution: %d   !!!!!\n\n\n", rc);
+	}
 }
 
 int test_register(struct u2f_bluez *device, const char *challenge, const char *appid)
@@ -393,7 +416,7 @@ static void on_found_u2f_bluez_device(struct u2f_bluez *device)
 	i = (int)(sizeof keys / sizeof *keys) - 1;
 	while(i && strcasecmp(keys[i].address, u2f_bluez_address(device)))
 		i--;
-	test_authenticate(device, ex_challenge, ex_appid, keys[i].keyhandle);
+	test_authenticate(device, ex_challenge, ex_appid, keys[i].keyhandle, keys[WHITE].publickey);
 #endif
 }
 

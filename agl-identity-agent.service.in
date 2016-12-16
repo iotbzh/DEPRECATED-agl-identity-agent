@@ -1,0 +1,10 @@
+[Unit]
+Description=AGL identity agent
+
+[Service]
+User=root
+ExecStartPre=/usr/sbin/rfkill unblock 0
+ExecStart=/usr/bin/afb-daemon --rootdir=@PROJECT_DESTINATION@ --ldpaths=@PROJECT_DESTINATION@ --port=1212 --token= --verbose --verbose --verbose
+
+[Install]
+WantedBy=default.target

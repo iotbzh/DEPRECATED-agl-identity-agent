@@ -1,0 +1,9 @@
+{
+ "endpoint": "https://agl-graphapi.forgerocklabs.org/getuserprofilefromtoken",
+ "vin": "4T1BF1FK5GU260429"
+}
+/*
+ "endpoint": "https://frdemo-graphapi.forgerocklabs.org/getuserprofilefromtoken",
+ "vin": "JTEBU4BF6EK189816"
+*/
+
