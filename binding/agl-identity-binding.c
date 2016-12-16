@@ -311,9 +311,14 @@ static int upload_request(const char *address)
 
 static void key_detected(struct u2f_bluez *device)
 {
-	const char *address = u2f_bluez_address(device);
-	int rc = upload_request(address);
-	struct json_object *object = make_event_object("incoming", address, address);
+	int rc;
+	const char *address;
+	struct json_object *object;
+
+	u2f_bluez_connect(device);
+	address = u2f_bluez_address(device);
+	rc = upload_request(address);
+	object = make_event_object("incoming", address, address);
 	afb_event_push(event, object);
 	if (rc < 0)
 		ERROR(interface, "failed to request upload");

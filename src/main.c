@@ -412,11 +412,13 @@ static void on_found_u2f_bluez_device(struct u2f_bluez *device)
 
 #if 0
 	test_register(device, ex_challenge, ex_appid);
-#else
+#elif 0
 	i = (int)(sizeof keys / sizeof *keys) - 1;
 	while(i && strcasecmp(keys[i].address, u2f_bluez_address(device)))
 		i--;
 	test_authenticate(device, ex_challenge, ex_appid, keys[i].keyhandle, keys[WHITE].publickey);
+#else
+	u2f_bluez_connect(device);
 #endif
 }
 
