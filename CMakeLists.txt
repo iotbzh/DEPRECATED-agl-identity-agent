@@ -45,7 +45,7 @@ set(CMAKE_C_FLAGS_CCOV         "-g -O2 --coverage")
 
 ###########################################################################
 
-set(PROJECT_DESTINATION ${LIBEXECDIR}/${PROJECT_NAME})
+set(PROJECT_DESTINATION ${CMAKE_INSTALL_LIBEXECDIR}/${PROJECT_NAME})
 
 ###########################################################################
 
