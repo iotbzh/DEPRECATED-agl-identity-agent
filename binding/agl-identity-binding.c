@@ -37,59 +37,7 @@
 
 #define AUTO_START_SCAN 1
 
-
-#if 0
-{
-  .name = "BLUE",
-  .address = "EB:7C:23:C6:21:BF",
-  .keyhandle =
-     "1b68af979b088cf0aedaf9d0484cc0cb"
-     "f973a3c3ce3b0298820069a19ac62c1f"
-     "f890e7ec5680526795488a098b30fd53"
-     "3383b2e62c9d8553a608d2ec1570ee46"
-     "40732b034c5abbad3ebda45877c3e497",
-  .publickey =
-     "04de27afe835c6fb029ca204c0e1311d"
-     "6dac539cc5ce4dd763b6ad1b3f0e0700"
-     "e548758916fe135f641d8a26ca3e6d76"
-     "5f129519fcd9a2bc8f1bb7314944c327"
-     "ee",
-  .certificate =
-     "308201ac30820153a003020102020478"
-     "2a0eb9300a06082a8648ce3d04030230"
-     "46311c301a060355040a131356415343"
-     "4f204461746120536563757269747931"
-     "2630240603550403131d564153434f20"
-     "44494749504153532053656375726543"
-     "6c69636b204341301e170d3136303232"
-     "323038333930305a170d343130323232"
-     "3038333930305a3053311c301a060355"
-     "040a1313564153434f20446174612053"
-     "65637572697479313330310603550403"
-     "132a564153434f204449474950415353"
-     "20536563757265436c69636b20417474"
-     "6573746174696f6e204b657930593013"
-     "06072a8648ce3d020106082a8648ce3d"
-     "030107034200044612a220e578b34f6a"
-     "891e23d65a9e896498011ea9be3029bc"
-     "cf1a8fca465b176697af67e0d912386d"
-     "4844df233c01e014bad9de9b3932614e"
-     "65d94c21bfcc83a32230203009060355"
-     "1d13040230003013060b2b0601040182"
-     "e51c020101040403020560300a06082a"
-     "8648ce3d04030203470030440220395e"
-     "8b68c043a77c8fdc4c6ef9b1194d393b"
-     "694ce5bf616ae944b0cb1c7bcc600220"
-     "11ccd27a799710e4fe5b0a64c0cff32f"
-     "eff505f79dc43d4753087937c317b105"
- }
-#endif
-
 extern int geturl(const char *url, void (*callback)(void *closure, int status, void *buffer, size_t size), void *closure);
-
-
-
-
 
 const struct afb_binding_interface *interface;
 
@@ -149,7 +97,7 @@ static struct json_object *get_local_config(const char *name)
 	return fd < 0 ? NULL : readjson(fd);
 }
 
-static void set(struct json_object *conf, const char *name, char **value, const char *def)
+static void confset(struct json_object *conf, const char *name, char **value, const char *def)
 {
 	struct json_object *v;
 	const char *s;
@@ -165,8 +113,8 @@ static void set(struct json_object *conf, const char *name, char **value, const 
 
 static void setconfig(struct json_object *conf)
 {
-	set(conf, "endpoint", &endpoint, endpoint ? : default_endpoint);
-	set(conf, "vin", &vin, vin ? : default_vin);
+	confset(conf, "endpoint", &endpoint, endpoint ? : default_endpoint);
+	confset(conf, "vin", &vin, vin ? : default_vin);
 }
 
 static void readconfig()
@@ -266,7 +214,7 @@ static int upload_request(const char *address)
 {
 	int rc;
 	time_t now;
-	struct keyrequest **pkr, *kr;
+	struct keyrequest **pkr, *kr, *fkr;
 	char *url;
 
 	url = get_upload_url(address);
@@ -275,19 +223,26 @@ static int upload_request(const char *address)
 
 	now = time(NULL);
 	pthread_mutex_lock(&mutex);
+	fkr = 0;
 	pkr = &keyrequests;
-	while ((kr = *pkr)) {
-		if (!kr->valid && now > kr->expiration) {
+	kr = *pkr;
+	while (kr) {
+		if (!kr->valid || now > kr->expiration) {
 			*pkr = kr->next;
+			free(kr->url);
 			free(kr);
 		} else {
-			if (!strcmp(url, kr->url)) {
-				free(url);
-				pthread_mutex_unlock(&mutex);
-				return 0;
-			}
+			if (!strcmp(url, kr->url))
+				fkr = kr;
 			pkr = &kr->next;
 		}
+		kr = *pkr;
+	}
+
+	if (fkr) {
+		free(url);
+		pthread_mutex_unlock(&mutex);
+		return 0;
 	}
 
 	kr = malloc(sizeof *kr);
@@ -315,8 +270,9 @@ static void key_detected(struct u2f_bluez *device)
 	const char *address;
 	struct json_object *object;
 
-	u2f_bluez_connect(device);
 	address = u2f_bluez_address(device);
+	DEBUG(interface, "Key %s detected", address);
+	u2f_bluez_connect(device);
 	rc = upload_request(address);
 	object = make_event_object("incoming", address, address);
 	afb_event_push(event, object);
