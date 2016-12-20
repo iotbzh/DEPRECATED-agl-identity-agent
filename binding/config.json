@@ -1,9 +1,11 @@
 {
  "endpoint": "https://agl-graphapi.forgerocklabs.org/getuserprofilefromtoken",
- "vin": "4T1BF1FK5GU260429"
+ "vin": "4T1BF1FK5GU260429",
+ "delay": 5
 }
 /*
  "endpoint": "https://frdemo-graphapi.forgerocklabs.org/getuserprofilefromtoken",
- "vin": "JTEBU4BF6EK189816"
+ "vin": "JTEBU4BF6EK189816",
+ "delay": 10
 */
 

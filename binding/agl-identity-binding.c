@@ -37,6 +37,8 @@
 
 #define AUTO_START_SCAN 1
 
+static int expiration_delay = 5;
+
 extern int geturl(const char *url, void (*callback)(void *closure, int status, void *buffer, size_t size), void *closure);
 
 const struct afb_binding_interface *interface;
@@ -48,7 +50,6 @@ static struct afb_event event;
 struct keyrequest {
 	struct keyrequest *next;
 	time_t expiration;
-	int valid;
 	char *url;
 };
 
@@ -97,7 +98,7 @@ static struct json_object *get_local_config(const char *name)
 	return fd < 0 ? NULL : readjson(fd);
 }
 
-static void confset(struct json_object *conf, const char *name, char **value, const char *def)
+static void confsetstr(struct json_object *conf, const char *name, char **value, const char *def)
 {
 	struct json_object *v;
 	const char *s;
@@ -111,10 +112,18 @@ static void confset(struct json_object *conf, const char *name, char **value, co
 	}
 }
 
+static void confsetint(struct json_object *conf, const char *name, int *value, int def)
+{
+	struct json_object *v;
+
+	*value = conf && json_object_object_get_ex(conf, name, &v) ? json_object_get_int(v) : def;
+}
+
 static void setconfig(struct json_object *conf)
 {
-	confset(conf, "endpoint", &endpoint, endpoint ? : default_endpoint);
-	confset(conf, "vin", &vin, vin ? : default_vin);
+	confsetstr(conf, "endpoint", &endpoint, endpoint ? : default_endpoint);
+	confsetstr(conf, "vin", &vin, vin ? : default_vin);
+	confsetint(conf, "delay", &expiration_delay, expiration_delay);
 }
 
 static void readconfig()
@@ -157,12 +166,19 @@ static void remove_keyhandle(struct keyrequest *kr)
 
 static void uploaded(void *closure, int status, void *buffer, size_t size)
 {
-	struct keyrequest *keyreq = closure;
+	struct keyrequest *kr = closure;
 	struct json_object *object, *subobj;
 
-	keyreq->valid = 0;
+	/* try to retrieve the request */
+	pthread_mutex_lock(&mutex);
+	kr = keyrequests;
+	while (kr && kr != closure)
+		kr = kr->next;
+
+	/* scan for the status */
 	if (status < 0 || !buffer) {
-		ERROR(interface, "uploaded failed: %d", status);
+		ERROR(interface, "uploading %s failed: %d", kr ? kr->url : "?", status);
+		pthread_mutex_unlock(&mutex);
 		return;
 	}
 
@@ -185,12 +201,22 @@ static void uploaded(void *closure, int status, void *buffer, size_t size)
 	if (subobj)
 		subobj = json_object_array_get_idx(subobj, 0);
 
+	/* is it a recognized user ? */
+	if (!subobj) {
+		/* not recognized!! */
+		INFO(interface, "unrecognized key for %s", kr ? kr->url : "?");
+		pthread_mutex_unlock(&mutex);
+		json_object_put(object);
+		return;
+	}
+
 	/* keeps only useful part */
 	subobj = json_object_get(subobj);
 	json_object_put(object);
 
 	/* switching the user */
 	INFO(interface, "Switching to user %s", subobj ? json_object_to_json_string(subobj) : "null");
+	pthread_mutex_unlock(&mutex);
 	object = current_identity;
 	current_identity = subobj;
 	json_object_put(object);
@@ -227,7 +253,7 @@ static int upload_request(const char *address)
 	pkr = &keyrequests;
 	kr = *pkr;
 	while (kr) {
-		if (!kr->valid || now > kr->expiration) {
+		if (now > kr->expiration) {
 			*pkr = kr->next;
 			free(kr->url);
 			free(kr);
@@ -253,8 +279,7 @@ static int upload_request(const char *address)
 	}
 
 	kr->next = keyrequests;
-	kr->expiration = now + 10;
-	kr->valid = 1;
+	kr->expiration = now + expiration_delay;
 	kr->url = url;
 	keyrequests = kr;
 	pthread_mutex_unlock(&mutex);
