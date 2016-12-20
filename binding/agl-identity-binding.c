@@ -132,6 +132,7 @@ static void readconfig()
 	setconfig(get_local_config("/etc/agl/identity-agent-config.json"));
 	setconfig(get_local_config("config.json"));
 }
+
 /****************************************************************/
 
 static struct json_object *make_event_object(const char *name, const char *id, const char *nick)
@@ -146,23 +147,36 @@ static struct json_object *make_event_object(const char *name, const char *id, c
 	return object;
 }
 
-static void remove_keyhandle(struct keyrequest *kr)
+static void do_login(struct json_object *desc)
 {
-	struct keyrequest **pkr;
+	struct json_object *object;
 
-	pthread_mutex_lock(&mutex);
-	pkr = &keyrequests;
-	while (*pkr) {
-		if (*pkr == kr) {
-			*pkr = kr->next;
-			free(kr->url);
-			free(kr);
-			break;
-		}
-		pkr = &(*pkr)->next;
-	}
-	pthread_mutex_unlock(&mutex);
+	/* switching the user */
+	INFO(interface, "Switching to user %s", desc ? json_object_to_json_string(desc) : "null");
+	object = current_identity;
+	current_identity = json_object_get(desc);
+	json_object_put(object);
+
+	if (!json_object_object_get_ex(desc, "name", &object))
+		object = 0;
+	object = make_event_object("login", !object ? "null" : json_object_get_string(object)? : "?", 0);
+	afb_event_push(event, object);
 }
+
+static void do_logout()
+{
+	struct json_object *object;
+
+	INFO(interface, "Switching to no user");
+	object = current_identity;
+	current_identity = 0;
+	json_object_put(object);
+
+	object = make_event_object("logout", "null", 0);
+	afb_event_push(event, object);
+}
+
+/****************************************************************/
 
 static void uploaded(void *closure, int status, void *buffer, size_t size)
 {
@@ -210,21 +224,9 @@ static void uploaded(void *closure, int status, void *buffer, size_t size)
 		return;
 	}
 
-	/* keeps only useful part */
-	subobj = json_object_get(subobj);
-	json_object_put(object);
-
-	/* switching the user */
-	INFO(interface, "Switching to user %s", subobj ? json_object_to_json_string(subobj) : "null");
 	pthread_mutex_unlock(&mutex);
-	object = current_identity;
-	current_identity = subobj;
+	do_login(subobj);
 	json_object_put(object);
-
-	if (subobj && !json_object_object_get_ex(subobj, "name", &subobj))
-		subobj = 0;
-	object = make_event_object("login", !subobj?"null":json_object_get_string(subobj)?:"?", 0);
-	afb_event_push(event, object);
 }
 
 static char *get_upload_url(const char *key)
@@ -282,10 +284,13 @@ static int upload_request(const char *address)
 	kr->expiration = now + expiration_delay;
 	kr->url = url;
 	keyrequests = kr;
-	pthread_mutex_unlock(&mutex);
 	rc = geturl(kr->url, uploaded, kr);
-	if (rc < 0)
-		remove_keyhandle(kr);
+	if (rc < 0) {
+		keyrequests = kr->next;
+		free(kr->url);
+		free(kr);
+	}
+	pthread_mutex_unlock(&mutex);
 	return rc;
 }
 
@@ -356,7 +361,8 @@ static void login (struct afb_req request)
 
 static void logout (struct afb_req request)
 {
-	afb_req_fail(request, "not-implemented-yet", NULL);
+	do_logout();
+	afb_req_success(request, NULL, NULL);
 }
 
 static void get (struct afb_req request)
