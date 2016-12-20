@@ -147,6 +147,11 @@ static struct json_object *make_event_object(const char *name, const char *id, c
 	return object;
 }
 
+static int send_event_object(const char *name, const char *id, const char *nick)
+{
+	return afb_event_push(event, make_event_object(name, id, nick));
+}
+
 static void do_login(struct json_object *desc)
 {
 	struct json_object *object;
@@ -159,8 +164,7 @@ static void do_login(struct json_object *desc)
 
 	if (!json_object_object_get_ex(desc, "name", &object))
 		object = 0;
-	object = make_event_object("login", !object ? "null" : json_object_get_string(object)? : "?", 0);
-	afb_event_push(event, object);
+	send_event_object("login", !object ? "null" : json_object_get_string(object)? : "?", 0);
 }
 
 static void do_logout()
@@ -172,8 +176,7 @@ static void do_logout()
 	current_identity = 0;
 	json_object_put(object);
 
-	object = make_event_object("logout", "null", 0);
-	afb_event_push(event, object);
+	send_event_object("logout", "null", 0);
 }
 
 /****************************************************************/
@@ -298,14 +301,12 @@ static void key_detected(struct u2f_bluez *device)
 {
 	int rc;
 	const char *address;
-	struct json_object *object;
 
 	address = u2f_bluez_address(device);
 	DEBUG(interface, "Key %s detected", address);
 	u2f_bluez_connect(device);
 	rc = upload_request(address);
-	object = make_event_object("incoming", address, address);
-	afb_event_push(event, object);
+	send_event_object("incoming", address, address);
 	if (rc < 0)
 		ERROR(interface, "failed to request upload");
 }
