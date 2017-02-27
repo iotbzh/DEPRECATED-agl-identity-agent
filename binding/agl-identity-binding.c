@@ -35,7 +35,9 @@
 
 #include "u2f-bluez.h"
 
+#if !defined(AUTO_START_SCAN)
 #define AUTO_START_SCAN 1
+#endif
 
 static int expiration_delay = 5;
 
@@ -63,6 +65,7 @@ static const char default_endpoint[] = "https://agl-graphapi.forgerocklabs.org/g
 static const char default_vin[] = "4T1BF1FK5GU260429";
 static char *vin;
 static char *endpoint;
+static int autoscan = AUTO_START_SCAN;
 
 /***** configuration ********************************************/
 
@@ -124,6 +127,7 @@ static void setconfig(struct json_object *conf)
 	confsetstr(conf, "endpoint", &endpoint, endpoint ? : default_endpoint);
 	confsetstr(conf, "vin", &vin, vin ? : default_vin);
 	confsetint(conf, "delay", &expiration_delay, expiration_delay);
+	confsetint(conf, "autoscan", &autoscan, autoscan);
 }
 
 static void readconfig()
@@ -413,11 +417,7 @@ int afbBindingV1ServiceInit(struct afb_service service)
 		return -1;
 
 	readconfig();
-#if defined(AUTO_START_SCAN) && AUTO_START_SCAN
-	return u2f_bluez_scan(key_detected);
-#else
-	return 0;
-#endif
+	return autoscan ? u2f_bluez_scan(key_detected) : 0;
 }
 
 
