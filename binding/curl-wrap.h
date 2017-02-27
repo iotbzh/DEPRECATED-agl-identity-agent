@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * vim: set colorcolumn=80:
  */
 
 #pragma once
@@ -42,4 +41,5 @@ extern int curl_wrap_add_header(CURL *curl, const char *header);
 
 extern int curl_wrap_add_header_value(CURL *curl, const char *name, const char *value);
 
+/* vim: set colorcolumn=80: */
 

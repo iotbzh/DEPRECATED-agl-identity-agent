@@ -39,4 +39,5 @@ char *authorization_basic_make_header(const char *user, const char *password)
 	return result;
 }
 
+/* vim: set colorcolumn=80: */
 

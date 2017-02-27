@@ -436,4 +436,5 @@ int afbBindingV1ServiceInit(struct afb_service service)
 	return autoscan ? u2f_bluez_scan(key_detected) : 0;
 }
 
+/* vim: set colorcolumn=80: */
 

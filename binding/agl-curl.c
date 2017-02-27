@@ -187,3 +187,4 @@ int geturl(const char *url, void (*callback)(void *closure, int status, void *bu
 	return queue_request(request);
 }
 
+/* vim: set colorcolumn=80: */

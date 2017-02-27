@@ -1,4 +1,3 @@
-/* vim: set colorcolumn=80: */
 /*
  * Copyright (C) 2015, 2016 "IoT.bzh"
  * Author: José Bollo <jose.bollo@iot.bzh>
@@ -191,3 +190,4 @@ CURL *curl_wrap_prepare_post(const char *base, const char *path, const char * co
 	return res;
 }
 
+/* vim: set colorcolumn=80: */

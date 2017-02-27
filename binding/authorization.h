@@ -20,3 +20,4 @@
 extern char *authorization_basic_make(const char *user, const char *password);
 extern char *authorization_basic_make_header(const char *user, const char *password);
 
+/* vim: set colorcolumn=80: */
