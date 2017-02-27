@@ -99,10 +99,6 @@ static void apply_request(struct request *request)
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, request);
 
-#if 0
-	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
-	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
-#endif
 	/* Perform the request, res will get the return code */ 
 	rc = curl_easy_perform(curl);
 
