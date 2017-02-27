@@ -28,7 +28,18 @@ add_compile_options(${EXTRAS_CFLAGS} -DFOR_AFB_BINDING)
 include_directories(${EXTRAS_INCLUDE_DIRS})
 link_libraries(${EXTRAS_LIBRARIES})
 
-add_library(${PROJECT_NAME} MODULE agl-curl.c  agl-identity-binding.c  u2f-bluez.c  u2f-bt.c  u2f-protocol.c)
+add_library(${PROJECT_NAME} MODULE
+	agl-curl.c
+	agl-identity-binding.c
+	u2f-bluez.c
+	u2f-bt.c
+	u2f-protocol.c
+	authorization.c
+	base64.c
+	escape.c
+	oidc-agent.c
+	curl-wrap.c
+)
 set_target_properties(${PROJECT_NAME} PROPERTIES
 	PREFIX ""
 	LINK_FLAGS "-Wl,--version-script=${CMAKE_CURRENT_SOURCE_DIR}/export.map"

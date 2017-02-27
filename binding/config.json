@@ -1,7 +1,18 @@
 {
  "endpoint": "https://agl-graphapi.forgerocklabs.org/getuserprofilefromtoken",
  "vin": "4T1BF1FK5GU260429",
- "delay": 5
+ "autoscan": true,
+ "delay": 5,
+ "idp": {
+     "authorization_endpoint": "",
+     "token_endpoint": "https://agl-am.forgerocklabs.org:8043/openam/oauth2/stateless/access_token"
+   },
+ "appli": {
+     "authorization": "Basic c3RhdGVsZXNzOnBhc3N3b3JkMgo=",
+     "username": "bjensen",
+     "password": "Passw0rd",
+     "scope": "openid profile email cn sn givenName ou mail postalAddress departmentNumber physicalDeliveryOfficeName facsimileTelephoneNumber"
+   }
 }
 /*
  "endpoint": "https://frdemo-graphapi.forgerocklabs.org/getuserprofilefromtoken",

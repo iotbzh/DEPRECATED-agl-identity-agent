@@ -34,6 +34,7 @@
 
 
 #include "u2f-bluez.h"
+#include "oidc-agent.h"
 
 #if !defined(AUTO_START_SCAN)
 #define AUTO_START_SCAN 1
@@ -63,6 +64,7 @@ static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 static const char default_endpoint[] = "https://agl-graphapi.forgerocklabs.org/getuserprofilefromtoken";
 static const char default_vin[] = "4T1BF1FK5GU260429";
+static const char *oidc_name;
 static char *vin;
 static char *endpoint;
 static int autoscan = AUTO_START_SCAN;
@@ -122,12 +124,26 @@ static void confsetint(struct json_object *conf, const char *name, int *value, i
 	*value = conf && json_object_object_get_ex(conf, name, &v) ? json_object_get_int(v) : def;
 }
 
+static void confsetoidc(struct json_object *conf, const char *name)
+{
+	struct json_object *idp, *appli;
+
+	if (conf
+	 && json_object_object_get_ex(conf, "idp", &idp)
+	 && json_object_object_get_ex(conf, "appli", &appli)) {
+		if (oidc_idp_set(name, idp) && oidc_appli_set(name, name, appli, 1)) {
+			oidc_name = name;
+		}
+	}
+}
+
 static void setconfig(struct json_object *conf)
 {
 	confsetstr(conf, "endpoint", &endpoint, endpoint ? : default_endpoint);
 	confsetstr(conf, "vin", &vin, vin ? : default_vin);
 	confsetint(conf, "delay", &expiration_delay, expiration_delay);
 	confsetint(conf, "autoscan", &autoscan, autoscan);
+	confsetoidc(conf, "oidc-forgerock");
 }
 
 static void readconfig()
