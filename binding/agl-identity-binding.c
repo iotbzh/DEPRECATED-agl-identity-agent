@@ -32,12 +32,11 @@
 
 #include "u2f-bluez.h"
 #include "oidc-agent.h"
+#include "aia-get.h"
 
 #if !defined(AUTO_START_SCAN)
 #define AUTO_START_SCAN 1
 #endif
-
-extern void aia_get(const char *url, int delay, const char *appli, const char *idp, void (*callback)(void *closure, int status, const void *buffer, size_t size), void *closure);
 
 static int expiration_delay = 5;
 
