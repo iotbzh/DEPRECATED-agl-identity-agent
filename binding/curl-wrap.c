@@ -145,7 +145,9 @@ int curl_wrap_add_header(CURL *curl, const char *header)
 
 	list = curl_slist_append(NULL, header);
 	rc = list ? curl_easy_setopt(curl, CURLOPT_HTTPHEADER, list) == CURLE_OK : 0;
+/*
 	curl_slist_free_all(list);
+*/
 	return rc;
 }
 

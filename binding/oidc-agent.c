@@ -99,9 +99,9 @@ static void j_merge(struct json_object *dest, struct json_object *src)
 	struct json_object_iter i;
 	json_object_object_foreachC(src, i) {
 		if (json_object_is_type(i.val, json_type_null))
-			json_object_object_add(dest, i.key, json_object_get(i.val));
-		else
 			json_object_object_del(dest, i.key);	
+		else
+			json_object_object_add(dest, i.key, json_object_get(i.val));
 	}
 }
 
@@ -766,18 +766,12 @@ void oidc_token_refresh(const char *appli, const char *idp, struct json_object *
 		);
 }
 
-void oidc_add_bearer(const char *appli, const char *idp, struct json_object *token, const struct oidc_grant_cb *cb)
+int oidc_add_bearer(CURL *curl, struct json_object *token)
 {
-	struct args *args;
+	struct json_object *bearer;
 
-	args = mkargs(appli, idp, token, cb);
-	if (!args)
-		return;
-	args->refresh = 1;
-	perform(args, string_token_endpoint, "refresh_token",
-			PARAM(Grant_Type) | PARAM(Refresh_Token),
-			PARAM(Scope) | PARAM(Authorization)
-		);
+	return json_object_object_get_ex(token, "authorization", &bearer)
+		&& curl_wrap_add_header_value(curl, "authorization", json_object_get_string(bearer));
 }
 
 

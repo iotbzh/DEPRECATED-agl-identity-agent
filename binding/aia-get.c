@@ -56,6 +56,7 @@ struct keyrequest {
 	const char *idp;
 	void (*callback)(void *closure, int status, const void *buffer, size_t size);
 	void *closure;
+	json_object *token;
 	pthread_t tid;
 };
 
@@ -83,19 +84,48 @@ static void perform_query(struct keyrequest *kr)
 	CURL *curl;
 
 	curl = curl_wrap_prepare_get_url(kr->url);
-	if (curl)
-		curl_wrap_do(curl, perform_query_callback, kr);
-	else
+	if (!curl)
 		kr->callback(kr->closure, 0, "out of memory", 0);
+	else {
+		oidc_add_bearer(curl, kr->token);
+		curl_wrap_do(curl, perform_query_callback, kr);
+	}
+}
+
+static void token_success(void *closure, struct json_object *token)
+{
+	struct keyrequest *kr = closure;
+	kr->token = token;
+	perform_query(kr);
+}
+
+static void token_error(void *closure, const char *message, const char *indice)
+{
+	struct keyrequest *kr = closure;
+	kr->callback(kr->closure, 0, message, 0);
 }
 
 static void *kr_get_thread(void *closure)
 {
+	struct oidc_grant_cb cb;
 	struct keyrequest *kr = closure;
 
-	perform_query(kr);
+	if (!kr->appli)
+		perform_query(kr);
+	else {
+		cb.closure = kr;
+		cb.success = token_success;
+		cb.error = token_error;
+		oidc_grant_owner_password(kr->appli, kr->idp, NULL, &cb);
+	}
 	kr->dead = 1;
 	return NULL;
+}
+
+static void kr_free(struct keyrequest *kr)
+{
+	json_object_put(kr->token);
+	free(kr);
 }
 
 static struct keyrequest *kr_alloc(
@@ -122,6 +152,7 @@ static struct keyrequest *kr_alloc(
 		result->expiration = expiration;
 		result->callback = callback;
 		result->closure = closure;
+		result->token = NULL;
 		result->tid = 0;
 
 		buf = (char*)(&result[1]);
@@ -172,7 +203,7 @@ void aia_get(
 		if (now > kr->expiration) {
 			if (kr->dead) {
 				*pkr = kr->next;
-				free(kr);
+				kr_free(kr);
 			} else {
 				pkr = &kr->next;
 			}
@@ -210,7 +241,7 @@ void aia_get(
 		/* error, unlink */
 		keyrequests = kr->next;
 		pthread_mutex_unlock(&mutex);
-		free(kr);
+		kr_free(kr);
 		callback(closure, 0, "Can't create a new thread", 0);
 		return;
 	}

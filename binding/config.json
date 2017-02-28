@@ -8,7 +8,7 @@
      "token_endpoint": "https://agl-am.forgerocklabs.org:8043/openam/oauth2/stateless/access_token"
    },
  "appli": {
-     "authorization": "Basic c3RhdGVsZXNzOnBhc3N3b3JkMgo=",
+     "authorization": "Basic c3RhdGVsZXNzOnBhc3N3b3JkMg==",
      "username": "bjensen",
      "password": "Passw0rd",
      "scope": "openid profile email cn sn givenName ou mail postalAddress departmentNumber physicalDeliveryOfficeName facsimileTelephoneNumber"

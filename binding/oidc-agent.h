@@ -105,5 +105,15 @@ extern void oidc_grant_client_credentials(
 		const struct oidc_grant_cb *cb
 	);
 
+extern void oidc_token_refresh(
+		const char *appli,
+		const char *idp,
+		struct json_object *token,
+		const struct oidc_grant_cb *cb
+	);
 
+extern int oidc_add_bearer(
+		CURL *curl,
+		struct json_object *token
+	);
 
