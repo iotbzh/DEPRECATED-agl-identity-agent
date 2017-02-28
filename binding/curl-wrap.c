@@ -27,11 +27,14 @@
 #include "curl-wrap.h"
 #include "escape.h"
 
+
+/* internal representation of buffers */
 struct buffer {
 	size_t size;
 	char *data;
 };
 
+/* write callback for filling buffers with the response */
 static size_t write_callback(char *ptr, size_t size, size_t nmemb, void *userdata)
 {
 	struct buffer *buffer = userdata;
@@ -48,12 +51,22 @@ static size_t write_callback(char *ptr, size_t size, size_t nmemb, void *userdat
 	return sz;
 }
 
+/* 
+ * Perform the CURL operation for 'curl' and put the result in
+ * memory. If 'result' isn't NULL it receives the returned content
+ * that then must be freed. If 'size' isn't NULL, it receives the
+ * size of the returned content. Note that if not NULL, the real
+ * content is one byte greater than the read size and the last byte
+ * zero. This facility allows to handle the returned content as a
+ * null terminated C-string.
+ */
 int curl_wrap_perform(CURL *curl, char **result, size_t *size)
 {
 	int rc;
 	struct buffer buffer;
 	CURLcode code;
 
+	/* init tthe buffer */
 	buffer.size = 0;
 	buffer.data = NULL;
 
@@ -76,12 +89,6 @@ int curl_wrap_perform(CURL *curl, char **result, size_t *size)
 			free(buffer.data);
 	} else {
 		/* had error */
-/*
-	char *url;
-		curl_easy_getinfo(curl, CURLINFO_EFFECTIVE_URL, &url);
-		ERROR(interface, "getting url failed: %s (%s)\n",
-					curl_easy_strerror(code), url);
-*/
 		free(buffer.data);
 	}
 
@@ -93,9 +100,14 @@ void curl_wrap_do(CURL *curl, void (*callback)(void *closure, int status, CURL *
 	int rc;
 	char *result;
 	size_t size;
+	char errbuf[CURL_ERROR_SIZE];
 
+	curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, errbuf);
 	rc = curl_wrap_perform(curl, &result, &size);
-	callback(closure, rc, curl, result, size);
+	if (rc)
+		callback(closure, rc, curl, result, size);
+	else
+		callback(closure, rc, curl, errbuf, 0);
 	free(result);
 	curl_easy_cleanup(curl);
 }

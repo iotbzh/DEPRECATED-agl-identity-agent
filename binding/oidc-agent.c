@@ -619,13 +619,24 @@ static void perform_callback(void *closure, int status, CURL *curl, const char *
 		return perform_redirect(args, curl, content, size);
 	case 400:
 	case 401:
-		return args_send_error(args, "returned code error", content);
+		return args_send_error(args, content ? : "returned code error", content ? "returned code error" : content);
 	default:
-		return args_send_error(args, "unexpected code error", content);
+		return args_send_error(args, content ? : "unexpected code error", content ? "unexpected code error" : content);
 	}
 }
 
-static void perform(struct args *args, const char *endpoint, const char *query, uint32_t mandatory, uint32_t optional)
+/*
+ * Main function for performing OAuth2/OpenId Connect transactions.
+ * The structure 'args' is filled with the needed values:
+ *   Application data as json object, IDP data as json object
+ *   Contextual arguments for the transaction.
+ * 'endpoint' must be the name of an endpoint in the context of 'args'.
+ * 'operation' is the value that will get either response_type or grant_type,
+ * depending on the nature of the required parameters 'mandatory'.
+ * 'mandatory' designates the mandatory parameters.
+ * 'optional' designate the optional parameters.
+ */
+static void perform(struct args *args, const char *endpoint, const char *operation, uint32_t mandatory, uint32_t optional)
 {
 	int post;
 	const char *url, *type;
@@ -640,7 +651,7 @@ static void perform(struct args *args, const char *endpoint, const char *query, 
 	if (!url)
 		return args_send_error(args, "No endpoint", endpoint);
 
-	/* get the query type */
+	/* get the operation type */
 	if ((mandatory & PARAM(Response_Type)) == PARAM(Response_Type)) {
 		type = "response_type";
 		post = 0; /* can be 1 sometimes so not risk here */
@@ -648,9 +659,9 @@ static void perform(struct args *args, const char *endpoint, const char *query, 
 		type = "grant_type";
 		post = 1; /* must be 1 */
 	} else
-		return args_send_error(args, "Unexpected query Type", NULL);
+		return args_send_error(args, "Unexpected operation Type", NULL);
 		
-	json_object_object_add(args->query, type, json_object_new_string(query));
+	json_object_object_add(args->query, type, json_object_new_string(operation));
 
 	/* get the arguments */
 	if (1
@@ -707,6 +718,7 @@ static void grant_client_credentials(struct args *args)
 		);
 }
 
+/* switches the requests depending on 'flow' */
 static void grant(struct args *args, enum oidc_grant_flow flow)
 {
 	/* ensure args is valid */
@@ -737,21 +749,40 @@ static void grant(struct args *args, enum oidc_grant_flow flow)
 	}
 }
 
+/*
+ * Initiates a grant with the given 'flow'.
+ * 'appli' and 'idp' designates the appli and the idp that have been recorded.
+ * when idp == NULL or idp == "", the default idp of 'appli' is used.
+ * 'args' contains parameters expected in plus for the grant transaction.
+ * 'cb' describes the callback actions that are called before
+ * the function returns.
+ */
 void oidc_grant(const char *appli, const char *idp, struct json_object *args, const struct oidc_grant_cb *cb, enum oidc_grant_flow flow)
 {
 	grant(mkargs(appli, idp, args, cb), flow);
 }
 
+/*
+ * Like oidc_grant for flow Flow_Resource_Owner_Password_Credentials_Grant
+ */
 void oidc_grant_owner_password(const char *appli, const char *idp, struct json_object *args, const struct oidc_grant_cb *cb)
 {
 	grant(mkargs(appli, idp, args, cb), Flow_Resource_Owner_Password_Credentials_Grant);
 }
 
+/*
+ * Like oidc_grant for flow Flow_Client_Credentials_Grant
+ */
 void oidc_grant_client_credentials(const char *appli, const char *idp, struct json_object *args, const struct oidc_grant_cb *cb)
 {
 	grant(mkargs(appli, idp, args, cb), Flow_Client_Credentials_Grant);
 }
 
+/*
+ * Refreshes the 'token' for the 'appli' and the  'idp'.
+ * 'cb' describes the callback actions that are called before
+ * the function returns.
+ */
 void oidc_token_refresh(const char *appli, const char *idp, struct json_object *token, const struct oidc_grant_cb *cb)
 {
 	struct args *args;
@@ -766,6 +797,10 @@ void oidc_token_refresh(const char *appli, const char *idp, struct json_object *
 		);
 }
 
+/*
+ * Adds the header "authorisation" with the bearer access_token of 'token'.
+ * Return 1 on case of success or 0 otherwise.
+ */
 int oidc_add_bearer(CURL *curl, struct json_object *token)
 {
 	struct json_object *bearer;
@@ -773,7 +808,5 @@ int oidc_add_bearer(CURL *curl, struct json_object *token)
 	return json_object_object_get_ex(token, "authorization", &bearer)
 		&& curl_wrap_add_header_value(curl, "authorization", json_object_get_string(bearer));
 }
-
-
 
 
