@@ -29,7 +29,6 @@ include_directories(${EXTRAS_INCLUDE_DIRS})
 link_libraries(${EXTRAS_LIBRARIES})
 
 add_library(${PROJECT_NAME} MODULE
-	agl-curl.c
 	agl-identity-binding.c
 	u2f-bluez.c
 	u2f-bt.c
@@ -39,6 +38,7 @@ add_library(${PROJECT_NAME} MODULE
 	escape.c
 	oidc-agent.c
 	curl-wrap.c
+	aia-get.c
 )
 set_target_properties(${PROJECT_NAME} PROPERTIES
 	PREFIX ""

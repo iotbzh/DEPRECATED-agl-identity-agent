@@ -17,17 +17,13 @@
 
 #define _GNU_SOURCE
 
-#include <errno.h>
+#include <stdlib.h>
+#include <stdio.h>
 #include <stdint.h>
-#include <time.h>
+#include <string.h>
 #include <pthread.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 
 #include <json-c/json.h>
-#include <curl/curl.h>
 
 #include "oidc-agent.h"
 #include "escape.h"
@@ -36,12 +32,14 @@
 /***************** utilities *************************/
 
 static const char string_empty[] = "";
-static const char string_issuer[] = "issuer";
 static const char string_authorization_endpoint[] = "authorization_endpoint";
 static const char string_token_endpoint[] = "token_endpoint";
+#if 0
+static const char string_issuer[] = "issuer";
 static const char string_userinfo_endpoint[] = "userinfo_endpoint";
 static const char string_revocation_endpoint[] = "revocation_endpoint";
 static const char string_jwks_uri[] = "jwks_uri";
+#endif
 
 #define MAX_IDP_COUNT     20
 #define MAX_APPLI_COUNT   100
@@ -53,6 +51,11 @@ static pthread_rwlock_t rwlock = PTHREAD_RWLOCK_INITIALIZER;
 
 /***************** utilities *************************/
 
+/*
+ * Get the object of 'name' in the 'container' and return it.
+ * Creates the result if needed and add it to the container.
+ * When 'maxcount' isn't zero the final count will not exceed 'maxcount'.
+ */
 static struct json_object *j_container_item(struct json_object *container, const char *name, int maxcount)
 {
 	struct json_object *result;
@@ -69,6 +72,9 @@ static struct json_object *j_container_item(struct json_object *container, const
 	return result;
 }
 
+/*
+ * Like 'j_container_item' but also creates the 'container' if needed.
+ */
 static struct json_object *j_container_item_make(struct json_object **container, const char *name, int maxcount)
 {
 	struct json_object *cont;
@@ -84,6 +90,10 @@ static struct json_object *j_container_item_make(struct json_object **container,
 	return j_container_item(cont, name, maxcount);
 }
 
+/*
+ * Adds in 'dest' the fields of 'src'
+ * Also when the value of a field of 'src' is null, delete the field of 'dst'
+ */
 static void j_merge(struct json_object *dest, struct json_object *src)
 {
 	struct json_object_iter i;
@@ -97,6 +107,10 @@ static void j_merge(struct json_object *dest, struct json_object *src)
 
 /***************** IDP **************************/
 
+/*
+ * Set the values of 'desc' for the idp of 'name'.
+ * Return 0 on error or 1 on success.
+ */
 int oidc_idp_set(const char *name, struct json_object *desc)
 {
 	struct json_object *idp;
@@ -112,6 +126,9 @@ int oidc_idp_set(const char *name, struct json_object *desc)
 	return result;
 }
 
+/*
+ * Return 1 if idp of 'name' exists or 0 otherwise.
+ */
 int oidc_idp_exists(const char *name)
 {
 	int result;
@@ -123,6 +140,9 @@ int oidc_idp_exists(const char *name)
 	return result;
 }
 
+/*
+ * Deletes the idp of 'name'.
+ */
 void oidc_idp_delete(const char *name)
 {
 	pthread_rwlock_wrlock(&rwlock);
@@ -132,6 +152,10 @@ void oidc_idp_delete(const char *name)
 
 /***************** APPLI **************************/
 
+/*
+ * Returns the name of the idp of the 'appli'.
+ * Returns NULL when appli isn't set or default idp isn't set.
+ */
 static const char *get_default_idp(const char *appli)
 {
 	struct json_object *a, *i;
@@ -143,6 +167,11 @@ static const char *get_default_idp(const char *appli)
 	return json_object_get_string(i);
 }
 
+/*
+ * Returns the application data related to the 'appli' for the 'idp'.
+ * If 'ja' isn't null, returns in it the object for the application 'appli'.
+ * Returns NULL in case of error.
+ */
 static struct json_object *get_appli_idp(const char *appli, const char *idp, struct json_object **ja)
 {
 	struct json_object *a, *i;
@@ -154,6 +183,12 @@ static struct json_object *get_appli_idp(const char *appli, const char *idp, str
 	return i;
 }
 
+/*
+ * Set the description 'desc' for the application of 'name' and
+ * the 'idp'. When 'make_default' is set it, make it the default idp
+ * for the application.
+ * Return 0 on error or 1 on success.
+ */
 int oidc_appli_set(const char *name, const char *idp, struct json_object *desc, int make_default)
 {
 	struct json_object *a, *ai;
@@ -174,6 +209,10 @@ int oidc_appli_set(const char *name, const char *idp, struct json_object *desc, 
 	return result;
 }
 
+/*
+ * Is the appli of 'name' defined?
+ * Return 1 if answer is yes or 0 for no.
+ */
 int oidc_appli_exists(const char *name)
 {
 	int result;
@@ -185,6 +224,10 @@ int oidc_appli_exists(const char *name)
 	return result;
 }
 
+/*
+ * Does the appli of 'name' has the 'idp' defined?
+ * Return 1 if answer is yes or 0 for no.
+ */
 int oidc_appli_has_idp(const char *name, const char *idp)
 {
 	int result;
@@ -196,6 +239,11 @@ int oidc_appli_has_idp(const char *name, const char *idp)
 	return result;
 }
 
+/*
+ * Set 'idp' as default for the application of 'name'.
+ * Returns 0 on error (appli or idp for appli not existing)
+ * or 1 in case of success.
+ */
 int oidc_appli_set_default_idp(const char *name, const char *idp)
 {
 	struct json_object *a, *i;
@@ -209,6 +257,9 @@ int oidc_appli_set_default_idp(const char *name, const char *idp)
 	return !!i;
 }
 
+/*
+ * Deletes the application of 'name'
+ */
 void oidc_appli_delete(const char *name)
 {
 	pthread_rwlock_wrlock(&rwlock);
@@ -247,9 +298,13 @@ enum param
 	Param_State,
 	Param_Token_Type,
 	Param_Ui_Locales,
-	Param_Username
+	Param_Username,
+	PARAM_COUNT
 };
 
+#if PARAM_COUNT > 30
+# error "Too much parameters"
+#endif
 #define PARAM(p)	((uint32_t)((uint32_t)1 << (Param_##p)))
 
 /* args of authorization requests */
@@ -260,12 +315,14 @@ struct args
 	struct json_object *args;
 	struct oidc_grant_cb cb;
 	int locked;
+	int refresh;
 	uint32_t mandatory;
 	uint32_t all;
 	struct json_object *header;
 	struct json_object *query;
 };
 
+/* Release the lock if needed */
 static void args_unlock(struct args *args)
 {
 	if (!args->locked) {
@@ -274,14 +331,17 @@ static void args_unlock(struct args *args)
 	}
 }
 
+/* Release the memory needed by args */
 static void args_destroy(struct args *args)
 {
+	json_object_put(args->appli);
+	json_object_put(args->idp);
 	json_object_put(args->header);
 	json_object_put(args->query);
-	json_object_put(args->args);
 	free(args);
 }
 
+/* Send the success event with the gained tokens */
 static void args_send_success(struct args *args, struct json_object *result)
 {
 	args_unlock(args);
@@ -289,7 +349,7 @@ static void args_send_success(struct args *args, struct json_object *result)
 	args_destroy(args);
 }
 
-/* Sends the error with the indice to the client of args */
+/* Sends the error event with the indice to the client of args */
 static void args_send_error(struct args *args, const char *message, const char *indice)
 {
 	args_unlock(args);
@@ -307,51 +367,50 @@ static inline struct args *args_send_error_null(struct args *args, const char *m
 /* creates a struct args from the arguments, returns NULL on error */
 struct args *mkargs(const char *appli, const char *idp, struct json_object *args, const struct oidc_grant_cb *cb)
 {
-	struct args *gargs;
+	struct args *result;
+	struct json_object *obj;
 
 	/* allocates the args */
-	gargs = calloc(1, sizeof *gargs);
-	if (!gargs) {
+	result = calloc(1, sizeof *result);
+	if (!result) {
 		cb->error(cb->closure, "Out of memory", NULL);
 		return NULL;
 	}
 
 	/* init of the structure */
-	gargs->cb = *cb;
-	gargs->mandatory = 0;
-	gargs->all = 0;
-	gargs->args = json_object_get(args);
-	gargs->header = json_object_new_object();
-	gargs->query = json_object_new_object();
+	result->cb = *cb;
+	result->args = args;
+	result->header = json_object_new_object();
+	result->query = json_object_new_object();
 
 	/* lock in read */
 	pthread_rwlock_rdlock(&rwlock);
-	gargs->locked = 1;
+	result->locked = 1;
 
 	/* check previous allocations */
-	if (!gargs->args || !gargs->query || !gargs->header) {
-		json_object_put(gargs->header);
-		json_object_put(gargs->query);
-		return args_send_error_null(gargs, "Out of memory", NULL);
+	if (!result->query || !result->header) {
+		return args_send_error_null(result, "Out of memory", NULL);
 	}
 
 	/* check whether default idp */
 	if (!idp) {
 		idp = get_default_idp(appli);
 		if (!idp)
-			return args_send_error_null(gargs, "No default IDP", NULL);
+			return args_send_error_null(result, "No default IDP", NULL);
 	}
 
 	/* get the IDP */
-	if (!json_object_object_get_ex(idps, idp, &gargs->idp))
-		return args_send_error_null(gargs, "Unknown IDP", idp);
+	if (!json_object_object_get_ex(idps, idp, &obj))
+		return args_send_error_null(result, "Unknown IDP", idp);
+	result->idp = json_object_get(obj);
 
 	/* get the appli */
-	gargs->appli = get_appli_idp(appli, idp, NULL);
-	if (!gargs->appli)
-		return args_send_error_null(gargs, "Unknown APPLI for IDP", appli);
+	obj = get_appli_idp(appli, idp, NULL);
+	if (!obj)
+		return args_send_error_null(result, "Unknown APPLI for IDP", appli);
+	result->appli = json_object_get(obj);
 
-	return gargs;
+	return result;
 }
 
 /* get a value for a struct args */
@@ -393,6 +452,30 @@ static int args_add(struct args *args, uint32_t val, const char *name, int query
 	return 1;
 }
 
+/*
+ * Makes the CURL object for the given 'url' for either GET or POST depending
+ * on 'post' with the added 'header' fields and the given query parameters.
+ * Returns NULL on error.
+ * Ex:
+ *
+ *   curl_json("http://iot.bzh/api", 0, {"X-Index": "no"}, {"fast":true,"item":"2345-hellfest"})
+ * 
+ * produces the query:
+ *
+ *   GET /api?fast=true&item=2345-hellfest HTTP/1.1
+ *   Host: iot.bzh
+ *   X-Index: no
+ *
+ * while the same but with post not null produces:
+ *
+ *   POST /api HTTP/1.1
+ *   Host: iot.bzh
+ *   X-Index: no
+ *   Content-Type: application/x-www-form-urlencoded
+ *
+ *   fast=true&item=2345-hellfest
+ *
+ */
 static CURL *curl_json(const char *url, int post, struct json_object *header, struct json_object *query)
 {
 	const char **args, *str;
@@ -436,18 +519,25 @@ static CURL *curl_json(const char *url, int post, struct json_object *header, st
 	return result;
 }
 
-static struct json_object *decode_perform_result(CURL *curl, const char *content)
+/*
+ * Extract from the answer of 'curl' whose 'content' has 'size' bytes the
+ * embeded JSON object (if any).
+ * Returns it or returns NULL if the answer can't be interpreted.
+ */
+static struct json_object *decode_perform_result(CURL *curl, const char *content, size_t size)
 {
 	int i;
 	const char **args;
 	struct json_object *result;
 
-	/*  */
+	/* is it an url encoded answer? */
 	if (curl_wrap_content_type_is(curl, "application/x-www-form-urlencoded")) {
+		/* yes, unescape as an array of strings */
 		args = unescape_args(content);
 		if (!args)
 			result = NULL;
 		else {
+			/* wrap the key=value pairs in an object  */
 			result = json_object_new_object();
 			if (result) {
 				for (i = 0 ; args[i] ; i += 2)
@@ -457,35 +547,64 @@ static struct json_object *decode_perform_result(CURL *curl, const char *content
 			free(args);
 		}
 	} else if (curl_wrap_content_type_is(curl, "application/json")) {
+		/* interpret the json */
 		result = json_tokener_parse (content);
 	} else {
+		/* by default, still try to interpret the answer as if json */
 		result = json_tokener_parse (content);
 	}
 	return result;
 }
 
+/*
+ * Treats the result of the query 'curl' of 'content' of 'size' bytes for the 'args'
+ */
 static void perform_result(struct args *args, CURL *curl, const char *content, size_t size)
 {
-	struct json_object *obj;
+	struct json_object *obj, *at, *tt;
+	char *txt;
 
 	/* get answer */
-	obj = decode_perform_result(curl, content);
+	obj = decode_perform_result(curl, content, size);
 	if (!obj)
-		return args_send_error(args, "unexpected answer type", content);
+		return args_send_error(args, "unable to extract answer", content);
 
 	/* process the answer */
+	if (json_object_object_get_ex(obj, "access_token", &at) && json_object_object_get_ex(obj, "token_type", &tt)) {
+		if (!strcmp(json_object_get_string(tt), "bearer")) {
+			if (asprintf(&txt, "Bearer %s", json_object_get_string(at)) > 0) {
+				json_object_object_add(obj, "authorization", json_object_new_string(txt));
+				free(txt);
+			}
+		}
+	}
+
+	/* merge the answer to the token args in case of refresh */
+	if (args->refresh)
+		j_merge(args->args, obj);
+
+	/* send the answer */
 	args_send_success(args, obj);
 }
 
+/*
+ * Treats the redirect answer of the query 'curl' of 'content' of 'size' bytes for the 'args'
+ */
 static void perform_redirect(struct args *args, CURL *curl, const char *content, size_t size)
 {
+	/* TODO: handle redirection for the normal flow */
 	return args_send_error(args, "unhandled redirection", content);
 }
 
+/*
+ * Handle the result of the query 'curl' of 'status'. If a data is returned, it is available in
+ * 'content' of 'size' bytes.
+ * When 'status' is 0, an error occured. Otherwise, 'statu' isn't zero.
+ */
 static void perform_callback(void *closure, int status, CURL *curl, const char *content, size_t size)
 {
-	struct args *args = closure;
 	long code;
+	struct args *args = closure;
 
 	/* query error ? */
 	if (!status
@@ -534,8 +653,8 @@ static void perform(struct args *args, const char *endpoint, const char *query, 
 	json_object_object_add(args->query, type, json_object_new_string(query));
 
 	/* get the arguments */
-	if (
-	    args_add(args, PARAM(Access_Token), "access_token", 1)
+	if (1
+	 && args_add(args, PARAM(Access_Token), "access_token", 1)
 	 && args_add(args, PARAM(Acr_Values), "acr_values", 1)
 	 && args_add(args, PARAM(Authorization), "authorization", 0)
 	 && args_add(args, PARAM(Client_Id), "client_id", 1)
@@ -570,6 +689,7 @@ static void perform(struct args *args, const char *endpoint, const char *query, 
 	}
 }
 
+/* perform a grant of flow Flow_Resource_Owner_Password_Credentials_Grant */
 static void grant_owner_password(struct args *args)
 {
 	perform(args, string_token_endpoint, "password",
@@ -578,6 +698,7 @@ static void grant_owner_password(struct args *args)
 		);
 }
 
+/* perform a grant of flow Flow_Client_Credentials_Grant */
 static void grant_client_credentials(struct args *args)
 {
 	perform(args, string_token_endpoint, "client_credentials",
@@ -588,28 +709,32 @@ static void grant_client_credentials(struct args *args)
 
 static void grant(struct args *args, enum oidc_grant_flow flow)
 {
-	if (args)
-		switch(flow) {
+	/* ensure args is valid */
+	if (!args)
+		return;
 
-		case Flow_Resource_Owner_Password_Credentials_Grant:
-			grant_owner_password(args);
-			break;
+	/* process for flow */
+	switch(flow) {
 
-		case Flow_Client_Credentials_Grant:
-			grant_client_credentials(args);
-			break;
+	case Flow_Resource_Owner_Password_Credentials_Grant:
+		grant_owner_password(args);
+		break;
 
-		case Flow_Authorization_Code_Grant:
-		case Flow_Implicit_Grant:
-		case Flow_Extension_Grant:
-			args_send_error(args, "Unsupported flow", NULL);
-			break;
-			
-		case Flow_Invalid:
-		default:
-			args_send_error(args, "Invalid flow", NULL);
-			break;
-		}
+	case Flow_Client_Credentials_Grant:
+		grant_client_credentials(args);
+		break;
+
+	case Flow_Authorization_Code_Grant:
+	case Flow_Implicit_Grant:
+	case Flow_Extension_Grant:
+		args_send_error(args, "Unsupported flow", NULL);
+		break;
+		
+	case Flow_Invalid:
+	default:
+		args_send_error(args, "Invalid flow", NULL);
+		break;
+	}
 }
 
 void oidc_grant(const char *appli, const char *idp, struct json_object *args, const struct oidc_grant_cb *cb, enum oidc_grant_flow flow)
@@ -626,5 +751,35 @@ void oidc_grant_client_credentials(const char *appli, const char *idp, struct js
 {
 	grant(mkargs(appli, idp, args, cb), Flow_Client_Credentials_Grant);
 }
+
+void oidc_token_refresh(const char *appli, const char *idp, struct json_object *token, const struct oidc_grant_cb *cb)
+{
+	struct args *args;
+
+	args = mkargs(appli, idp, token, cb);
+	if (!args)
+		return;
+	args->refresh = 1;
+	perform(args, string_token_endpoint, "refresh_token",
+			PARAM(Grant_Type) | PARAM(Refresh_Token),
+			PARAM(Scope) | PARAM(Authorization)
+		);
+}
+
+void oidc_add_bearer(const char *appli, const char *idp, struct json_object *token, const struct oidc_grant_cb *cb)
+{
+	struct args *args;
+
+	args = mkargs(appli, idp, token, cb);
+	if (!args)
+		return;
+	args->refresh = 1;
+	perform(args, string_token_endpoint, "refresh_token",
+			PARAM(Grant_Type) | PARAM(Refresh_Token),
+			PARAM(Scope) | PARAM(Authorization)
+		);
+}
+
+
 
 

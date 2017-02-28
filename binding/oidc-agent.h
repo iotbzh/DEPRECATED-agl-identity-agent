@@ -18,6 +18,7 @@
 #pragma once
 
 struct json_object;
+#include <curl/curl.h>
 
 /***************** IDP **************************/
 

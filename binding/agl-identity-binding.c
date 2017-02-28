@@ -18,8 +18,6 @@
 
 #include <errno.h>
 #include <stdint.h>
-#include <time.h>
-#include <pthread.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/types.h>
@@ -32,7 +30,6 @@
 #include <afb/afb-event-itf.h>
 #include <afb/afb-service-itf.h>
 
-
 #include "u2f-bluez.h"
 #include "oidc-agent.h"
 
@@ -40,9 +37,9 @@
 #define AUTO_START_SCAN 1
 #endif
 
-static int expiration_delay = 5;
+extern void aia_get(const char *url, int delay, const char *appli, const char *idp, void (*callback)(void *closure, int status, const void *buffer, size_t size), void *closure);
 
-extern int geturl(const char *url, void (*callback)(void *closure, int status, void *buffer, size_t size), void *closure);
+static int expiration_delay = 5;
 
 const struct afb_binding_interface *interface;
 
@@ -50,17 +47,7 @@ static int scanning;
 
 static struct afb_event event;
 
-struct keyrequest {
-	struct keyrequest *next;
-	time_t expiration;
-	char *url;
-};
-
-static struct keyrequest *keyrequests;
-
 static struct json_object *current_identity;
-
-static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 static const char default_endpoint[] = "https://agl-graphapi.forgerocklabs.org/getuserprofilefromtoken";
 static const char default_vin[] = "4T1BF1FK5GU260429";
@@ -143,7 +130,7 @@ static void setconfig(struct json_object *conf)
 	confsetstr(conf, "vin", &vin, vin ? : default_vin);
 	confsetint(conf, "delay", &expiration_delay, expiration_delay);
 	confsetint(conf, "autoscan", &autoscan, autoscan);
-	confsetoidc(conf, "oidc-forgerock");
+	confsetoidc(conf, "oidc-aia");
 }
 
 static void readconfig()
@@ -201,57 +188,6 @@ static void do_logout()
 
 /****************************************************************/
 
-static void uploaded(void *closure, int status, void *buffer, size_t size)
-{
-	struct keyrequest *kr = closure;
-	struct json_object *object, *subobj;
-
-	/* try to retrieve the request */
-	pthread_mutex_lock(&mutex);
-	kr = keyrequests;
-	while (kr && kr != closure)
-		kr = kr->next;
-
-	/* scan for the status */
-	if (status < 0 || !buffer) {
-		ERROR(interface, "uploading %s failed: %d", kr ? kr->url : "?", status);
-		pthread_mutex_unlock(&mutex);
-		return;
-	}
-
-	DEBUG(interface, "received data: %.*s", (int)size, (char*)buffer);
-
-	/* get the object */
-	object = json_tokener_parse(buffer); /* okay because 0 appended */
-
-	/* extract useful part */
-	if (object && !json_object_object_get_ex(object, "results", &subobj))
-		subobj = 0;
-	if (subobj)
-		subobj = json_object_array_get_idx(subobj, 0);
-	if (subobj && !json_object_object_get_ex(subobj, "data", &subobj))
-		subobj = 0;
-	if (subobj)
-		subobj = json_object_array_get_idx(subobj, 0);
-	if (subobj && !json_object_object_get_ex(subobj, "row", &subobj))
-		subobj = 0;
-	if (subobj)
-		subobj = json_object_array_get_idx(subobj, 0);
-
-	/* is it a recognized user ? */
-	if (!subobj) {
-		/* not recognized!! */
-		INFO(interface, "unrecognized key for %s", kr ? kr->url : "?");
-		pthread_mutex_unlock(&mutex);
-		json_object_put(object);
-		return;
-	}
-
-	pthread_mutex_unlock(&mutex);
-	do_login(subobj);
-	json_object_put(object);
-}
-
 static char *get_upload_url(const char *key)
 {
 	int rc;
@@ -261,74 +197,72 @@ static char *get_upload_url(const char *key)
 	return rc >= 0 ? result : NULL;
 }
 
-static int upload_request(const char *address)
+static void uploaded(void *closure, int status, const void *buffer, size_t size)
 {
-	int rc;
-	time_t now;
-	struct keyrequest **pkr, *kr, *fkr;
-	char *url;
+	struct json_object *object, *subobj;
+	char *url = closure;
 
-	url = get_upload_url(address);
-	if (!url)
-		return -ENOMEM;
+	/* checks whether discarded */
+	if (status == 0 && !buffer)
+		goto end; /* discarded */
 
-	now = time(NULL);
-	pthread_mutex_lock(&mutex);
-	fkr = 0;
-	pkr = &keyrequests;
-	kr = *pkr;
-	while (kr) {
-		if (now > kr->expiration) {
-			*pkr = kr->next;
-			free(kr->url);
-			free(kr);
-		} else {
-			if (!strcmp(url, kr->url))
-				fkr = kr;
-			pkr = &kr->next;
-		}
-		kr = *pkr;
+	/* scan for the status */
+	if (status == 0 || !buffer) {
+		ERROR(interface, "uploading %s failed %s", url ? : "?", (const char*)buffer ? : "");
+		goto end;
 	}
 
-	if (fkr) {
-		free(url);
-		pthread_mutex_unlock(&mutex);
-		return 0;
+	/* get the object */
+	DEBUG(interface, "received data: %.*s", (int)size, (char*)buffer);
+	object = json_tokener_parse(buffer); /* okay because 0 appended */
+
+	/* extract useful part */
+	subobj = NULL;
+	if (object && !json_object_object_get_ex(object, "results", &subobj))
+		subobj = NULL;
+	if (subobj)
+		subobj = json_object_array_get_idx(subobj, 0);
+	if (subobj && !json_object_object_get_ex(subobj, "data", &subobj))
+		subobj = NULL;
+	if (subobj)
+		subobj = json_object_array_get_idx(subobj, 0);
+	if (subobj && !json_object_object_get_ex(subobj, "row", &subobj))
+		subobj = NULL;
+	if (subobj)
+		subobj = json_object_array_get_idx(subobj, 0);
+
+	/* is it a recognized user ? */
+	if (!subobj) {
+		/* not recognized!! */
+		INFO(interface, "unrecognized key for %s", url ? : "?");
+		json_object_put(object);
+		goto end;
 	}
 
-	kr = malloc(sizeof *kr);
-	if (!kr) {
-		free(url);
-		pthread_mutex_unlock(&mutex);
-		return -ENOMEM;
-	}
+	do_login(subobj);
+	json_object_put(object);
+end:
+	free(url);
+}
 
-	kr->next = keyrequests;
-	kr->expiration = now + expiration_delay;
-	kr->url = url;
-	keyrequests = kr;
-	rc = geturl(kr->url, uploaded, kr);
-	if (rc < 0) {
-		keyrequests = kr->next;
-		free(kr->url);
-		free(kr);
-	}
-	pthread_mutex_unlock(&mutex);
-	return rc;
+static void upload_request(const char *address)
+{
+	char *url = get_upload_url(address);
+	if (url)
+		aia_get(url, expiration_delay, oidc_name, oidc_name, uploaded, url);
+	else
+		ERROR(interface, "out of memory");
 }
 
 static void key_detected(struct u2f_bluez *device)
 {
-	int rc;
 	const char *address;
 
 	address = u2f_bluez_address(device);
 	DEBUG(interface, "Key %s detected", address);
 	u2f_bluez_connect(device);
-	rc = upload_request(address);
+	upload_request(address);
 	send_event_object("incoming", address, address);
-	if (rc < 0)
-		ERROR(interface, "failed to request upload");
 }
 
 static void scan (struct afb_req request)
