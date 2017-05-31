@@ -25,10 +25,8 @@
 
 #include <json-c/json.h>
 
+#define AFB_BINDING_VERSION 1
 #include <afb/afb-binding.h>
-#include <afb/afb-req-itf.h>
-#include <afb/afb-event-itf.h>
-#include <afb/afb-service-itf.h>
 
 #include "u2f-bluez.h"
 #include "oidc-agent.h"
